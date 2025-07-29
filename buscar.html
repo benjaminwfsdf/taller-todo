@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Buscar Vehículo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .barra-superior {
+      background-color: #000;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 2px solid #b30000;
+    }
+
+    .contenedor {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #fff;
+      border: 2px solid #b30000;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .logo {
+      max-width: 180px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      background-color: #b30000;
+      color: white;
+      padding: 15px;
+      font-size: 24px;
+      margin: 0 0 30px 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      text-align: left;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #aaa;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #b30000;
+      color: white;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    button:hover {
+      background-color: #900;
+    }
+
+    .resultado {
+      text-align: left;
+      background-color: #f9f9f9;
+      padding: 15px;
+      border: 1px solid #000;
+    }
+
+    .resultado strong {
+      display: inline-block;
+      width: 140px;
+    }
+
+    .boton-volver {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #111;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      margin-top: 30px;
+    }
+
+    .boton-volver:hover {
+      background-color: #333;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: #000;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<script>
+  const CLAVE_CORRECTA = "informes@";
+  const ingreso = prompt("🔐 Ingresa la clave para acceder:");
+  if (ingreso !== CLAVE_CORRECTA) {
+    alert("❌ Clave incorrecta. Acceso denegado.");
+    window.location.href = "https://www.elsenordelosescaner.cl/";
+  }
+</script>
+
+<body>
+  <div class="barra-superior">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="contenedor">
+    <img src="img/logo-scanners.png" alt="Logo" class="logo">
+
+    <h1>Buscar Vehículo</h1>
+
+    <label id="etiqueta">Buscar por:</label>
+    <input type="text" id="valor" placeholder="">
+
+    <button onclick="buscar()">Buscar</button>
+
+    <div id="resultado" class="resultado" style="display:none;"></div>
+
+    <a href="gestion_autos.html" class="boton-volver">← Volver al Menú Principal</a>
+  </div>
+
+  <footer class="footer">
+    © 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.
+  </footer>
+
+  <script>
+    const tipo = new URLSearchParams(window.location.search).get('tipo');
+    const etiqueta = document.getElementById('etiqueta');
+    const input = document.getElementById('valor');
+
+    const campoSheets = {
+      patente: "Patente",
+      nombre: "Nombre",
+      telefono: "Teléfono"
+    };
+
+    if (tipo === 'patente') {
+      etiqueta.textContent = 'Buscar por Patente:';
+      input.placeholder = 'Escribe la patente';
+    } else if (tipo === 'nombre') {
+      etiqueta.textContent = 'Buscar por Nombre del Dueño:';
+      input.placeholder = 'Escribe el nombre del dueño';
+    } else if (tipo === 'telefono') {
+      etiqueta.textContent = 'Buscar por Teléfono del Dueño:';
+      input.placeholder = '+56 9 XXXXXXXX';
+      input.value = '+56 9 ';
+      input.setAttribute("maxlength", 14);
+    }
+
+    async function buscar() {
+      const valor = input.value.trim().toUpperCase();
+      if (!valor || (tipo === 'telefono' && valor.length !== 14)) {
+        alert("⚠️ Por favor ingresa un dato válido para buscar.");
+        return;
+      }
+
+      try {
+        const respuesta = await fetch("https://script.google.com/macros/s/AKfycbwxpj3-u99NZiHjiRQY-srOG6Xd0uazLd9dVaEL-MS3H77BvwOrSwHZPGKaH-vlMnlkSQ/exec");
+        const datos = await respuesta.json();
+
+        const campo = campoSheets[tipo];
+        if (!campo) {
+          alert("❌ Tipo de búsqueda no válido.");
+          return;
+        }
+
+        const resultado = datos.find(item =>
+          (item[campo] || "").toString().toUpperCase().trim() === valor
+        );
+
+        const contenedor = document.getElementById("resultado");
+        contenedor.style.display = "block";
+
+        if (resultado) {
+          contenedor.innerHTML = `
+            <strong>Nombre:</strong> ${resultado["Nombre"] || "-"}<br>
+            <strong>Teléfono:</strong> ${resultado["Teléfono"] || "-"}<br>
+            <strong>Dirección:</strong> ${resultado["Dirección"] || "-"}<br>
+            <strong>Marca:</strong> ${resultado["Marca"] || "-"}<br>
+            <strong>Modelo:</strong> ${resultado["Modelo"] || "-"}<br>
+            <strong>Patente:</strong> ${resultado["Patente"] || "-"}<br>
+          `;
+        } else {
+          contenedor.innerHTML = `<strong>No se encontró ningún resultado con ese dato.</strong>`;
+        }
+
+      } catch (error) {
+        alert("❌ Error al conectarse a la base de datos.");
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>

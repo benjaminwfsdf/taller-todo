@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Computadora</title>
+  <script>
+    const clave = prompt("🔐 Ingresa la contraseña para acceder:");
+    if (clave !== "computador@") {
+      alert("❌ Contraseña incorrecta.");
+      window.location.href = "https://www.elsenordelosescaner.cl/";
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .barra-superior {
+      background-color: #000;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 4px solid #b30000;
+      letter-spacing: 1px;
+    }
+
+    .contenedor {
+      max-width: 700px;
+      background: #fff;
+      margin: 50px auto;
+      padding: 30px 40px;
+      border-radius: 10px;
+      border: 2px solid #b30000;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    h1 {
+      background-color: #b30000;
+      color: white;
+      padding: 16px;
+      text-align: center;
+      font-size: 24px;
+      border-radius: 6px;
+      margin-top: 0;
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 20px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      resize: vertical;
+      text-transform: uppercase;
+    }
+
+    button {
+      background-color: #b30000;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      text-align: center;
+      font-size: 16px;
+      margin-top: 30px;
+      width: 100%;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #900000;
+    }
+
+    .boton-buscar {
+      position: absolute;
+      top: 30px;
+      right: -190px;
+      background-color: #222;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: bold;
+      transition: background 0.3s;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+      border: 2px solid #b30000;
+    }
+
+    .boton-buscar:hover {
+      background-color: #b30000;
+    }
+
+    .mensaje {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    .footer {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 13px;
+      color: #333;
+      padding: 12px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 900px) {
+      .boton-buscar {
+        position: static;
+        margin-top: 30px;
+        width: 100%;
+        display: block;
+        text-align: center;
+      }
+
+      .contenedor {
+        padding: 20px;
+        margin: 30px 16px;
+      }
+   
+
+    }
+  </style>
+</head>
+<body>
+
+  <div class="barra-superior">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+
+
+  <div class="contenedor">
+    <a href="buscar.html" class="boton-buscar">🔍 Buscar computador</a>
+
+    <h1>Registrar Computadora de Auto</h1>
+
+    <label for="patente">Patente del Auto:</label>
+    <input type="text" id="patente" placeholder="Ej: ABCD12" required>
+
+    <label for="descripcion">¿Qué se le hará a la computadora?</label>
+    <textarea id="descripcion" rows="4" placeholder="Ej: Limpieza, reprogramación, cambio de chip..."></textarea>
+
+    <label for="codigos">Códigos de Avería:</label>
+    <textarea id="codigos" rows="4" placeholder="Ej: P0300, P0171, P0420..."></textarea>
+
+    <label for="telefono">Número del Dueño (opcional):</label>
+    <input type="text" id="telefono" placeholder="+56 9 XXXXXXXX">
+
+    <label for="tipo_computadora">Tipo de Computadora (opcional):</label>
+    <input type="text" id="tipo_computadora" placeholder="Ej: ECU, TCM, BCM...">
+
+    <button onclick="guardarDatos()">Guardar en la Hoja de Cálculo</button>
+
+    <div class="mensaje" id="mensaje"></div>
+  </div>
+<a href="../index.html" class="boton-volver">← Volver al Panel Principal</a>
+
+<style>
+  .boton-volver {
+    display: block;
+    margin: 30px auto 10px auto;
+    width: fit-content;
+    padding: 12px 20px;
+    background-color: #222;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 2px solid #b30000;
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+
+  .boton-volver:hover {
+    background-color: #b30000;
+  }
+</style>
+
+  <div class="footer">
+    © 2025 Benjamin González. Todos los derechos reservados.
+  </div>
+
+  <script>
+    function guardarDatos() {
+      const patente = document.getElementById("patente").value.trim().toUpperCase();
+      const descripcion = document.getElementById("descripcion").value.trim().toUpperCase();
+      const codigos = document.getElementById("codigos").value.trim().toUpperCase();
+      const telefono = document.getElementById("telefono").value.trim();
+      const tipo_computadora = document.getElementById("tipo_computadora").value.trim().toUpperCase();
+
+      if (!patente || !descripcion || !codigos) {
+        alert("⚠️ Por favor completa los campos obligatorios.");
+        return;
+      }
+
+      fetch("https://script.google.com/macros/s/AKfycbzw_DufhrDoR11ZwFIMN7AgyeRHmrffhmx4NdG9DU6ECFfvQ0voDI_9LBrM03g3Ohc31Q/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ patente, descripcion, codigos, telefono, tipo_computadora }),
+      });
+
+      document.getElementById("mensaje").textContent = "✅ Información guardada con éxito.";
+      document.getElementById("patente").value = "";
+      document.getElementById("descripcion").value = "";
+      document.getElementById("codigos").value = "";
+      document.getElementById("telefono").value = "";
+      document.getElementById("tipo_computadora").value = "";
+    }
+  </script>
+
+</body>
+</html>

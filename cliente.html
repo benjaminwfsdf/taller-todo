@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modo Cliente - El Señor del Scanner</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #161616;
+      color: white;
+    }
+    header {
+      background-color: #000;
+      padding: 20px;
+      text-align: center;
+    }
+    header img {
+      width: 130px;
+    }
+    header h1 {
+      color: #ffbc49;
+      font-size: 28px;
+      margin-top: 10px;
+    }
+    .main {
+      max-width: 700px;
+      margin: 40px auto;
+      background-color: rgba(255, 255, 255, 0.04);
+      border: 2px solid #ffbc49;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    h2 {
+      text-align: center;
+      color: #ffbc49;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      background-color: #ffbc49;
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e6a73a;
+    }
+    .resultado {
+      margin-top: 30px;
+      border: 2px solid #ffbc49;
+      border-radius: 6px;
+      padding: 20px;
+      background-color: #1e1e1e;
+    }
+    .resultado p {
+      margin: 10px 0;
+      font-size: 15px;
+    }
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: #aaa;
+      padding: 20px;
+      margin-top: 60px;
+      background-color: #000;
+      border-top: 4px solid #ffbc49;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="https://www.elsenordelosescaner.cl/wp-content/uploads/2015/08/logo-01.png" alt="Logo">
+    <h1>WWW.ELSEÑORDELOSESCANER.CL</h1>
+  </header>
+
+  <div class="main">
+    <h2>Modo Cliente</h2>
+    <label for="busqueda">Ingresa tu Patente o Teléfono:</label>
+    <input type="text" id="busqueda">
+    <button onclick="consultarEstado()">Ver Estado de mi Vehículo</button>
+
+    <div id="resultado" class="resultado" style="display:none;"></div>
+  </div>
+
+  <footer>
+    &copy; 2025 El Señor de los Scanner. Todos los derechos reservados. Desarrollado por Benjamín González
+  </footer>
+
+  <script>
+    async function consultarEstado() {
+      const valor = document.getElementById("busqueda").value.trim().toUpperCase();
+      const contenedor = document.getElementById("resultado");
+      contenedor.style.display = "block";
+
+      if (!valor) {
+        contenedor.innerHTML = "⚠️ Por favor ingresa una patente o teléfono.";
+        return;
+      }
+
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbzRvSulgNyjFEU603UqceOi3F_E_9OLeg3zKX8Yrrw3iIZcszsZZuEmJUabYKRFERa_3g/exec");
+        const datos = await response.json();
+
+        const resultado = datos.find(item => {
+          const patente = (item["Patente"] || "").toUpperCase();
+          const telefono = (item["Teléfono"] || "").replace(/\D/g, '');
+          const valorNormalizado = valor.replace(/\D/g, '');
+          return patente === valor || telefono === valorNormalizado;
+        });
+
+        if (resultado) {
+          contenedor.innerHTML = `
+            <p>🚗 <strong>Patente:</strong> ${resultado["Patente"] || "-"}</p>
+            <p>📞 <strong>Teléfono:</strong> ${resultado["Teléfono"] || "-"}</p>
+            <p>📋 <strong>Estado:</strong> <span style="color:${resultado["Estado"] === "LISTO" ? "#3aff3a" : "#ffa500"}">${resultado["Estado"] || "-"}</span></p>
+          `;
+        } else {
+          contenedor.innerHTML = "❌ No se encontró ningún resultado con ese dato.";
+        }
+      } catch (error) {
+        console.error(error);
+        contenedor.innerHTML = "❌ Error al conectar con la base de datos.";
+      }
+    }
+  </script>
+</body>
+</html>

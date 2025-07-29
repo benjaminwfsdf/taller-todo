@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recepción de Clientes</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #222;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    .barra-superior {
+      background-color: #000;
+      color: white;
+      text-align: center;
+      padding: 16px;
+      font-size: 22px;
+      font-weight: bold;
+      border-bottom: 4px solid #b30000;
+      letter-spacing: 1px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #f33;
+      margin-top: 20px;
+    }
+
+    .formulario {
+      max-width: 600px;
+      margin: 30px auto 10px auto;
+      background: #fff;
+      padding: 20px;
+      border: 2px solid #b30000;
+      border-radius: 10px;
+      color: black;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+
+    .bloque {
+      background-color: #333;
+      border: 2px solid #b30000;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+
+    .patente-actual {
+      font-size: 36px;
+      font-weight: bold;
+      color: #00ff00;
+      margin-top: 10px;
+    }
+
+    .modelo-actual {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .boton-listo {
+      background-color: #b30000;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .boton-listo:hover {
+      background-color: #900;
+    }
+
+    .subtitulo {
+      text-align: center;
+      color: #bbb;
+      font-size: 20px;
+      margin-top: 40px;
+    }
+
+    .proximo {
+      font-size: 22px;
+      color: #eee;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .confirmacion {
+      text-align: center;
+      font-weight: bold;
+      color: lightgreen;
+      margin-top: 15px;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 10px;
+      color: #ffffff;
+      border-top: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="barra-superior">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <h1>Recepción y Turnos</h1>
+
+  <div class="formulario">
+    <label for="patente">Patente:</label>
+    <input type="text" id="patente" placeholder="Ej: ABCD12">
+
+    <label for="modelo">Modelo:</label>
+    <input type="text" id="modelo" placeholder="Ej: TOYOTA YARIS">
+
+    <button class="boton-listo" onclick="agregarCliente()">➕ Añadir Cliente</button>
+    <div id="confirmacion" class="confirmacion"></div>
+  </div>
+
+  <div class="bloque" id="turnoActual">
+    <div style="text-align: center;">🔧 En Atención</div>
+    <div class="patente-actual" id="patenteActual">---</div>
+    <div class="modelo-actual" id="modeloActual">---</div>
+    <button class="boton-listo" onclick="marcarComoListo()">✅ Marcar como Listo</button>
+  </div>
+
+  <div class="subtitulo" id="contadorTotal">🚘 Autos en espera: 0</div>
+  <div class="subtitulo">🔜 Próximos</div>
+  <div id="proximos"></div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzxjqH9ZoNwj9mho0rUWVQff7b0s7Jgmrm_T8MzvETaVgnlgVcw422AMdtNVURGOp0j3A/exec";
+
+    function agregarCliente() {
+      const patente = document.getElementById("patente").value.trim().toUpperCase();
+      const modelo = document.getElementById("modelo").value.trim().toUpperCase();
+
+      if (!patente || !modelo) {
+        alert("Por favor completa ambos campos.");
+        return;
+      }
+
+      fetch(`${API_URL}?funcion=agregarCliente&patente=${encodeURIComponent(patente)}&modelo=${encodeURIComponent(modelo)}`)
+        .then(() => {
+          document.getElementById("confirmacion").textContent = "✅ Cliente registrado correctamente.";
+          setTimeout(() => document.getElementById("confirmacion").textContent = "", 3000);
+          document.getElementById("patente").value = "";
+          document.getElementById("modelo").value = "";
+          setTimeout(cargarTurnos, 1000);
+        });
+    }
+
+    function marcarComoListo() {
+      fetch(`${API_URL}?funcion=eliminarPrimero`).then(() => {
+        setTimeout(cargarTurnos, 1000);
+      });
+    }
+
+    function cargarTurnos() {
+      fetch(`${API_URL}?funcion=obtenerClientes`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data || data.length === 0) {
+            document.getElementById("contadorTotal").textContent = `🚘 Autos en espera: 0`;
+            return;
+          }
+
+          const total = data.length;
+          document.getElementById("contadorTotal").textContent = `🚘 Autos en espera: ${total}`;
+
+          const actual = data[0];
+          const siguientes = data.slice(1, 3);
+
+          document.getElementById("patenteActual").textContent = actual.Patente || "-";
+          document.getElementById("modeloActual").textContent = actual.Modelo || "-";
+
+          const div = document.getElementById("proximos");
+          div.innerHTML = "";
+          siguientes.forEach(c => {
+            const p = document.createElement("div");
+            p.className = "proximo";
+            p.innerHTML = `🚗 <strong>${c.Patente}</strong> - ${c.Modelo}`;
+            div.appendChild(p);
+          });
+        });
+    }
+
+    setInterval(cargarTurnos, 3000);
+    cargarTurnos();
+  </script>
+
+  <a href="../index.html" class="boton-volver">← Volver al Panel Principal</a>
+
+  <style>
+    .boton-volver {
+      display: block;
+      margin: 30px auto 10px auto;
+      width: fit-content;
+      padding: 12px 20px;
+      background-color: #222;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 2px solid #b30000;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .boton-volver:hover {
+      background-color: #b30000;
+    }
+  </style>
+
+  <footer class="footer">
+    © 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.
+  </footer>
+</body>
+</html>
