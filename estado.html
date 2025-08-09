@@ -3,112 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="img/scanner.png"
+  <link rel="icon" type="image/png" href="img/scanner.png">
   <title>Actualizar Estado del Vehículo</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-    }
-
-    .barra-superior {
-      background-color: #000;
-      color: white;
-      text-align: center;
-      padding: 14px;
-      font-size: 18px;
-      font-weight: bold;
-      border-bottom: 4px solid #b30000;
-    }
-
-    .contenedor {
-      max-width: 700px;
-      background: #fff;
-      margin: 40px auto;
-      padding: 30px;
-      border-radius: 10px;
-      border: 2px solid #b30000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      text-align: center;
-      background-color: #b30000;
-      color: white;
-      padding: 15px;
-      border-radius: 6px;
-    }
-
-    label {
-      font-weight: bold;
-      margin-top: 20px;
-      display: block;
-    }
-
-    input[type="text"], select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      box-sizing: border-box;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      text-transform: uppercase;
-    }
-
-    button {
-      margin-top: 30px;
-      padding: 14px;
-      font-size: 16px;
-      background-color: #b30000;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    button:hover {
-      background-color: #900000;
-    }
-
-    .boton-volver {
-      margin-top: 20px;
-      display: block;
-      text-align: center;
-      background-color: #222;
-      color: white;
-      padding: 12px 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: bold;
-      border: 2px solid #b30000;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.3s ease;
-    }
-
-    .boton-volver:hover {
-      background-color: #b30000;
-    }
-
-    .mensaje {
-      text-align: center;
-      margin-top: 20px;
-      font-weight: bold;
-      color: green;
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 12px;
-      color: #000;
-      margin-top: 40px;
-      padding: 10px;
-      border-top: 1px solid #ccc;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background:#f4f4f4; margin:0 }
+    .barra-superior { background:#000; color:#fff; text-align:center; padding:14px; font-weight:700; border-bottom:4px solid #b30000 }
+    .contenedor { max-width:700px; background:#fff; margin:40px auto; padding:30px; border-radius:10px; border:2px solid #b30000; box-shadow:0 4px 12px rgba(0,0,0,.1) }
+    h1 { text-align:center; background:#b30000; color:#fff; padding:15px; border-radius:6px }
+    label { font-weight:700; margin-top:20px; display:block }
+    input[type="text"], select { width:100%; padding:10px; margin-top:6px; font-size:16px; border-radius:5px; border:1px solid #ccc; text-transform:uppercase }
+    button { margin-top:30px; padding:14px; font-size:16px; background:#b30000; color:#fff; border:none; border-radius:6px; cursor:pointer; width:100% }
+    button:hover { background:#900000 }
+    .boton-volver { margin-top:20px; display:block; text-align:center; background:#222; color:#fff; padding:12px 16px; border-radius:6px; text-decoration:none; font-size:14px; font-weight:700; border:2px solid #b30000; box-shadow:0 3px 6px rgba(0,0,0,.2) }
+    .boton-volver:hover { background:#b30000 }
+    .mensaje { text-align:center; margin-top:20px; font-weight:700 }
+    .footer { text-align:center; font-size:12px; color:#000; margin-top:40px; padding:10px; border-top:1px solid #ccc }
   </style>
 </head>
 <body>
@@ -127,44 +36,48 @@
       <option value="LISTO">LISTO</option>
     </select>
 
-    <button onclick="actualizarEstado()">Guardar Estado</button>
-
+    <button id="btnGuardar">Guardar Estado</button>
     <a href="gestion_autos.html" class="boton-volver">← Volver al Menú Principal</a>
 
     <div id="mensaje" class="mensaje"></div>
   </div>
 
-  <div class="footer">
-    © 2025 Benjamin González. Todos los derechos reservados.
-  </div>
+  <div class="footer">© 2025 Benjamin González. Todos los derechos reservados.</div>
 
   <script>
-    function actualizarEstado() {
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwB71UDlQKi6wcf_w7PEbkTeEfyf02dSkEz59eyKZHgMTA_8wwugdjF1BdCjbWglfApmQ/exec"; // <-- tu /exec
+
+    document.getElementById('btnGuardar').addEventListener('click', actualizarEstado);
+
+    async function actualizarEstado() {
       const patente = document.getElementById("patente").value.trim().toUpperCase();
-      const estado = document.getElementById("estado").value;
+      const estado  = document.getElementById("estado").value;
+      const mensajeEl = document.getElementById("mensaje");
+      if (!patente) { alert("⚠️ Ingresa la patente."); return; }
 
-      if (!patente) {
-        alert("⚠️ Por favor ingresa la patente del vehículo.");
-        return;
+      mensajeEl.style.color = "#444";
+      mensajeEl.textContent = "⏳ Enviando...";
+
+      try {
+        // NO HEADERS + no-cors = sin preflight
+        await fetch(WEBAPP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify({ patente, estado, detalle_estado: "" })
+        });
+
+        // No podemos leer la respuesta por CORS, pero el backend sí corrió.
+        mensajeEl.style.color = "green";
+        mensajeEl.textContent = "✅ Estado enviado. (El backend actualiza y envía WhatsApp).";
+
+        // Limpieza básica
+        document.getElementById("patente").value = "";
+        document.getElementById("estado").value = "REPARACIÓN";
+      } catch (e) {
+        mensajeEl.style.color = "red";
+        mensajeEl.textContent = "❌ Error de red: " + e.message;
       }
-
-      fetch("https://script.google.com/macros/s/AKfycbzRvSulgNyjFEU603UqceOi3F_E_9OLeg3zKX8Yrrw3iIZcszsZZuEmJUabYKRFERa_3g/exec?funcion=actualizarEstadoVehiculo", {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          patente,
-          estado
-        })
-      });
-
-      document.getElementById("mensaje").textContent = "✅ Estado actualizado correctamente.";
-      document.getElementById("patente").value = "";
-      document.getElementById("estado").value = "REPARACIÓN";
     }
   </script>
-
 </body>
 </html>
