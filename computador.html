@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="img/scanner.png"
+  <link rel="icon" type="image/png" href="img/scanner.png">
   <title>Registrar Computadora</title>
+
+ 
+  
+
+  
   <script>
     const clave = prompt("🔐 Ingresa la contraseña para acceder:");
     if (clave !== "computador@") {
@@ -12,226 +17,219 @@
       window.location.href = "https://www.elsenordelosescaner.cl/";
     }
   </script>
+  
+
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f2f2f2;
-      margin: 0;
-      padding: 0;
+    :root{
+      --bg:#f1f2f4; --ink:#111; --muted:#666;
+      --panel:#fff; --border:#e6e6e6;
+      --brand:#b30000; --brand-ink:#fff;
+      --line:#b30000; --dark:#000;
+      --ok:#12a150; --warn:#c97a00; --err:#d43c3c;
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Segoe UI,system-ui,Arial}
+    .top{background:var(--dark);color:#fff;text-align:center;padding:12px;font-weight:800;border-bottom:4px solid var(--line);letter-spacing:.5px}
+
+    .wrap{
+      max-width:900px;margin:28px auto;padding:0 16px;
     }
 
-    .barra-superior {
-      background-color: #000;
-      color: white;
-      text-align: center;
-      padding: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      border-bottom: 4px solid #b30000;
-      letter-spacing: 1px;
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:0 6px 20px rgba(0,0,0,.08);
+      overflow:hidden;
     }
 
-    .contenedor {
-      max-width: 700px;
-      background: #fff;
-      margin: 50px auto;
-      padding: 30px 40px;
-      border-radius: 10px;
-      border: 2px solid #b30000;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      position: relative;
+    .card__head{
+      display:flex; align-items:center; gap:12px;
+      padding:18px 22px;
+      background:linear-gradient(180deg, #d01515, var(--brand));
+      color:var(--brand-ink);
+      border-bottom:4px solid #7e0000;
+    }
+    .card__head h1{
+      margin:0; font-size:24px; line-height:1.2; font-weight:800; letter-spacing:.3px;
+      flex:1;
+    }
+    .card__head .actions{display:flex; gap:10px}
+    .btn{
+      border:2px solid var(--brand);
+      background:#000; color:#fff; font-weight:800;
+      padding:10px 14px; border-radius:10px; cursor:pointer;
+      transition:.2s transform, .2s background;
+    }
+    .btn--light{
+      background:#111; border-color:#ffaaaa;
+    }
+    .btn:hover{background:var(--brand); transform:translateY(-1px)}
+    .btn:disabled{opacity:.6; cursor:not-allowed; transform:none}
+
+    .card__body{padding:22px}
+
+    .grid{
+      display:grid; gap:16px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width:820px){
+      .grid--2{grid-template-columns: 1fr 1fr}
     }
 
-    h1 {
-      background-color: #b30000;
-      color: white;
-      padding: 16px;
-      text-align: center;
-      font-size: 24px;
-      border-radius: 6px;
-      margin-top: 0;
-      margin-bottom: 30px;
+    label{font-weight:700; font-size:14px; color:#222; display:block; margin-bottom:6px}
+    .hint{color:var(--muted); font-size:12px; margin-top:4px}
+
+    input[type="text"], textarea{
+      width:100%; padding:12px 12px;
+      border:1px solid #d7d7d7; border-radius:10px; background:#fff;
+      font-size:16px; outline:none;
+      transition:border-color .15s ease;
+      text-transform:uppercase;
+    }
+    input[type="text"]:focus, textarea:focus{
+      border-color:#b30000; box-shadow:0 0 0 3px #ff000022;
+    }
+    textarea{resize:vertical; min-height:100px}
+
+    .actions-bar{
+      margin-top:18px; display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;
+      border-top:1px dashed #eee; padding-top:16px;
     }
 
-    label {
-      font-weight: bold;
-      margin-top: 20px;
-      display: block;
-      margin-bottom: 8px;
+    .msg{
+      margin-top:10px; font-weight:700; text-align:center;
+      padding:10px 12px; border-radius:10px; display:none;
     }
+    .msg--ok{display:block; background:#e9fbef; color:#0b7a42; border:1px solid #bfe8cf}
+    .msg--err{display:block; background:#ffecee; color:#9b1d1d; border:1px solid #f2c3c3}
 
-    input[type="text"], textarea {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-      resize: vertical;
-      text-transform: uppercase;
+    .back{
+      display:block; width:fit-content; margin:26px auto 10px;
+      padding:10px 16px; background:#222; color:#fff; border:2px solid var(--brand);
+      border-radius:8px; font-weight:700; text-decoration:none; transition:.2s background;
     }
+    .back:hover{background:var(--brand)}
 
-    button {
-      background-color: #b30000;
-      color: white;
-      border: none;
-      padding: 14px 20px;
-      text-align: center;
-      font-size: 16px;
-      margin-top: 30px;
-      width: 100%;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #900000;
-    }
-
-    .boton-buscar {
-      position: absolute;
-      top: 30px;
-      right: -190px;
-      background-color: #222;
-      color: white;
-      padding: 12px 16px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: bold;
-      transition: background 0.3s;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-      border: 2px solid #b30000;
-    }
-
-    .boton-buscar:hover {
-      background-color: #b30000;
-    }
-
-    .mensaje {
-      margin-top: 20px;
-      font-weight: bold;
-      color: green;
-      text-align: center;
-      font-size: 15px;
-    }
-
-    .footer {
-      margin-top: 50px;
-      text-align: center;
-      font-size: 13px;
-      color: #333;
-      padding: 12px;
-      font-weight: bold;
-    }
-
-    @media (max-width: 900px) {
-      .boton-buscar {
-        position: static;
-        margin-top: 30px;
-        width: 100%;
-        display: block;
-        text-align: center;
-      }
-
-      .contenedor {
-        padding: 20px;
-        margin: 30px 16px;
-      }
-   
-
-    }
+    footer{margin:30px 0 50px; text-align:center; font-size:12px; color:#555; font-weight:700}
   </style>
 </head>
 <body>
+  <div class="top">WWW.ELSEÑORDELOSESCANER.CL</div>
 
-  <div class="barra-superior">WWW.ELSEÑORDELOSESCANER.CL</div>
+  <div class="wrap">
+    <div class="card">
+      <div class="card__head">
+        <h1>Registrar Computadora de Auto</h1>
+        <div class="actions">
+          <a class="btn btn--light" href="buscar.html">🔎 Buscar computador</a>
+        </div>
+      </div>
 
+      <div class="card__body">
+        <div class="grid grid--2">
+          <div>
+            <label for="patente">Patente del Auto</label>
+            <input type="text" id="patente" placeholder="ABCD12" maxlength="8">
+            <div class="hint">Se guarda en mayúsculas.</div>
+          </div>
 
+          <div>
+            <label for="telefono">Teléfono del Dueño (opcional)</label>
+            <input type="text" id="telefono" placeholder="+56 9 XXXXXXXX">
+            <div class="hint">Solo para contacto interno.</div>
+          </div>
 
-  <div class="contenedor">
-    <a href="buscar.html" class="boton-buscar">🔍 Buscar computador</a>
+          <div>
+            <label for="tipo_computadora">Tipo de Computadora (opcional)</label>
+            <input type="text" id="tipo_computadora" placeholder="ECU, TCM, BCM…">
+          </div>
+        </div>
 
-    <h1>Registrar Computadora de Auto</h1>
+        <div class="grid" style="margin-top:16px">
+          <div>
+            <label for="descripcion">¿Qué se le hará a la computadora?</label>
+            <textarea id="descripcion" rows="4" placeholder="LIMPIEZA, REPROGRAMACIÓN, CAMBIO DE CHIP…"></textarea>
+          </div>
 
-    <label for="patente">Patente del Auto:</label>
-    <input type="text" id="patente" placeholder="Ej: ABCD12" required>
+          <div>
+            <label for="codigos">Códigos de Avería</label>
+            <textarea id="codigos" rows="4" placeholder="P0300, P0171, P0420…"></textarea>
+            <div class="hint">Separa con coma o salto de línea.</div>
+          </div>
+        </div>
 
-    <label for="descripcion">¿Qué se le hará a la computadora?</label>
-    <textarea id="descripcion" rows="4" placeholder="Ej: Limpieza, reprogramación, cambio de chip..."></textarea>
+        <div class="actions-bar">
+          <button id="btnGuardar" class="btn" onclick="guardarDatos()">Guardar</button>
+          <button class="btn btn--light" type="button" onclick="limpiar()">Limpiar</button>
+        </div>
 
-    <label for="codigos">Códigos de Avería:</label>
-    <textarea id="codigos" rows="4" placeholder="Ej: P0300, P0171, P0420..."></textarea>
+        <div id="mensaje" class="msg"></div>
+      </div>
+    </div>
 
-    <label for="telefono">Número del Dueño (opcional):</label>
-    <input type="text" id="telefono" placeholder="+56 9 XXXXXXXX">
-
-    <label for="tipo_computadora">Tipo de Computadora (opcional):</label>
-    <input type="text" id="tipo_computadora" placeholder="Ej: ECU, TCM, BCM...">
-
-    <button onclick="guardarDatos()">Guardar en la Hoja de Cálculo</button>
-
-    <div class="mensaje" id="mensaje"></div>
+    <a href="../index.html" class="back">← Volver al Panel Principal</a>
+    <footer>© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</footer>
   </div>
-<a href="../index.html" class="boton-volver">← Volver al Panel Principal</a>
 
-<style>
-  .boton-volver {
-    display: block;
-    margin: 30px auto 10px auto;
-    width: fit-content;
-    padding: 12px 20px;
-    background-color: #222;
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 2px solid #b30000;
-    text-align: center;
-    transition: background-color 0.3s ease;
+<script>
+  // 🔧 Cambia esta URL por tu Apps Script de “computadoras”
+  const API_URL = "https://script.google.com/macros/s/AKfycbzw_DufhrDoR11ZwFIMN7AgyeRHmrffhmx4NdG9DU6ECFfvQ0voDI_9LBrM03g3Ohc31Q/exec";
+
+  // UX: auto-mayúsculas mientras escribes
+  ['patente','descripcion','codigos','tipo_computadora'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', ()=> el.value = el.value.toUpperCase());
+  });
+
+  function showMsg(text, ok=true){
+    const m = document.getElementById('mensaje');
+    m.className = 'msg ' + (ok ? 'msg--ok' : 'msg--err');
+    m.textContent = text;
   }
 
-  .boton-volver:hover {
-    background-color: #b30000;
+  function limpiar(){
+    ['patente','descripcion','codigos','telefono','tipo_computadora'].forEach(id=>{
+      const el = document.getElementById(id); el.value = '';
+    });
+    const m = document.getElementById('mensaje'); m.className='msg'; m.textContent='';
   }
-</style>
 
-  <div class="footer">
-    © 2025 Benjamin González. Todos los derechos reservados.
-  </div>
+  async function guardarDatos() {
+    const btn = document.getElementById('btnGuardar');
+    const patente = document.getElementById("patente").value.trim().toUpperCase();
+    const descripcion = document.getElementById("descripcion").value.trim().toUpperCase();
+    const codigos = document.getElementById("codigos").value.trim().toUpperCase();
+    const telefono = document.getElementById("telefono").value.trim();
+    const tipo_computadora = document.getElementById("tipo_computadora").value.trim().toUpperCase();
 
-  <script>
-    function guardarDatos() {
-      const patente = document.getElementById("patente").value.trim().toUpperCase();
-      const descripcion = document.getElementById("descripcion").value.trim().toUpperCase();
-      const codigos = document.getElementById("codigos").value.trim().toUpperCase();
-      const telefono = document.getElementById("telefono").value.trim();
-      const tipo_computadora = document.getElementById("tipo_computadora").value.trim().toUpperCase();
+    if (!patente || !descripcion || !codigos) {
+      showMsg("⚠️ Completa Patente, Descripción y Códigos.", false);
+      return;
+    }
 
-      if (!patente || !descripcion || !codigos) {
-        alert("⚠️ Por favor completa los campos obligatorios.");
-        return;
-      }
-
-      fetch("https://script.google.com/macros/s/AKfycbzw_DufhrDoR11ZwFIMN7AgyeRHmrffhmx4NdG9DU6ECFfvQ0voDI_9LBrM03g3Ohc31Q/exec", {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ patente, descripcion, codigos, telefono, tipo_computadora }),
+    try{
+      btn.disabled = true; showMsg("Guardando…");
+      // Para evitar CORS preflight: form-urlencoded
+      const body = new URLSearchParams({
+        patente, descripcion, codigos, telefono, tipo_computadora
       });
 
-      document.getElementById("mensaje").textContent = "✅ Información guardada con éxito.";
-      document.getElementById("patente").value = "";
-      document.getElementById("descripcion").value = "";
-      document.getElementById("codigos").value = "";
-      document.getElementById("telefono").value = "";
-      document.getElementById("tipo_computadora").value = "";
-    }
-  </script>
+      await fetch(API_URL, {
+        method: "POST",
+        body
+      });
 
+      showMsg("✅ Información guardada con éxito.");
+      limpiar();
+    }catch(e){
+      console.error(e);
+      showMsg("❌ Error al guardar. Reintenta.", false);
+    }finally{
+      btn.disabled = false;
+    }
+  }
+</script>
 </body>
 </html>
