@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar Computadores</title>
+  <style>
+    body{font-family:'Segoe UI', Tahoma, sans-serif;background:#f7f7f7;margin:0}
+    .barra-superior{background:#000;color:#fff;text-align:center;padding:12px;font-weight:700;border-bottom:4px solid #b30000}
+    .wrap{max-width:1000px;margin:30px auto;padding:0 16px}
+    .card{background:#fff;border:2px solid #b30000;border-radius:10px;padding:20px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    input{flex:1;min-width:220px;padding:12px;border:1px solid #ccc;border-radius:6px;text-transform:uppercase}
+    button{padding:12px 16px;background:#b30000;color:#fff;border:none;border-radius:6px;cursor:pointer}
+    button:hover{background:#900}
+    table{width:100%;border-collapse:collapse;margin-top:16px;background:#fff}
+    th,td{border:1px solid #ddd;padding:10px;font-size:14px}
+    th{background:#f0f0f0;text-align:left}
+    .muted{color:#777}
+    button:hover { background:#900000 }
+    .boton-volver { margin-top:20px; display:block; text-align:center; background:#222; color:#fff; padding:12px 16px; border-radius:6px; text-decoration:none; font-size:14px; font-weight:700; border:2px solid #b30000; box-shadow:0 3px 6px rgba(0,0,0,.2) }
+  </style>
+</head>
+<body>
+  <div class="barra-superior">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="row">
+        <input id="patente" placeholder="ABCD12" />
+        <button onclick="buscar()">🔎 Buscar por Patente</button>
+        <button onclick="listarTodo()">📋 Listar todo</button>
+      </div>
+      <div id="info" class="muted">Ingresa una patente o lista todo.</div>
+      <div style="overflow:auto">
+        <table id="tabla" style="display:none">
+          <thead>
+            <tr>
+              <th>Patente</th>
+              <th>Descripción Trabajo</th>
+              <th>Códigos de avería</th>
+              <th>Teléfono</th>
+              <th>Tipo de Computadora</th>
+            </tr>
+            
+          </thead>
+          <tbody id="tbody"></tbody>
+          
+        </table>
+      </div>
+    </div>
+    <a href="computador.html" class="boton-volver">← Volver al Menú Principal</a>
+  </div>
+  
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycby8WBaWWAnXmBQNnKcRolzpC9zTYs5E0WTtv4AHrwycRlGboHoNZetBuuT-zxwbLHJMtQ/exec'; // ⬅️ tu URL
+
+  // Inserta un <script> con callback= para JSONP
+  function jsonp(url, cbName) {
+    return new Promise((resolve) => {
+      window[cbName] = (data) => {
+        resolve(data);
+        // limpia el callback y el script
+        delete window[cbName];
+        script.remove();
+      };
+      const script = document.createElement('script');
+      script.src = `${url}&callback=${cbName}`;
+      script.onerror = () => { resolve([]); script.remove(); };
+      document.body.appendChild(script);
+    });
+  }
+
+  function render(data) {
+    const info = document.getElementById('info');
+    const tabla = document.getElementById('tabla');
+    const tbody = document.getElementById('tbody');
+
+    if (!Array.isArray(data) || data.length === 0) {
+      tabla.style.display = 'none';
+      info.textContent = 'Sin resultados.';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    data.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r['Patente'] || ''}</td>
+        <td>${r['Descripción Trabajo'] || ''}</td>
+        <td>${r['Códigos de avería'] || ''}</td>
+        <td>${r['Teléfono'] || ''}</td>
+        <td>${r['Tipo de Computadora'] || ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    info.textContent = `Resultados: ${data.length}`;
+    tabla.style.display = '';
+  }
+
+  async function buscar() {
+    const pat = document.getElementById('patente').value.trim().toUpperCase();
+    if (!pat) { document.getElementById('info').textContent = 'Ingresa una patente.'; return; }
+    document.getElementById('info').textContent = 'Buscando...';
+    const data = await jsonp(`${API_URL}?funcion=buscarComputador&patente=${encodeURIComponent(pat)}`, 'cbBuscar');
+    render(data);
+  }
+
+  async function listarTodo() {
+    document.getElementById('info').textContent = 'Cargando todo...';
+    const data = await jsonp(`${API_URL}?funcion=obtenerComputadores`, 'cbTodo');
+    render(data);
+  }
+</script>
+</body>
+</html>
