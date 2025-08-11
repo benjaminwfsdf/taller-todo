@@ -7,17 +7,22 @@
   <title>Gestor de Vehículos</title>
   <style>
     :root{
-      --brand:#b30000;
-      --brand-900:#900;
-      --ink:#111;
-      --bg:#f5f6f7;
-      --card:#ffffff;
-      --muted:#000000;
-      --border:#e5e7eb;
-      --shadow:0 6px 22px rgba(0,0,0,.08);
-      --shadow-hover:0 10px 28px rgba(0,0,0,.12);
-      --radius:14px;
-      --radius-sm:10px;
+      --brand:#900000;        /* rojo solicitado */
+      --brand-900:#700000;    /* tono más oscuro opcional */
+      --ink:#e9ecef;          /* texto principal claro */
+      --muted:#b9c0c7;        /* texto secundario */
+      --bg:#0b0b0c;           /* fondo de la página */
+      --panel:#0f0f11;        /* fondo del marco */
+      --card:#16181b;         /* fondo de tarjetas */
+      --card-border:#272a2f;  /* borde de tarjetas */
+      --shadow:0 10px 28px rgba(0,0,0,.45);
+      --shadow-hover:0 14px 40px rgba(0,0,0,.6);
+      --radius:16px;
+      --radius-sm:12px;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none!important;transition:none!important}
     }
 
     /* ----- Layout base ----- */
@@ -28,7 +33,7 @@
       background: var(--bg);
       color: var(--ink);
       -webkit-font-smoothing: antialiased;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .topbar{
@@ -39,22 +44,32 @@
       font-weight:700;
       letter-spacing:.6px;
       border-bottom:4px solid var(--brand);
+      box-shadow: 0 6px 16px rgba(0,0,0,.55);
     }
 
     .wrapper{
       max-width: 1100px;
-      margin: 28px auto 40px;
+      margin: 28px auto 44px;
       padding: 0 16px;
     }
 
+    /* Marco con borde */
+    .frame{
+      border: 3px solid var(--brand);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
     .header{
+      margin: 10px;
       background: var(--brand);
       color:#fff;
       border-radius: var(--radius);
-      padding: 18px 24px;
+      padding: 20px 24px;
       text-align:center;
-      margin-bottom: 22px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 22px rgba(144,0,0,.35);
     }
     .header h1{
       margin:0;
@@ -66,7 +81,8 @@
     .grid{
       display:grid;
       grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: 18px;
+      gap: 20px;
+      padding: 12px;
     }
     @media (max-width: 900px){
       .grid{grid-template-columns: 1fr;}
@@ -76,15 +92,15 @@
     .card{
       position: relative;
       background: var(--card);
-      border:1px solid var(--border);
+      border:1px solid var(--card-border);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
+      box-shadow: 0 6px 18px rgba(0,0,0,.35);
       padding: 18px 18px 16px 18px;
       display:flex;
       gap:16px;
       align-items:flex-start;
       isolation:isolate;
-      transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+      transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease, background .2s ease;
     }
     .card::before{
       /* franja roja a la izquierda */
@@ -98,7 +114,8 @@
     .card:hover{
       box-shadow: var(--shadow-hover);
       transform: translateY(-2px);
-      border-color:#d8dbe2;
+      border-color:#32363d;
+      background:#191c20;
     }
 
     .icon{
@@ -107,11 +124,12 @@
       border-radius: 12px;
       display:grid;
       place-items:center;
-      background: #111;
+      background: #0c0c0e;
       border:2px solid var(--brand);
       color:#fff;
       font-size:22px;
       margin-left: 6px; /* compensa la franja */
+      box-shadow: inset 0 0 12px rgba(144,0,0,.35);
     }
 
     .content{
@@ -123,7 +141,7 @@
       font-size: clamp(16px, 2.2vw, 18px);
       font-weight:800;
       letter-spacing:.2px;
-      color:#111;
+      color:#f5f7fa;
     }
     .desc{
       margin:0;
@@ -142,13 +160,15 @@
       border:0;
       border-radius: 12px;
       padding:10px 16px;
-      font-weight:700;
+      font-weight:800;
       cursor:pointer;
-      transition: transform .12s ease, box-shadow .2s ease, background .2s ease;
-      box-shadow: 0 2px 0 rgba(0,0,0,.15);
+      transition: transform .12s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+      box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(144,0,0,.25);
+      text-decoration:none;
+      display:inline-block;
     }
     .btn-primary{
-      background:#111;
+      background:#0c0c0e;
       color:#fff;
       border:2px solid var(--brand);
     }
@@ -158,30 +178,33 @@
     /* ----- Botón volver ----- */
     .back{
       display:inline-block;
-      margin: 28px auto 0;
+      margin: 10px 10px 0;
       padding: 10px 14px;
       border:2px solid var(--brand);
-      border-radius: 10px;
-      background:#111;
+      border-radius: 12px;
+      background:#0c0c0e;
       color:#fff;
       text-decoration:none;
-      font-weight:700;
-      transition: background .2s ease;
+      font-weight:800;
+      transition: background .2s ease, transform .12s ease;
+      box-shadow: 0 2px 0 rgba(0,0,0,.6);
     }
     .back:hover{ background: var(--brand); }
+    .back:active{ transform: translateY(1px); }
 
     /* ----- Footer ----- */
     .footer{
       text-align:center;
-      color:#6b7280;
+      color:#8c96a3;
       font-size:12px;
-      margin: 30px 0 50px;
+      margin: 24px 0 40px;
     }
+    .footer strong{ color:#cfd6de; }
   </style>
 </head>
 <body>
   <script>
-    // Protegemos acceso como tenías antes
+    // Protección simple por clave (como tenías)
     const CLAVE = "informes@";
     const pin = prompt("🔐 Ingresa la clave para acceder:");
     if(pin !== CLAVE){
@@ -193,74 +216,76 @@
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
   <div class="wrapper">
-    <div class="header">
-      <h1>GESTOR DE VEHÍCULOS</h1>
-    </div>
+    <div class="frame">
+      <div class="header">
+        <h1>GESTOR DE VEHÍCULOS</h1>
+      </div>
 
-    <div class="grid" role="list">
-      <!-- Añadir vehículo -->
-      <article class="card" role="listitem">
-        <div class="icon">➕</div>
-        <div class="content">
-          <h2 class="title">Añadir Vehículo</h2>
-          <p class="desc">Registrar un nuevo vehículo con los datos del cliente y dejarlo en la fila del taller.</p>
-        </div>
-        <div class="actions">
-          <a class="btn btn-primary" href="agregar.html">Abrir</a>
-        </div>
-      </article>
+      <div class="grid" role="list">
+        <!-- Añadir vehículo -->
+        <article class="card" role="listitem">
+          <div class="icon">➕</div>
+          <div class="content">
+            <h2 class="title">Añadir Vehículo</h2>
+            <p class="desc">Registrar un nuevo vehículo con los datos del cliente y dejarlo en la fila del taller.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="agregar.html">Abrir</a>
+          </div>
+        </article>
 
-      <!-- Buscar por patente -->
-      <article class="card" role="listitem">
-        <div class="icon">🔎</div>
-        <div class="content">
-          <h2 class="title">Buscar por Patente</h2>
-          <p class="desc">Encuentra rápidamente un auto usando su placa para ver o actualizar su información.</p>
-        </div>
-        <div class="actions">
-          <a class="btn btn-primary" href="buscar.html?tipo=patente">Abrir</a>
-        </div>
-      </article>
+        <!-- Buscar por patente -->
+        <article class="card" role="listitem">
+          <div class="icon">🔎</div>
+          <div class="content">
+            <h2 class="title">Buscar por Patente</h2>
+            <p class="desc">Encuentra rápidamente un auto usando su placa para ver o actualizar su información.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="buscar.html?tipo=patente">Abrir</a>
+          </div>
+        </article>
 
-      <!-- Buscar por nombre -->
-      <article class="card" role="listitem">
-        <div class="icon">🧑</div>
-        <div class="content">
-          <h2 class="title">Buscar por Nombre</h2>
-          <p class="desc">Localiza vehículos por el nombre del dueño. Útil cuando no tienes la patente a mano.</p>
-        </div>
-        <div class="actions">
-          <a class="btn btn-primary" href="buscar.html?tipo=nombre">Abrir</a>
-        </div>
-      </article>
+        <!-- Buscar por nombre -->
+        <article class="card" role="listitem">
+          <div class="icon">🧑</div>
+          <div class="content">
+            <h2 class="title">Buscar por Nombre</h2>
+            <p class="desc">Localiza vehículos por el nombre del dueño. Útil cuando no tienes la patente a mano.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="buscar.html?tipo=nombre">Abrir</a>
+          </div>
+        </article>
 
-      <!-- Buscar por teléfono -->
-      <article class="card" role="listitem">
-        <div class="icon">📞</div>
-        <div class="content">
-          <h2 class="title">Buscar por Teléfono</h2>
-          <p class="desc">Filtra por número de contacto del cliente para revisar su historial.</p>
-        </div>
-        <div class="actions">
-          <a class="btn btn-primary" href="buscar.html?tipo=telefono">Abrir</a>
-        </div>
-      </article>
+        <!-- Buscar por teléfono -->
+        <article class="card" role="listitem">
+          <div class="icon">📞</div>
+          <div class="content">
+            <h2 class="title">Buscar por Teléfono</h2>
+            <p class="desc">Filtra por número de contacto del cliente para revisar su historial.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="buscar.html?tipo=telefono">Abrir</a>
+          </div>
+        </article>
 
-      <!-- Actualizar estado -->
-      <article class="card" role="listitem">
-        <div class="icon">🛠️</div>
-        <div class="content">
-          <h2 class="title">Actualizar Estado</h2>
-          <p class="desc">Cambia el estado del trabajo (recepción, diagnóstico, reparación, listo, etc.).</p>
-        </div>
-        <div class="actions">
-          <a class="btn btn-primary" href="estado.html">Abrir</a>
-        </div>
-      </article>
-    </div>
+        <!-- Actualizar estado -->
+        <article class="card" role="listitem">
+          <div class="icon">🛠️</div>
+          <div class="content">
+            <h2 class="title">Actualizar Estado</h2>
+            <p class="desc">Cambia el estado del trabajo (recepción, diagnóstico, reparación, listo, etc.).</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="estado.html">Abrir</a>
+          </div>
+        </article>
+      </div>
 
-    <div style="text-align:center;">
-      <a href="../index.html" class="back">← Volver al Panel Principal</a>
+      <div style="text-align:center;">
+        <a href="../index.html" class="back">← Volver al Panel Principal</a>
+      </div>
     </div>
 
     <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
