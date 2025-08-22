@@ -1,18 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
-  <script>
-    const claveCorrecta = "informes@"; // Puedes cambiar esta clave
-    const ingreso = prompt("🔐 Ingresa la clave para acceder:");
-    if (ingreso !== claveCorrecta) {
-      alert("❌ Clave incorrecta. Acceso denegado.");
-      window.location.href = "https://www.elsenordelosescaner.cl/";
-    }
-  </script>
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Informe de Diagnóstico</title>
+
+  <!-- === Protección ligera con PIN (modal + persistencia 12h) === -->
+  <style>
+    #auth-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.6);
+      display: none; align-items: center; justify-content: center; z-index: 9999;
+      backdrop-filter: blur(2px);
+    }
+    #auth-card {
+      background:#fff; width:min(92vw, 380px); border:1px solid #000; border-radius:10px;
+      padding:18px; box-shadow:0 4px 0 #000; font-family: Arial, sans-serif;
+    }
+    #auth-card h3 { margin:0 0 10px; font-size:18px; }
+    #auth-card input[type=password]{
+      width:100%; padding:10px; font-size:16px; border:1px solid #000; border-radius:6px;
+    }
+    #auth-card button{
+      margin-top:10px; width:100%; padding:10px; font-size:14px; cursor:pointer;
+      border:1px solid #000; border-radius:6px; background:#fff; box-shadow:0 2px 0 #000;
+    }
+    #auth-error { color:#b30000; font-size:12px; height:16px; margin-top:6px; font-weight:bold; }
+    .shake { animation:shake .2s linear 2; }
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  </style>
+
   <style>
     @media print {
       @page { size: letter; margin: 6mm 20mm; }
@@ -74,6 +90,18 @@
 </head>
 
 <body onload="document.getElementById('fecha').innerText = new Date().toLocaleDateString('es-CL');">
+  <!-- Modal auth -->
+  <div id="auth-overlay" aria-hidden="true">
+    <div id="auth-card">
+      <h3>Acceso</h3>
+      <p style="margin:0 0 6px; font-size:13px">Ingresa tu clave para continuar.</p>
+      <input id="auth-pin" type="password" autocomplete="current-password" placeholder="••••••••" />
+      <div id="auth-error"></div>
+      <button id="auth-btn">Entrar</button>
+      <p style="font-size:11px;opacity:.7;margin-top:8px">Cerrar sesión: <b>Ctrl+L</b></p>
+    </div>
+  </div>
+
   <div class="titulo">INFORME DE DIAGNOSTICO</div>
 
   <div class="contacto-wrap">
@@ -145,7 +173,67 @@
   </div>
 
   <script>
-    // ===== Librería fija de códigos (edítala/expándela aquí) =====
+    /* ====== Auth modal (clave informes@) ====== */
+    (function(){
+      // SHA-256("informes@")
+      const PASS_HASH = "76c4d54885353802045d21b7b97d9b892f5b7c72fd0eff29f366d9d44dd0b0cd";
+      const HOURS_VALID = 12;
+      const storeKey = "auth_until";
+
+      const $ov = document.getElementById('auth-overlay');
+      const $pin = document.getElementById('auth-pin');
+      const $btn = document.getElementById('auth-btn');
+      const $err = document.getElementById('auth-error');
+
+      const now = () => Date.now();
+      const isAuthed = () => {
+        const until = parseInt(sessionStorage.getItem(storeKey) || "0", 10);
+        return until && until > now();
+      };
+      const setAuthed = (h) => {
+        const ms = (h || HOURS_VALID) * 60 * 60 * 1000;
+        sessionStorage.setItem(storeKey, String(now() + ms));
+      };
+      const logout = () => { sessionStorage.removeItem(storeKey); location.reload(); };
+
+      async function sha256Hex(text){
+        const enc = new TextEncoder().encode(text);
+        const buf = await crypto.subtle.digest("SHA-256", enc);
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+      }
+      async function tryLogin(){
+        $err.textContent = "";
+        const pin = ($pin.value || "").trim();
+        if (!pin) { $err.textContent = "Ingresa la clave."; return; }
+        const h = await sha256Hex(pin);
+        if (h === PASS_HASH){
+          setAuthed(HOURS_VALID);
+          $ov.style.display = "none";
+          $ov.setAttribute("aria-hidden","true");
+        } else {
+          $err.textContent = "Clave incorrecta.";
+          const card = document.getElementById('auth-card');
+          card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+          $pin.select();
+        }
+      }
+
+      if (!isAuthed()){
+        $ov.style.display = "flex";
+        $ov.setAttribute("aria-hidden","false");
+        setTimeout(()=> $pin.focus(), 0);
+      }
+
+      $btn.addEventListener('click', tryLogin);
+      $pin.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') tryLogin(); });
+
+      // Cerrar sesión: Ctrl+L
+      document.addEventListener('keydown', (e)=>{
+        if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); logout(); }
+      });
+    })();
+
+    /* ====== Librería de códigos (edítala/expándela aquí) ====== */
     const CODIGOS_BASE = {
       "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
   "P0171": "Sistema demasiado pobre (Banco 1)",
@@ -736,20 +824,18 @@
     // 🔁 Puedes seguir agregando más
   };
 
-    // ===== Autorrelleno: SOLO DESCRIPCIONES en “DETALLE” =====
+    /* ====== Autorrelleno: SOLO descripciones en “DETALLE” ====== */
     const txtCodigos = document.getElementById("codigo_area");
     const txtDetalle = document.getElementById("detalle_area");
 
-    // Código válido: P/B/C/U + 4 dígitos (ej: P0300)
     const RE_CODIGO = /^[PBCU]\d{4}$/;
-
     const normalizar = s => s.toUpperCase().trim().replace(/[^A-Z0-9]/g, "");
     const codigosDe = (input) =>
       Array.from(new Set(
         input.toUpperCase().split(/[\s,;]+/).map(normalizar).filter(c => RE_CODIGO.test(c))
       ));
 
-    // Línea automática de detalle: SOLO la descripción, sin el número
+    // Línea automática (solo descripción, sin número)
     const esLineaAuto = (linea) => /^•\s+.+/.test(linea.trim()) && !/^[PBCU]\d{4}/.test(linea.trim());
 
     function construirLineasAutoSoloDescripcion(codigos) {
@@ -762,28 +848,23 @@
       const cods = codigosDe(txtCodigos.value);
       const nuevasAuto = construirLineasAutoSoloDescripcion(cods);
 
-      // Separamos las líneas actuales del detalle y preservamos lo MANUAL (no-auto)
+      // Preservar lo manual (eliminar líneas auto antiguas)
       const lineas = txtDetalle.value.split(/\r?\n/);
       const manual = lineas.filter(l => !esLineaAuto(l) && l.trim() !== "");
 
-      // Si no hay códigos reconocidos → dejamos solo lo manual
-      if (nuevasAuto.length === 0) {
-        txtDetalle.value = manual.join("\n");
-        return;
-      }
+      if (nuevasAuto.length === 0) { txtDetalle.value = manual.join("\n"); return; }
 
-      // Ensamble: automáticas (descripciones) + línea en blanco + manual
       const resultado = [...nuevasAuto, ...(manual.length ? ["", ...manual] : [])].join("\n");
       txtDetalle.value = resultado;
     }
 
-    // Actualiza SIEMPRE que cambie “CÓDIGOS” (aunque hayas escrito en DETALLE).
+    // Actualiza SIEMPRE al cambiar “CÓDIGOS”
     txtCodigos.addEventListener("input", () => {
       clearTimeout(window.__debAutoTimer);
       window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 120);
     });
 
-    // ===== Guardar en Google Sheets + imprimir (no borra nada) =====
+    /* ====== Guardar en Google Sheets + imprimir (no borra nada) ====== */
     async function guardarEnGoogleSheetsYImprimir() {
       const datos = {
         marca: document.querySelector('input[name="marca"]').value.trim(),
@@ -807,30 +888,26 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita preflight CORS
           body: JSON.stringify(datos)
         });
-        window.print(); // No se limpia el formulario después
+        window.print();
       } catch (e) {
         alert("⚠️ No se pudo guardar en Google Sheets. Revisa tu conexión o la API.\nSe abrirá la impresión de todos modos.");
         window.print();
       }
     }
 
-    // ===== Borrar todo (manual) =====
+    /* ====== Borrar todo (manual) ====== */
     function borrarTodo() {
       if (!confirm("¿Seguro que quieres borrar todo el contenido del informe?")) return;
       document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
     }
 
-    // ===== Atajos de teclado =====
+    /* ====== Atajos de teclado ====== */
     document.addEventListener("keydown", (ev) => {
-      // Ctrl+Shift+S -> Guardar e Imprimir
       if (ev.ctrlKey && ev.shiftKey && (ev.key === 'S' || ev.key === 's')) {
-        ev.preventDefault();
-        guardarEnGoogleSheetsYImprimir();
+        ev.preventDefault(); guardarEnGoogleSheetsYImprimir();
       }
-      // Ctrl+Shift+D -> Borrar todo
       if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) {
-        ev.preventDefault();
-        borrarTodo();
+        ev.preventDefault(); borrarTodo();
       }
     });
   </script>
