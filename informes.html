@@ -1,230 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
   <script>
-  const claveCorrecta = "informes@"; // Puedes cambiar esta clave
-
-  const ingreso = prompt("🔐 Ingresa la clave para acceder:");
-  if (ingreso !== claveCorrecta) {
-    alert("❌ Clave incorrecta. Acceso denegado.");
-    window.location.href = "https://www.elsenordelosescaner.cl/"; // 🔁 Reemplaza con tu URL destino
-  }
-</script>
-
+    const claveCorrecta = "informes@"; // Puedes cambiar esta clave
+    const ingreso = prompt("🔐 Ingresa la clave para acceder:");
+    if (ingreso !== claveCorrecta) {
+      alert("❌ Clave incorrecta. Acceso denegado.");
+      window.location.href = "https://www.elsenordelosescaner.cl/";
+    }
+  </script>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Informe de Diagnóstico</title>
   <style>
     @media print {
-      @page {
-        size: letter;
-        margin-top: 6mm;
-        margin-bottom: 6mm;
-        margin-left: 20mm;
-        margin-right: 20mm;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        box-shadow: none;
-        border: none;
-      }
-      #boton-imprimir {
-        display: none;
-      }
+      @page { size: letter; margin: 6mm 20mm; }
+      body { margin: 0; padding: 0; box-shadow: none; border: none; }
+      #boton-imprimir, #boton-borrar { display: none !important; }
     }
 
     body {
       font-family: Arial, sans-serif;
-      width: 21cm;
-      min-height: 29.7cm;
-      margin: auto;
-      padding: 40px;
-      background: white;
-      border: 1px solid #000;
-      box-sizing: border-box;
-      font-size: 13px;
+      width: 21cm; min-height: 29.7cm;
+      margin: auto; padding: 40px; background: #fff;
+      border: 1px solid #000; box-sizing: border-box; font-size: 13px;
     }
 
     .titulo {
-      width: 100%;
-      background-color: #b30000;
-      color: white;
-      font-weight: bold;
-      font-size: 24px;
-      padding: 12px 0;
-      text-align: center;
-      box-sizing: border-box;
-      margin: 0 0 10px 0;
+      width: 100%; background: #b30000; color: #fff; font-weight: bold;
+      font-size: 24px; padding: 12px 0; text-align: center;
+      box-sizing: border-box; margin: 0 0 10px 0;
     }
 
-    .contacto-wrap {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+    .contacto-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .contacto { text-align: center; font-size: 14px; line-height: 1.4; flex: 1; font-weight: bold; }
+    .contacto-wrap img { max-height: 170px; object-fit: contain; }
 
-    .contacto {
-      text-align: center;
-      font-size: 14px;
-      line-height: 1.4;
-      flex: 1;
-      font-weight: bold;
-    }
-
-    .contacto-wrap img {
-      max-height: 170px;
-      object-fit: contain;
-    }
-
-    .form-grid {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-
-    .form-grid td {
-      padding: 6px;
-      border: 1px solid #000;
-      vertical-align: middle;
-    }
-
-    .form-grid label {
-      font-weight: bold;
-      margin-right: 6px;
-      min-width: 60px;
-      font-size: 14px;
-    }
-
-    .form-grid .inline {
-      display: flex;
-      align-items: center;
-    }
-
+    .form-grid { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .form-grid td { padding: 6px; border: 1px solid #000; vertical-align: middle; }
+    .form-grid label { font-weight: bold; margin-right: 6px; min-width: 60px; font-size: 14px; }
+    .inline { display: flex; align-items: center; gap: 6px; }
     .form-grid input[type="text"] {
-      width: 100%;
-      padding: 2px 4px;
-      box-sizing: border-box;
-      border: 1px solid #000;
-      font-size: 16px;
+      width: 100%; padding: 2px 4px; box-sizing: border-box; border: 1px solid #000; font-size: 16px;
     }
 
     .seccion-titulo {
-      font-weight: bold;
-      margin-top: 20px;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      background-color: #f0f0f0;
-      padding: 6px;
-      border: 1px solid #000;
+      font-weight: bold; margin-top: 20px; margin-bottom: 5px; text-transform: uppercase;
+      background: #f0f0f0; padding: 6px; border: 1px solid #000;
     }
 
-    .tabla-codigos {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-      table-layout: fixed;
-    }
+    .tabla-codigos { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
+    .tabla-codigos th, .tabla-codigos td { border: 1px solid #000; padding: 8px; vertical-align: top; }
+    .tabla-codigos th { background: #d9d9d9; font-weight: bold; text-align: left; }
+    .tabla-codigos textarea { width: 100%; height: 220px; border: none; resize: none; font-size: 16px; box-sizing: border-box; padding: 6px; }
 
-    .tabla-codigos th, .tabla-codigos td {
-      border: 1px solid #000;
-      padding: 8px;
-      vertical-align: top;
-    }
+    textarea { width: 100%; height: 100px; margin-top: 5px; padding: 6px; border: 1px solid #000; box-sizing: border-box; font-size: 16px; }
 
-    .tabla-codigos th {
-      background-color: #d9d9d9;
-      font-weight: bold;
-      text-align: left;
-    }
+    .valor-final { margin-top: 20px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .valor-final input { padding: 10px 16px; border: 2px solid #000; font-size: 20px; font-weight: bold; width: 180px; text-align: right; }
+    .fecha-final { border: 1px solid #000; padding: 6px 12px; font-size: 13px; color: #000; }
 
-    .tabla-codigos textarea {
-      width: 100%;
-      height: 220px;
-      border: none;
-      resize: none;
-      font-size: 16px;
-      box-sizing: border-box;
-      padding: 6px;
-    }
+    .nota-footer { font-size: 10px; text-align: center; margin-top: 10px; font-weight: bold; }
 
-    textarea {
-      width: 100%;
-      height: 100px;
-      margin-top: 5px;
-      padding: 6px;
-      border: 1px solid #000;
-      box-sizing: border-box;
-      font-size: 16px;
+    .fab {
+      position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px;
     }
-
-    .valor-final {
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .fab button {
+      padding: 10px 16px; font-size: 14px; border: 1px solid #000; background: #fff; cursor: pointer; box-shadow: 0 2px 0 #000; border-radius: 6px;
     }
-
-    .valor-final input {
-      padding: 10px 16px;
-      border: 2px solid #000;
-      font-size: 20px;
-      font-weight: bold;
-      width: 180px;
-      text-align: right;
-    }
-
-    .fecha-final {
-      border: 1px solid black;
-      padding: 6px 12px;
-      font-size: 13px;
-      color: black;
-    }
-
-    .nota-footer {
-      font-size: 10px;
-      text-align: center;
-      margin-top: 10px;
-      font-weight: bold;
-    }
+    .fab button:hover { transform: translateY(1px); }
   </style>
 </head>
 
 <body onload="document.getElementById('fecha').innerText = new Date().toLocaleDateString('es-CL');">
-
   <div class="titulo">INFORME DE DIAGNOSTICO</div>
 
   <div class="contacto-wrap">
-    <img src="img/logo-scanners.png" alt="logo scanners">
+    <img src="img/logo-scanners.png" alt="logo scanners" />
     <div class="contacto">
-      WWW.ELSEÑORDELOSESCANER.CL<br>
-      DORSAL (ALTURA 6200) METRO NEPTUNO<br>
-      CELULAR: +56976209564<br>
-      (WALDO)<br><br>
-      SCANNER ORIGINAL TODAS LAS MARCAS<br>
+      WWW.ELSEÑORDELOSESCANER.CL<br />
+      DORSAL (ALTURA 6200) METRO NEPTUNO<br />
+      CELULAR: +56976209564<br />
+      (WALDO)<br /><br />
+      SCANNER ORIGINAL TODAS LAS MARCAS<br />
       LIMPIEZA INYECTORES – SISTEMAS DPF - GASES LLAVES CON CHIP – PROGRAMACION
     </div>
-    <img src="img/qr-whatsapp.png" alt="QR whatsapp">
+    <img src="img/qr-whatsapp.png" alt="QR whatsapp" />
   </div>
 
   <table class="form-grid">
-
-
     <tr>
-      <td><div class="inline"><label>MARCA:</label><input type="text" name="marca"style="text-transform: uppercase;"></div></td>
-      <td><div class="inline"><label>MODELO:</label><input type="text" name="modelo"style="text-transform: uppercase;"></div></td>
+      <td><div class="inline"><label>MARCA:</label><input type="text" name="marca" style="text-transform: uppercase;"></div></td>
+      <td><div class="inline"><label>MODELO:</label><input type="text" name="modelo" style="text-transform: uppercase;"></div></td>
     </tr>
     <tr>
       <td><div class="inline"><label>PATENTE:</label><input type="text" name="patente" style="text-transform: uppercase;"></div></td>
-      <td><div class="inline"><label>AÑO:</label><input type="text" name="ano"style="text-transform: uppercase;"></div></td>
+      <td><div class="inline"><label>AÑO:</label><input type="text" name="ano" style="text-transform: uppercase;"></div></td>
     </tr>
     <tr>
-      <td><div class="inline"><label>KM:</label><input type="text" name="km"style="text-transform: uppercase;"></div></td>
-      <td><div class="inline"><label>MOTOR:</label><input type="text" name="motor"style="text-transform: uppercase;"></div></td>
+      <td><div class="inline"><label>KM:</label><input type="text" name="km" style="text-transform: uppercase;"></div></td>
+      <td><div class="inline"><label>MOTOR:</label><input type="text" name="motor" style="text-transform: uppercase;"></div></td>
     </tr>
   </table>
 
@@ -238,23 +114,29 @@
     </thead>
     <tbody>
       <tr>
-        <td><textarea name="codigo_area"style="text-transform: uppercase;"></textarea>></textarea></td>
-        <td><textarea name="detalle_area"></textarea></td>
-        <td><textarea name="valor_area" style="font-weight:bold; font-size:16px;"></textarea></td>
+        <td>
+          <textarea name="codigo_area" id="codigo_area" style="text-transform: uppercase;"></textarea>
+        </td>
+        <td>
+          <textarea name="detalle_area" id="detalle_area"></textarea>
+        </td>
+        <td>
+          <textarea name="valor_area" id="valor_area"></textarea>
+        </td>
       </tr>
     </tbody>
   </table>
 
   <div class="seccion-titulo">POSIBLES CAUSAS</div>
-  <textarea name="causas"></textarea>
+  <textarea name="causas" id="causas"></textarea>
 
   <div class="seccion-titulo">RECOMENDACIONES</div>
-  <textarea name="recomendaciones"></textarea>
+  <textarea name="recomendaciones" id="recomendaciones"></textarea>
 
   <div class="valor-final">
     <div class="fecha-final" id="fecha"></div>
     <div>
-      $ <input type="text" name="valor_final">
+      $ <input type="text" name="valor_final" id="valor_final">
     </div>
   </div>
 
@@ -263,38 +145,9 @@
   </div>
 
   <script>
-  function guardarEnGoogleSheets() {
-    const patente = document.querySelector('input[name="patente"]').value;
-    const codigo = document.querySelector('textarea[name="codigo_area"]').value;
-    const detalle = document.querySelector('textarea[name="detalle_area"]').value;
-
-    // Guardar en Google Sheets
-    fetch("https://script.google.com/macros/s/AKfycbzTDTkFKdwIqH8E_jDrOWx3chf42XasN-QI0WcCRav9gS9r7gZJ5tRIVVch1T6E1ukw/exec", {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ patente, codigo, detalle })
-    });
-
-    // Imprimir
-    window.onafterprint = () => {
-  document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
-};
-
-window.print();
-
-  }
-</script>
-
-
-  <button id="boton-imprimir" onclick="guardarEnGoogleSheets()" style="position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; font-size: 14px;">
-    Imprimir y Guardar
-  </button>
-<script>
-  const codigosOBD2 = {
-   "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
+    // ===== Librería fija de códigos (edítala/expándela aquí) =====
+    const CODIGOS_BASE = {
+      "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
   "P0171": "Sistema demasiado pobre (Banco 1)",
   "P0300": "Falla de encendido aleatoria o múltiple",
   "P0113": "Sensor de temperatura del aire de admisión - entrada alta",
@@ -883,27 +736,108 @@ window.print();
     // 🔁 Puedes seguir agregando más
   };
 
-  const codigoArea = document.querySelector('textarea[name="codigo_area"]');
-  const detalleArea = document.querySelector('textarea[name="detalle_area"]');
+    // ===== Autorrelleno: SOLO DESCRIPCIONES en “DETALLE” =====
+    const txtCodigos = document.getElementById("codigo_area");
+    const txtDetalle = document.getElementById("detalle_area");
 
-  codigoArea.addEventListener('input', () => {
-    const codigos = codigoArea.value
-      .toUpperCase()
-      .split(/[\s,;]+/)
-      .map(c => c.trim())
-      .filter(c => c);
+    // Código válido: P/B/C/U + 4 dígitos (ej: P0300)
+    const RE_CODIGO = /^[PBCU]\d{4}$/;
 
-    const existente = detalleArea.value.split('\n').map(line => line.trim());
-    const nuevasDescripciones = codigos
-      .map(cod => codigosOBD2[cod])
-      .filter(desc => desc && !existente.includes(desc));
+    const normalizar = s => s.toUpperCase().trim().replace(/[^A-Z0-9]/g, "");
+    const codigosDe = (input) =>
+      Array.from(new Set(
+        input.toUpperCase().split(/[\s,;]+/).map(normalizar).filter(c => RE_CODIGO.test(c))
+      ));
 
-    if (nuevasDescripciones.length > 0) {
-      detalleArea.value += (detalleArea.value ? '\n' : '') + nuevasDescripciones.join('\n');
+    // Línea automática de detalle: SOLO la descripción, sin el número
+    const esLineaAuto = (linea) => /^•\s+.+/.test(linea.trim()) && !/^[PBCU]\d{4}/.test(linea.trim());
+
+    function construirLineasAutoSoloDescripcion(codigos) {
+      return codigos
+        .filter(c => CODIGOS_BASE[c])
+        .map(c => `• ${CODIGOS_BASE[c]}`);
     }
-  });
-</script>
 
+    function mezclarDetalleSoloDescripcion() {
+      const cods = codigosDe(txtCodigos.value);
+      const nuevasAuto = construirLineasAutoSoloDescripcion(cods);
 
+      // Separamos las líneas actuales del detalle y preservamos lo MANUAL (no-auto)
+      const lineas = txtDetalle.value.split(/\r?\n/);
+      const manual = lineas.filter(l => !esLineaAuto(l) && l.trim() !== "");
+
+      // Si no hay códigos reconocidos → dejamos solo lo manual
+      if (nuevasAuto.length === 0) {
+        txtDetalle.value = manual.join("\n");
+        return;
+      }
+
+      // Ensamble: automáticas (descripciones) + línea en blanco + manual
+      const resultado = [...nuevasAuto, ...(manual.length ? ["", ...manual] : [])].join("\n");
+      txtDetalle.value = resultado;
+    }
+
+    // Actualiza SIEMPRE que cambie “CÓDIGOS” (aunque hayas escrito en DETALLE).
+    txtCodigos.addEventListener("input", () => {
+      clearTimeout(window.__debAutoTimer);
+      window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 120);
+    });
+
+    // ===== Guardar en Google Sheets + imprimir (no borra nada) =====
+    async function guardarEnGoogleSheetsYImprimir() {
+      const datos = {
+        marca: document.querySelector('input[name="marca"]').value.trim(),
+        modelo: document.querySelector('input[name="modelo"]').value.trim(),
+        patente: document.querySelector('input[name="patente"]').value.trim(),
+        ano: document.querySelector('input[name="ano"]').value.trim(),
+        km: document.querySelector('input[name="km"]').value.trim(),
+        motor: document.querySelector('input[name="motor"]').value.trim(),
+        codigo: document.getElementById("codigo_area").value.trim(),
+        detalle: document.getElementById("detalle_area").value.trim(),
+        valor_area: document.getElementById("valor_area").value.trim(),
+        causas: document.getElementById("causas").value.trim(),
+        recomendaciones: document.getElementById("recomendaciones").value.trim(),
+        valor_final: document.getElementById("valor_final").value.trim(),
+        fecha: document.getElementById("fecha").innerText.trim()
+      };
+
+      try {
+        await fetch("https://script.google.com/macros/s/AKfycbzTDTkFKdwIqH8E_jDrOWx3chf42XasN-QI0WcCRav9gS9r7gZJ5tRIVVch1T6E1ukw/exec", {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita preflight CORS
+          body: JSON.stringify(datos)
+        });
+        window.print(); // No se limpia el formulario después
+      } catch (e) {
+        alert("⚠️ No se pudo guardar en Google Sheets. Revisa tu conexión o la API.\nSe abrirá la impresión de todos modos.");
+        window.print();
+      }
+    }
+
+    // ===== Borrar todo (manual) =====
+    function borrarTodo() {
+      if (!confirm("¿Seguro que quieres borrar todo el contenido del informe?")) return;
+      document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
+    }
+
+    // ===== Atajos de teclado =====
+    document.addEventListener("keydown", (ev) => {
+      // Ctrl+Shift+S -> Guardar e Imprimir
+      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'S' || ev.key === 's')) {
+        ev.preventDefault();
+        guardarEnGoogleSheetsYImprimir();
+      }
+      // Ctrl+Shift+D -> Borrar todo
+      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) {
+        ev.preventDefault();
+        borrarTodo();
+      }
+    });
+  </script>
+
+  <div class="fab">
+    <button id="boton-imprimir" onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
+    <button id="boton-borrar" onclick="borrarTodo()">🧹 Borrar todo</button>
+  </div>
 </body>
 </html>
