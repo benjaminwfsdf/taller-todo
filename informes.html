@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Informe de Diagnóstico</title>
 
-  <!-- === Protección ligera con PIN (modal + persistencia 12h) === -->
+  <!-- === Protección ligera con PIN (modal + persistencia 12h en localStorage) === -->
   <style>
     #auth-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,.6);
@@ -173,12 +173,13 @@
   </div>
 
   <script>
-    /* ====== Auth modal (clave informes@) ====== */
+    /* ====== Auth modal (clave informes@) con persistencia en localStorage (12h) ====== */
     (function(){
       // SHA-256("informes@")
       const PASS_HASH = "76c4d54885353802045d21b7b97d9b892f5b7c72fd0eff29f366d9d44dd0b0cd";
       const HOURS_VALID = 12;
-      const storeKey = "auth_until";
+      const storeKey = "auth_until_ts";
+      const STORAGE = localStorage; // ← persiste aunque cierres navegador
 
       const $ov = document.getElementById('auth-overlay');
       const $pin = document.getElementById('auth-pin');
@@ -187,14 +188,14 @@
 
       const now = () => Date.now();
       const isAuthed = () => {
-        const until = parseInt(sessionStorage.getItem(storeKey) || "0", 10);
+        const until = parseInt(STORAGE.getItem(storeKey) || "0", 10);
         return until && until > now();
       };
       const setAuthed = (h) => {
         const ms = (h || HOURS_VALID) * 60 * 60 * 1000;
-        sessionStorage.setItem(storeKey, String(now() + ms));
+        STORAGE.setItem(storeKey, String(now() + ms));
       };
-      const logout = () => { sessionStorage.removeItem(storeKey); location.reload(); };
+      const logout = () => { STORAGE.removeItem(storeKey); sessionStorage.removeItem(storeKey); location.reload(); };
 
       async function sha256Hex(text){
         const enc = new TextEncoder().encode(text);
@@ -233,7 +234,7 @@
       });
     })();
 
-    /* ====== Librería de códigos (edítala/expándela aquí) ====== */
+    /* ====== Librería de códigos (ejemplos; puedes ampliarla) ====== */
     const CODIGOS_BASE = {
       "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
   "P0171": "Sistema demasiado pobre (Banco 1)",
@@ -836,7 +837,8 @@
       ));
 
     // Línea automática (solo descripción, sin número)
-    const esLineaAuto = (linea) => /^•\s+.+/.test(linea.trim()) && !/^[PBCU]\d{4}/.test(linea.trim());
+    const esLineaAuto = (linea) =>
+      /^•\s+.+/.test(linea.trim()) && !/^[PBCU]\d{4}/.test(linea.trim());
 
     function construirLineasAutoSoloDescripcion(codigos) {
       return codigos
@@ -848,7 +850,7 @@
       const cods = codigosDe(txtCodigos.value);
       const nuevasAuto = construirLineasAutoSoloDescripcion(cods);
 
-      // Preservar lo manual (eliminar líneas auto antiguas)
+      // Preservar lo manual (quitar las líneas auto antiguas)
       const lineas = txtDetalle.value.split(/\r?\n/);
       const manual = lineas.filter(l => !esLineaAuto(l) && l.trim() !== "");
 
@@ -908,6 +910,11 @@
       }
       if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) {
         ev.preventDefault(); borrarTodo();
+      }
+      // Cerrar sesión manual rápido (por si cambiaste de usuario)
+      if (ev.ctrlKey && (ev.key === 'l' || ev.key === 'L')) {
+        ev.preventDefault();
+        localStorage.removeItem('auth_until_ts'); sessionStorage.removeItem('auth_until_ts'); location.reload();
       }
     });
   </script>
