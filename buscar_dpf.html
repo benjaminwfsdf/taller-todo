@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Taller · DPF OFF — Buscar</title>
+<meta name="theme-color" content="#c50000">
+<style>
+  :root{--bg:#0b0b0d;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;--accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f}
+  body{margin:0;font-family:system-ui,Arial;color:var(--text);background:var(--bg)}
+  .top{background:#000;border-bottom:3px solid var(--stroke);padding:10px 16px;text-align:center;font-weight:800;letter-spacing:.08em}
+  .top a{color:#fff;text-decoration:none}
+  .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+  .panel{background:linear-gradient(180deg,#920000,#540000);border:3px solid #000;border-radius:18px;box-shadow:0 10px 30px #0008,inset 0 0 0 3px var(--stroke);padding:16px;text-align:center;margin-bottom:24px}
+  .panel h1{margin:0;color:#fff;text-shadow:0 2px 0 #000;font-size:28px}
+  .card{background:var(--card);border:2px solid #000;border-radius:16px;box-shadow:10px 12px 0 #000,0 0 0 3px var(--stroke) inset;padding:22px}
+  .grid{display:grid;gap:20px;grid-template-columns:repeat(3,1fr);margin-bottom:12px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  label{font-weight:800;font-size:14px;display:block;margin-bottom:6px}
+  input,button,a.btn{width:100%;padding:12px;border-radius:12px;border:2px solid #000;color:#fff;background:#0f0f12;box-shadow:0 0 0 2px var(--stroke) inset;font-size:16px}
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+  .btn{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff;border:2px solid #000;border-radius:12px;padding:12px 16px;font-weight:900;text-decoration:none;box-shadow:6px 8px 0 #000,0 0 0 2px var(--stroke) inset}
+  .btn.ghost{background:#0f0f12}
+  .result{margin-top:12px;padding:16px;border:2px dashed #000;border-radius:16px;background:#0d0e10}
+  .dtcgrid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .pill{padding:6px 10px;border:2px solid #000;border-radius:999px;background:#0f0f12;font-weight:900;box-shadow:0 0 0 2px var(--stroke) inset}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="top"><a href="#">WWW.ELSENORDELOSCANER.CL</a></div>
+  <div class="wrap">
+    <div class="panel"><h1>DPF OFF · Buscar</h1></div>
+
+    <div class="card">
+      <div class="grid">
+        <div><label>Marca</label><input id="marca" placeholder="Peugeot"></div>
+        <div><label>Modelo</label><input id="modelo" placeholder="308 1.6 HDi"></div>
+        <div><label>ECU</label><input id="ecu" placeholder="EDC17C60 / MED17.4.4"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="buscar">Buscar</button>
+        <button class="btn ghost" id="copiar">Copiar lista</button>
+        <button class="btn ghost" id="csv">Descargar CSV</button>
+      </div>
+
+      <div id="result" class="result"><div class="muted">Sin resultados todavía.</div></div>
+
+      <a href="añadir_dpf.html" class="btn ghost" style="margin-top:18px">⬅️ Volver a Añadir / Editar</a>
+    </div>
+  </div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwdJYX4UP3g-2OieFv_i1T7BKh-0ZEATdppMsYkPohpBUnxNIuc7Eex6TbhyfUtb3tfpQ/exec';
+const $ = id=>document.getElementById(id);
+let last = [];
+
+async function postForm(payload){
+  const body = new URLSearchParams();
+  Object.entries(payload).forEach(([k,v])=> body.append(k, String(v)));
+  const r = await fetch(API_URL, { method:'POST', body });
+  return r.json();
+}
+
+function draw(p){
+  const box=$('result'); box.innerHTML='';
+  if(p.notFound){ box.innerHTML='<b>No encontrado</b><div class="muted">Revisa la combinación.</div>'; last=[]; return; }
+  box.innerHTML = `<b>${p.marca} · ${p.modelo}</b><br>ECU: <code>${p.ecu}</code>`;
+  const grid=document.createElement('div'); grid.className='dtcgrid';
+  (p.dtcs||[]).forEach(d=>{ const s=document.createElement('span'); s.className='pill'; s.textContent=d; grid.appendChild(s); });
+  box.appendChild(grid);
+  last = p.dtcs||[];
+  if(!last.length){ const m=document.createElement('div'); m.className='muted'; m.textContent='No hay DTC definidos aún.'; box.appendChild(m); }
+}
+
+$('buscar').addEventListener('click', async ()=>{
+  const marca=$('marca').value.trim(), modelo=$('modelo').value.trim(), ecu=$('ecu').value.trim();
+  if(!marca||!modelo||!ecu){ alert('Completa marca, modelo y ECU.'); return; }
+  try{ const j=await postForm({action:'search',marca,modelo,ecu}); if(j.ok) draw(j); else alert('Error: '+(j.error||'desconocido')); }
+  catch(err){ alert('Error de red: '+err); }
+});
+
+$('copiar').addEventListener('click', async ()=>{
+  if(!last.length){ alert('No hay DTC para copiar.'); return; }
+  const t=last.join(', ');
+  try{ await navigator.clipboard.writeText(t); alert('Copiado:\n'+t); }catch{ alert(t); }
+});
+
+$('csv').addEventListener('click', ()=>{
+  if(!last.length){ alert('No hay DTC para exportar.'); return; }
+  const csv = ['DTC', ...last].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='dtcs_dpf_off.csv'; a.click(); URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>

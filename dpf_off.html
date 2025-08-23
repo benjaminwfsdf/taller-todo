@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Taller · Panel DPF OFF & Computadores</title>
+<meta name="theme-color" content="#c50000">
+<style>
+  :root{
+    --bg:#0b0b0d;--panel:#121215;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;
+    --accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f;--ok:#39ff78;--err:#ffb3b3
+  }
+  /* ====== Base ====== */
+  html,body{height:100%}
+  body{margin:0;font-family:system-ui,Arial,sans-serif;color:var(--text);background:var(--bg)}
+  .top{background:#000;border-bottom:3px solid var(--stroke);padding:10px 16px;text-align:center;font-weight:800;letter-spacing:.08em}
+  .top a{color:#fff;text-decoration:none}
+  .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
+  .panel{
+    background:linear-gradient(180deg,#920000,#540000);border:3px solid #000;border-radius:18px;
+    box-shadow:0 10px 30px #0008,inset 0 0 0 3px var(--stroke);padding:18px;text-align:center;margin-bottom:22px
+  }
+  .panel h1{margin:0;color:#fff;text-shadow:0 2px 0 #000;font-size:28px}
+  .section-title{margin:18px 2px 10px;font-weight:900;letter-spacing:.02em;color:#fff;opacity:.9}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{
+    background:var(--card);border:2px solid #000;border-radius:16px;box-shadow:8px 10px 0 #000,0 0 0 3px var(--stroke) inset;
+    padding:18px;display:flex;align-items:center;gap:16px
+  }
+  .icon{
+    min-width:64px;height:64px;border-radius:14px;background:#0f0f12;border:2px solid #000;box-shadow:0 0 0 2px var(--stroke) inset;
+    display:flex;align-items:center;justify-content:center;font-size:28px
+  }
+  .info{flex:1}
+  .title{font-weight:900;font-size:18px;margin:0 0 4px}
+  .desc{margin:0;color:var(--muted)}
+  .btn{
+    text-decoration:none;background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff;border:2px solid #000;border-radius:12px;
+    padding:10px 16px;font-weight:900;box-shadow:6px 8px 0 #000,0 0 0 2px var(--stroke) inset;display:inline-block;text-align:center
+  }
+  .footer{margin-top:28px;text-align:center}
+
+  /* ====== Modal de acceso ====== */
+  .lock-overlay{
+    position:fixed; inset:0; z-index:9999;
+    background:
+      radial-gradient(1000px 600px at 50% -10%, #1c0b0b50, transparent 60%),
+      linear-gradient(180deg,#0a0a0b 0%, #000 100%);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .lock-card{
+    width:min(92vw, 460px);
+    background:#121215; border:2px solid #000; border-radius:18px;
+    box-shadow:12px 14px 0 #000, 0 0 0 3px var(--stroke) inset;
+    padding:20px;
+  }
+  .lock-head{
+    display:flex; gap:12px; align-items:center; margin-bottom:10px;
+  }
+  .badge{
+    width:54px; height:54px; border-radius:14px; background:#0f0f12;
+    border:2px solid #000; box-shadow:0 0 0 2px var(--stroke) inset;
+    display:flex; align-items:center; justify-content:center; font-size:26px;
+  }
+  .lock-title{margin:0; font-size:20px}
+  .lock-desc{margin:2px 0 0; color:var(--muted); font-size:14px}
+  .lock-form{margin-top:10px}
+  .field{margin-top:12px}
+  .label{display:flex;justify-content:space-between; font-weight:800; font-size:14px; margin-bottom:6px}
+  .input-wrap{
+    display:flex; align-items:stretch; gap:8px;
+    background:#0f0f12; border:2px solid #000; border-radius:12px;
+    box-shadow:0 0 0 2px var(--stroke) inset; padding:6px;
+  }
+  .input-wrap input{
+    flex:1; border:0; outline:none; background:transparent; color:#fff; font-size:16px; padding:8px;
+  }
+  .toggle{
+    padding:0 10px; border-left:2px dashed #000; cursor:pointer; user-select:none; display:flex; align-items:center;
+  }
+  .remember{
+    margin-top:10px; display:flex; align-items:center; gap:8px; font-size:14px; color:#ddd;
+  }
+  .lock-actions{margin-top:14px; display:flex; gap:10px}
+  .btn-full{
+    width:100%; text-align:center; padding:12px 16px; font-weight:900; border-radius:12px; border:2px solid #000;
+    background:linear-gradient(180deg,var(--accent),var(--accent2)); color:#fff;
+    box-shadow:6px 8px 0 #000, 0 0 0 2px var(--stroke) inset; cursor:pointer;
+  }
+  .btn-ghost{
+    width:100%; text-align:center; padding:12px 16px; font-weight:900; border-radius:12px; border:2px solid #000;
+    background:#0f0f12; color:#fff; box-shadow:0 0 0 2px var(--stroke) inset; cursor:pointer;
+  }
+  .msg{margin-top:10px; font-weight:700; min-height:20px}
+  .msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+  .shake{animation:shake .28s ease-in-out}
+  @keyframes shake{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-6px)} 40%{transform:translateX(6px)}
+    60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+  }
+
+  /* Evita desplazamiento del fondo cuando el lock está activo */
+  body.locked{overflow:hidden}
+  /* Oculta el contenido hasta desbloquear */
+  #app{display:none}
+</style>
+</head>
+<body class="locked">
+  <!-- Modal de acceso -->
+  <div class="lock-overlay" id="lock">
+    <div class="lock-card" id="lockCard">
+      <div class="lock-head">
+        <div class="badge">🔐</div>
+        <div>
+          <h2 class="lock-title">Acceso restringido</h2>
+          <p class="lock-desc">Ingresa la contraseña para abrir el panel. Se recordará por 12 horas.</p>
+        </div>
+      </div>
+
+      <form class="lock-form" id="lockForm">
+        <div class="field">
+          <div class="label">
+            <span>Contraseña</span>
+            <small id="expiresHint" style="opacity:.8"></small>
+          </div>
+          <div class="input-wrap" id="inputWrap">
+            <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" autofocus />
+            <div class="toggle" id="togglePass" title="Mostrar/Ocultar">👁️</div>
+          </div>
+        </div>
+
+        <label class="remember">
+          <input type="checkbox" id="remember" checked />
+          Recordar este dispositivo por 12 horas
+        </label>
+
+        <div class="lock-actions">
+          <button type="submit" class="btn-full">Entrar</button>
+          <button type="button" class="btn-ghost" id="salir">Salir</button>
+        </div>
+
+        <div class="msg" id="msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- App (oculta hasta validar) -->
+  <div id="app">
+    <div class="top"><a href="#">WWW.ELSENORDELOSCANER.CL</a></div>
+
+    <div class="wrap">
+      <div class="panel"><h1>Panel DPF OFF & Computadores</h1></div>
+
+      <!-- Sección DPF OFF -->
+      <h3 class="section-title">DPF OFF</h3>
+      <div class="grid">
+        <div class="card">
+          <div class="icon">➕</div>
+          <div class="info">
+            <p class="title">Añadir / Editar</p>
+            <p class="desc">Guarda combinaciones de <strong>Marca · Modelo · ECU</strong> y su lista de DTC a borrar.</p>
+          </div>
+          <a class="btn" href="añadir_dpf.html">Abrir</a>
+        </div>
+
+        <div class="card">
+          <div class="icon">🔎</div>
+          <div class="info">
+            <p class="title">Buscar</p>
+            <p class="desc">Consulta por <strong>Marca · Modelo · ECU</strong> y muestra al instante los DTC a borrar para DPF OFF. </p>
+          </div>
+          <a class="btn" href="buscar_dpf.html">Abrir</a>
+        </div>
+      </div>
+
+      <!-- Sección Computadores -->
+      <h3 class="section-title">Computadores</h3>
+      <div class="grid">
+        <div class="card">
+          <div class="icon">🖥️</div>
+          <div class="info">
+            <p class="title">Registrar Computador</p>
+            <p class="desc">Registra un computador/ECU/BCM con sus detalles.</p>
+          </div>
+          <a class="btn" href="computador.html">Abrir</a>
+        </div>
+
+        <div class="card">
+          <div class="icon">🗂️</div>
+          <div class="info">
+            <p class="title">Buscar Computador Registrado</p>
+            <p class="desc">Busca por marca, modelo para ver el historial y detalles del computador registrado.</p>
+          </div>
+          <a class="btn" href="buscar_computadores.html">Abrir</a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <a class="btn" href="index.html">⬅️ Volver al Panel Principal</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ===== Config =====
+  const CLAVE = "computador@";
+  const STORAGE_KEY = "acceso_computadores";
+  const HORAS = 12;
+
+  const els = {
+    lock: document.getElementById('lock'),
+    lockCard: document.getElementById('lockCard'),
+    app: document.getElementById('app'),
+    pass: document.getElementById('pass'),
+    msg: document.getElementById('msg'),
+    inputWrap: document.getElementById('inputWrap'),
+    expiresHint: document.getElementById('expiresHint'),
+    togglePass: document.getElementById('togglePass'),
+    remember: document.getElementById('remember'),
+    salir: document.getElementById('salir'),
+    form: document.getElementById('lockForm'),
+    body: document.body
+  };
+
+  function fmtHora(ts){
+    const d = new Date(ts);
+    const pad = n=>String(n).padStart(2,'0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function cargarAcceso(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      if(data.clave === CLAVE && Date.now() < data.expira) return data;
+      return null;
+    }catch{ return null; }
+  }
+
+  function guardarAcceso(){
+    const expira = Date.now() + HORAS*60*60*1000;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({clave: CLAVE, expira}));
+    return expira;
+  }
+
+  function desbloquear(expiraTs){
+    // Mostrar app
+    els.lock.style.display = 'none';
+    els.body.classList.remove('locked');
+    els.app.style.display = 'block';
+    // Hint (opcional) arriba del campo
+    if(expiraTs) els.expiresHint.textContent = `Recordado hasta ${fmtHora(expiraTs)}`;
+  }
+
+  // Al cargar: si ya es válido, desbloquear
+  (function init(){
+    const saved = cargarAcceso();
+    if(saved){
+      desbloquear(saved.expira);
+    }else{
+      els.body.classList.add('locked');
+      els.app.style.display = 'none';
+      els.lock.style.display = 'flex';
+      setTimeout(()=> els.pass.focus(), 100);
+    }
+  })();
+
+  // Mostrar/ocultar contraseña
+  els.togglePass.addEventListener('click', ()=>{
+    const isPwd = els.pass.type === 'password';
+    els.pass.type = isPwd ? 'text' : 'password';
+    els.togglePass.textContent = isPwd ? '🙈' : '👁️';
+    els.pass.focus();
+  });
+
+  // Botón Salir
+  els.salir.addEventListener('click', ()=>{
+    window.location.href = "https://www.elsenordelosescaner.cl/";
+  });
+
+  // Envío del formulario
+  els.form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const val = els.pass.value.trim();
+    if(val !== CLAVE){
+      els.msg.className = 'msg err';
+      els.msg.textContent = '❌ Contraseña incorrecta';
+      els.lockCard.classList.remove('shake'); // reinicia animación
+      void els.lockCard.offsetWidth;
+      els.lockCard.classList.add('shake');
+      els.pass.select();
+      return;
+    }
+    let expiraTs = null;
+    if(els.remember.checked){
+      expiraTs = guardarAcceso();
+    }else{
+      // Si NO recuerda, igual desbloquea esta sesión pero no persiste.
+      // (podrías usar sessionStorage si quieres recordarlo solo en esta pestaña)
+    }
+    els.msg.className = 'msg ok';
+    els.msg.textContent = '✅ Acceso concedido';
+    setTimeout(()=> desbloquear(expiraTs), 150);
+  });
+
+  // Enter directo desbloquea (ya cubierto por submit) y Esc para salir
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && els.lock.style.display !== 'none') els.salir.click();
+  });
+</script>
+</body>
+</html>
