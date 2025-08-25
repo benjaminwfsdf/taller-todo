@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <base target="_self">
+
   <link rel="manifest" href="manifest.json">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -321,6 +323,47 @@
   });
 </script>
 
+<script>
+(function () {
+  const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!isStandalone) return;
+
+  // Aquí pon lo que SÍ quieres que salga a Safari
+  const EXTERN = new Set(['informes.html','buscador_averias.html']);
+
+  const toURL = h => { try { return new URL(h, location.href); } catch { return null; } };
+  const sameOrigin = u => u && u.origin === location.origin;
+  const fileName = u => u ? u.pathname.split('/').pop() : '';
+  const go = u => location.assign(u.pathname + u.search + u.hash);
+
+  // Enlaces <a>: internos -> misma ventana
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href]'); if (!a) return;
+    if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
+    const u = toURL(a.getAttribute('href')); if (!u) return;
+    const interno = sameOrigin(u);
+    const whitelisted = EXTERN.has(fileName(u)) || EXTERN.has(u.href);
+    if (interno && !whitelisted) { e.preventDefault(); go(u); }
+  }, true);
+
+  // window.open interno -> misma ventana
+  const _open = window.open;
+  window.open = function (url, target, features) {
+    const u = toURL(url);
+    const interno = sameOrigin(u);
+    const whitelisted = EXTERN.has(fileName(u)) || EXTERN.has(u?.href);
+    if (interno && !whitelisted) { go(u); return null; }
+    return _open.call(window, url, target, features);
+  };
+
+  // Formularios internos -> _self
+  document.addEventListener('submit', e => {
+    const f = e.target; if (!(f && f.tagName === 'FORM')) return;
+    const u = toURL(f.getAttribute('action') || location.href);
+    if (sameOrigin(u)) f.target = '_self';
+  }, true);
+})();
+</script>
 
 </body>
 </html>
