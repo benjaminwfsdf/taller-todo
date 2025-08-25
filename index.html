@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
- <link rel="manifest" href="/manifest.json">
-
+ <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Taller">
-
-<!-- iOS busca esto: -->
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<!-- copia de seguridad (opcional): -->
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-
 <meta name="theme-color" content="#000000">
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js");
+    });
+  }
+</script>
 
 
   <meta charset="UTF-8" />
@@ -247,7 +249,7 @@
             <p class="desc">Crear informes. Se abre en una pestaña nueva.</p>
           </div>
           <div class="actions">
-            <a class="btn" href="informes.html" target="_blank" rel="noopener" data-pwa="external">Abrir</a>
+            <a class="btn" href="informes.html"target="_blank">Abrir</a>
           </div>
         </article>
 
@@ -283,7 +285,7 @@
             <p class="desc">Consulta rápida de DTC y descripciones.</p>
           </div>
           <div class="actions">
-            <a class="btn" href="buscador_averias.html" target="_blank" rel="noopener" data-pwa="external">Abrir</a>
+            <a class="btn" href="buscador_averias.html" target="_blank">Abrir</a>
           </div>
         </article>
 
