@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="img/scanner.png">
+  <title>Recepción de Clientes</title>
+  <style>
+    :root{
+      --brand:#900000; --brand-900:#700000;
+      --ink:#e9ecef; --muted:#b9c0c7;
+      --bg:#0b0b0c; --panel:#0f0f11;
+      --card:#16181b; --card-border:#272a2f;
+      --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.45);
+    }
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.55}
+    .topbar{background:#000;color:#fff;text-align:center;padding:14px 10px;font-weight:800;letter-spacing:.6px;border-bottom:4px solid var(--brand)}
+    .wrapper{max-width:900px;margin:28px auto 44px;padding:0 16px}
+    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow)}
+    .header{margin:10px;background:var(--brand);color:#fff;border-radius:18px;padding:18px 22px;text-align:center;box-shadow:0 10px 22px rgba(144,0,0,.35)}
+    .header h1{margin:0;font-size:clamp(22px,3.2vw,30px)}
+    .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;margin:12px}
+    label{display:block;margin:8px 0 6px;font-weight:800}
+    input{
+      width:100%;padding:12px 14px;border:1px solid #32363d;border-radius:10px;background:#101215;color:#e8edf3;font-size:16px;box-sizing:border-box;text-transform:uppercase;
+    }
+    .btn{width:100%;margin-top:12px;appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;color:#fff;background:#0c0c0e;border:2px solid var(--brand);box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(144,0,0,.25);transition:background .2s,transform .12s,box-shadow .2s}
+    .btn:hover{background:var(--brand);box-shadow:0 4px 10px rgba(144,0,0,.35)}
+    .btn:active{transform:translateY(1px)}
+    .block{background:#0f1114;border:1px solid #2b2f35;border-radius:14px;padding:16px;margin:12px}
+    .patente-actual{font-size:36px;font-weight:900;color:#3ddc97;text-align:center;letter-spacing:.8px}
+    .modelo-actual{text-align:center;margin:6px 0 16px;color:#cfd6de}
+    .subtitulo{text-align:center;color:#b9c0c7;font-size:18px;margin-top:18px}
+    .proximo{font-size:20px;color:#fff;text-align:center;margin-top:8px}
+    .back{display:block;margin:18px auto 0 auto;width:fit-content;padding:12px 18px;text-decoration:none;border-radius:12px;border:2px solid var(--brand);background:#15171b;color:#fff;font-weight:800}
+    .back:hover{background:var(--brand)}
+    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:12px 0 0}
+  </style>
+</head>
+<body>
+  <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="wrapper">
+    <div class="frame">
+      <div class="header"><h1>Recepción y Turnos</h1></div>
+
+      <div class="card">
+        <label for="patente">Patente</label>
+        <input id="patente" placeholder="ABCD12">
+        <label for="modelo">Modelo</label>
+        <input id="modelo" placeholder="TOYOTA YARIS">
+        <button class="btn" onclick="agregarCliente()">➕ Añadir Cliente</button>
+        <div id="confirmacion" style="text-align:center;font-weight:800;color:#3ddc97;margin-top:10px"></div>
+      </div>
+
+      <div class="block" id="turnoActual">
+        <div style="text-align:center">🔧 En Atención</div>
+        <div class="patente-actual" id="patenteActual">---</div>
+        <div class="modelo-actual" id="modeloActual">---</div>
+        <button class="btn" onclick="marcarComoListo()">✅ Marcar como Listo</button>
+      </div>
+
+      <div class="subtitulo" id="contadorTotal">🚘 Autos en espera: 0</div>
+      <div class="subtitulo">🔜 Próximos</div>
+      <div id="proximos"></div>
+
+      <a href="../index.html" class="back">← Volver al Panel Principal</a>
+
+      <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzxjqH9ZoNwj9mho0rUWVQff7b0s7Jgmrm_T8MzvETaVgnlgVcw422AMdtNVURGOp0j3A/exec";
+
+    function agregarCliente() {
+      const patente = document.getElementById("patente").value.trim().toUpperCase();
+      const modelo = document.getElementById("modelo").value.trim().toUpperCase();
+      if (!patente || !modelo) { alert("Por favor completa ambos campos."); return; }
+
+      fetch(`${API_URL}?funcion=agregarCliente&patente=${encodeURIComponent(patente)}&modelo=${encodeURIComponent(modelo)}`)
+        .then(() => {
+          document.getElementById("confirmacion").textContent = "✅ Cliente registrado correctamente.";
+          setTimeout(() => document.getElementById("confirmacion").textContent = "", 3000);
+          document.getElementById("patente").value = "";
+          document.getElementById("modelo").value = "";
+          setTimeout(cargarTurnos, 1000);
+        });
+    }
+
+    function marcarComoListo() {
+      fetch(`${API_URL}?funcion=eliminarPrimero`).then(() => setTimeout(cargarTurnos, 1000));
+    }
+
+    function cargarTurnos() {
+      fetch(`${API_URL}?funcion=obtenerClientes`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data || !data.length) {
+            document.getElementById("contadorTotal").textContent = `🚘 Autos en espera: 0`;
+            document.getElementById("patenteActual").textContent = "---";
+            document.getElementById("modeloActual").textContent = "---";
+            document.getElementById("proximos").innerHTML = "";
+            return;
+          }
+
+          const total = data.length;
+          document.getElementById("contadorTotal").textContent = `🚘 Autos en espera: ${total}`;
+
+          const actual = data[0];
+          const siguientes = data.slice(1, 3);
+
+          document.getElementById("patenteActual").textContent = actual.Patente || "-";
+          document.getElementById("modeloActual").textContent = actual.Modelo || "-";
+
+          const div = document.getElementById("proximos");
+          div.innerHTML = "";
+          siguientes.forEach(c => {
+            const p = document.createElement("div");
+            p.className = "proximo";
+            p.innerHTML = `🚗 <strong>${c.Patente}</strong> - ${c.Modelo}`;
+            div.appendChild(p);
+          });
+        });
+    }
+
+    setInterval(cargarTurnos, 3000);
+    cargarTurnos();
+  </script>
+</body>
+</html>

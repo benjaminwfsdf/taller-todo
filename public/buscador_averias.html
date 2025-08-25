@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="img/scanner.png">
+  <title>Asistente del Taller</title>
+  <style>
+    :root{
+      --brand:#900000; --ink:#e9ecef; --bg:#0b0b0c; --panel:#0f0f11; --card:#16181b; --card-border:#272a2f; --radius:16px;
+    }
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    .topbar{background:#000;color:#fff;text-align:center;padding:14px 10px;font-weight:800;border-bottom:4px solid var(--brand)}
+    .wrapper{max-width:700px;margin:28px auto 44px;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:22px}
+    h1{text-align:center;margin:0 0 14px 0}
+    label{display:block;margin:6px 0 6px 0;font-weight:800;color:#fff}
+    textarea{width:100%;height:80px;padding:12px 14px;border:1px solid #32363d;border-radius:10px;background:#101215;color:#e8edf3;font-size:16px;resize:none;box-sizing:border-box}
+    .btn{width:100%;margin-top:12px;appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;color:#fff;background:#0c0c0e;border:2px solid var(--brand);box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(144,0,0,.25);transition:background .2s,transform .12s}
+    .btn:hover{background:var(--brand)}
+    .respuesta{margin-top:14px;background:#0f1114;border:1px solid #2b2f35;border-radius:12px;padding:14px;min-height:90px;white-space:pre-wrap}
+    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:16px 0 0}
+  </style>
+</head>
+<body>
+  <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="wrapper">
+    <div class="card">
+      <h1>🏎️ Buscador de Códigos OBD2</h1>
+      <label for="pregunta">Escribe un código (ej: P0420):</label>
+      <textarea id="pregunta" placeholder="Ej: P0420" maxlength="5" required></textarea>
+      <button class="btn" onclick="consultarCodigo()">Consultar</button>
+      <div class="respuesta" id="respuesta">La respuesta aparecerá aquí...</div>
+    </div>
+
+    <div class="footer">© 2025 Benjamin González. Todos los derechos reservados.</div>
+  </div>
+
+  <script>
+    const codigosOBD2 = {
+      "P0420":"Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
+      "P0171":"Sistema demasiado pobre (Banco 1)",
+      "P0300":"Falla de encendido aleatoria o múltiple",
+      "P0113":"Sensor de temperatura del aire de admisión - entrada alta",
+      "P0340":"Circuito del sensor de posición del árbol de levas - mal funcionamiento",
+      "P0335":"Sensor de posición del cigüeñal - circuito defectuoso",
+      "P0128":"Termostato del refrigerante - temperatura de funcionamiento por debajo del regulado",
+      "P0172":"Sistema demasiado rico (Banco 1)",
+      "P0011":"Posición del árbol de levas A - tiempo adelantado o rendimiento del sistema (Banco 1)",
+      "P0016":"Sensor de posición del cigüeñal - correlación con el árbol de levas (Banco 1)",
+      "P0102":"Sensor MAF - entrada baja",
+      "P0135":"Sensor de oxígeno (Banco 1 Sensor 1) - calentador - mal funcionamiento del circuito",
+      "P0299":"Presión del turbo/sobrealimentador por debajo del límite",
+      "P0301":"Fallo de encendido del cilindro 1",
+      "P0401":"Flujo insuficiente en el sistema EGR",
+      "P0430":"Eficiencia del sistema de catalizador por debajo del umbral (Banco 2)",
+      "P0087":"Presión de combustible/raíl - demasiado baja",
+      "P0101":"Sensor MAF - rango/rendimiento",
+      "P0141":"Sensor de oxígeno (Banco 1 Sensor 2) - calentador - mal funcionamiento del circuito"
+      // … (dejé varias más en tu versión larga; puedes mantenerlas si lo deseas)
+    };
+
+    function consultarCodigo() {
+      const entrada = document.getElementById("pregunta").value.trim().toUpperCase();
+      const respuesta = document.getElementById("respuesta");
+
+      const match = entrada.match(/^[A-Z]\d{4}$/i);
+      if (!match) {
+        respuesta.textContent = "⚠️ Ingresa un código válido como P0420.";
+        return;
+      }
+
+      const codigo = match[0].toUpperCase();
+      const descripcion = codigosOBD2[codigo];
+      respuesta.textContent = descripcion
+        ? `📟 Código ${codigo}: ${descripcion}`
+        : `⚠️ Código ${codigo} no encontrado en la base de datos.`;
+    }
+  </script>
+</body>
+</html>

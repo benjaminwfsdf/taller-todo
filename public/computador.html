@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Computadora</title>
+  <link rel="icon" type="image/png" href="img/scanner.png">
+  <style>
+    :root{
+      --brand:#900000;
+      --brand-900:#700000;
+      --ink:#e9ecef;
+      --muted:#b9c0c7;
+      --bg:#0b0b0c;
+      --panel:#0f0f11;
+      --card:#16181b;
+      --card-border:#272a2f;
+      --shadow:0 10px 28px rgba(0,0,0,.45);
+      --radius:16px;
+    }
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+      background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.55;
+    }
+    .topbar{background:#000;color:#fff;text-align:center;padding:14px 10px;font-weight:700;letter-spacing:.6px;border-bottom:4px solid var(--brand);}
+    .wrapper{max-width:900px;margin:28px auto 44px;padding:0 16px;}
+    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow);}
+    .header{margin:10px;background:var(--brand);color:#fff;border-radius:18px;padding:18px 22px;text-align:center;box-shadow:0 10px 22px rgba(144,0,0,.35);}
+    .header h1{margin:0;font-size:clamp(20px,3.2vw,28px);letter-spacing:.5px;}
+    .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:20px;margin:12px;}
+    label{display:block;margin:14px 0 6px;font-weight:700;color:#f5f7fa;}
+    input,textarea{
+      width:100%;padding:12px 14px;border:1px solid #32363d;border-radius:10px;background:#101215;
+      color:#e8edf3;font-size:16px;box-sizing:border-box;
+    }
+    input::placeholder,textarea::placeholder{color:#8b94a3}
+    textarea{resize:vertical}
+    .row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;justify-content:center}
+    .btn{
+      appearance:none;border:0;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer;
+      transition:transform .12s ease,box-shadow .2s ease,background .2s ease,color .2s ease,border-color .2s ease;
+      color:#fff;background:#0c0c0e;border:2px solid var(--brand);box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(144,0,0,.25);text-decoration:none;display:inline-block;
+    }
+    .btn:hover{background:var(--brand);box-shadow:0 4px 10px rgba(144,0,0,.35);}
+    .btn:active{transform:translateY(1px)}
+    .btn-secondary{background:#15171b}
+    .status{margin:12px;text-align:center;font-weight:800}
+    .status.ok{color:#3ddc97}
+    .status.err{color:#ff6b6b}
+    .footer{text-align:center;color:#8c96a3;font-size:12px;margin: 12px 0 0;}
+  </style>
+</head>
+<body>
+  <script>
+    const claveCorrecta = "computador@";
+    const ingreso = prompt("🔐 Ingresa la clave para acceder:");
+    if (ingreso !== claveCorrecta) {
+      alert("❌ Clave incorrecta. Acceso denegado.");
+      window.location.href = "https://www.elsenordelosescaner.cl/";
+    }
+  </script>
+
+  <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="wrapper">
+    <div class="frame">
+      <div class="header"><h1>Registrar Computadora de Auto</h1></div>
+
+      <div class="card">
+        <label>Patente del Auto</label>
+        <input id="patente" placeholder="ABCD12" style="text-transform:uppercase">
+
+        <label>¿Qué se le hará a la computadora?</label>
+        <textarea id="descripcion" rows="3" placeholder="LIMPIEZA, REPROGRAMACIÓN, CAMBIO DE CHIP..." style="text-transform:uppercase"></textarea>
+
+        <label>Códigos de Avería</label>
+        <textarea id="codigos" rows="3" placeholder="P0300, P0171, P0420..." style="text-transform:uppercase"></textarea>
+
+        <label>Número del Dueño (opcional)</label>
+        <input id="telefono" placeholder="+56 9 XXXXXXXX">
+
+        <label>Tipo de Computadora (opcional)</label>
+        <input id="tipo" placeholder="ECU, TCM, BCM..." style="text-transform:uppercase">
+
+        <div class="row-actions">
+          <button class="btn" onclick="guardarDatos()">Guardar</button>
+          <a class="btn btn-secondary" href="buscar_computadores.html">Buscar computador</a>
+          <a class="btn btn-secondary" href="index.html">← Volver al Menú Principal</a>
+        </div>
+
+        <div id="msg" class="status"></div>
+      </div>
+
+      <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
+    </div>
+  </div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycby8WBaWWAnXmBQNnKcRolzpC9zTYs5E0WTtv4AHrwycRlGboHoNZetBuuT-zxwbLHJMtQ/exec';
+
+  async function guardarDatos() {
+    const patente      = document.getElementById('patente').value.trim().toUpperCase();
+    const descripcion  = document.getElementById('descripcion').value.trim().toUpperCase();
+    const codigos      = document.getElementById('codigos').value.trim().toUpperCase();
+    const telefono     = document.getElementById('telefono').value.trim();
+    const tipo         = document.getElementById('tipo').value.trim().toUpperCase();
+    const msg          = document.getElementById('msg');
+
+    if (!patente || !descripcion || !codigos) {
+      msg.className = 'status err';
+      msg.textContent = '⚠️ Completa patente, descripción y códigos.';
+      return;
+    }
+
+    const payload = new URLSearchParams({
+      accion: 'agregarComputador',
+      patente, descripcion, codigos, telefono, tipo
+    });
+
+    try {
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+        body: payload
+      });
+
+      msg.className = 'status ok';
+      msg.textContent = '✅ Información enviada para guardar.';
+      ['patente','descripcion','codigos','telefono','tipo'].forEach(id => document.getElementById(id).value = '');
+    } catch (err) {
+      console.error(err);
+      msg.className = 'status err';
+      msg.textContent = '❌ Error al enviar.';
+    }
+  }
+</script>
+</body>
+</html>

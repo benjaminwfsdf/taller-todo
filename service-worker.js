@@ -1,33 +1,34 @@
 // app/service-worker.js
-const VERSION = "v1.0.1";
+const VERSION = "v1.0.6";  // súbela en 1
+
 const PRECACHE = `precache-${VERSION}`;
 const RUNTIME  = `runtime-${VERSION}`;
 
 const PRECACHE_URLS = [
   // HTML
-  "/app/index.html",
-  "/app/agregar.html",
-  "/app/buscador_averias.html",
-  "/app/buscar_computadores.html",
-  "/app/buscar_dpf.html",
-  "/app/buscar.html",
-  "/app/cliente.html",
-  "/app/clientes_turno.html",
-  "/app/computador.html",
-  "/app/dpf_cosas.html",
-  "/app/dpf_off.html",
-  "/app/estado.html",
-  "/app/gestion_autos.html",
-  "/app/informes.html",
-  "/app/panel_clientes.html",
+  "/index.html",
+  "agregar.html",
+  "buscador_averias.html",
+  "buscar_computadores.html",
+  "buscar_dpf.html",
+  "buscar.html",
+  "cliente.html",
+  "clientes_turno.html",
+  "computador.html",
+  "dpf_cosas.html",
+  "dpf_off.html",
+  "estado.html",
+  "gestion_autos.html",
+  "informes.html",
+  "panel_clientes.html",
 
   // Iconos
-  "/app/icons/icon-192.png",
-  "/app/icons/icon-512.png",
+  "icons/icon-192.png",
+  "icons/icon-512.png",
 
   // Otros
-  "/app/img/scanner.png",
-  "/app/manifest.json"
+  "img/scanner.png",
+  "manifest.json"
 ];
 
 self.addEventListener("install", (event) => {

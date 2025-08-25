@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="img/scanner.png">
+  <title>Panel Principal</title>
+  <style>
+    :root{
+  --brand:#900000; /* nuevo rojo */
+  --brand-900:#700000; /* tono más oscuro opcional */
+  --ink:#e9ecef;
+  --muted:#b9c0c7;
+  --bg:#0b0b0c;
+  --panel:#0f0f11;
+  --card:#16181b;
+  --card-border:#272a2f;
+  --shadow:0 10px 28px rgba(0,0,0,.45);
+  --shadow-hover:0 14px 40px rgba(0,0,0,.6);
+  --radius:16px;
+}
+
+
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none!important;transition:none!important}
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.55;
+    }
+
+    /* Barra superior */
+    .topbar{
+      background:#000;
+      color:#fff;
+      text-align:center;
+      padding:14px 10px;
+      font-weight:700;
+      letter-spacing:.6px;
+      border-bottom:4px solid var(--brand);
+      box-shadow: 0 6px 16px rgba(0,0,0,.55);
+    }
+
+    /* Contenedor central con borde */
+    .wrapper{
+      max-width: 1100px;
+      margin: 28px auto 44px;
+      padding: 0 16px;
+    }
+    .frame{
+      border: 3px solid var(--brand);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    /* Header rojo */
+    .header{
+      margin: 10px;
+      background: var(--brand);
+      color:#fff;
+      border-radius: 18px;
+      padding: 20px 24px;
+      text-align:center;
+      box-shadow: 0 10px 22px rgba(179,0,0,.35);
+    }
+    .header h1{
+      margin:0;
+      font-size: clamp(20px, 3.2vw, 28px);
+      letter-spacing:.5px;
+    }
+
+    /* Grid de tarjetas */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 20px;
+      padding: 12px;
+    }
+    @media (max-width: 900px){
+      .grid{grid-template-columns: 1fr;}
+    }
+
+    /* Tarjeta */
+    .card{
+      position: relative;
+      background: var(--card);
+      border:1px solid var(--card-border);
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.35);
+      padding: 18px 18px 16px 18px;
+      display:flex;
+      gap:16px;
+      align-items:flex-start;
+      isolation:isolate;
+      transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:0 auto 0 0;
+      width:8px;
+      border-radius: 14px 0 0 14px;
+      background: var(--brand);
+    }
+    .card:hover{
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+      border-color:#32363d;
+      background:#191c20;
+    }
+
+    .icon{
+      flex:0 0 44px;
+      height:44px;
+      border-radius: 12px;
+      display:grid;
+      place-items:center;
+      background: #0c0c0e;
+      border:2px solid var(--brand);
+      color:#fff;
+      font-size:22px;
+      margin-left: 6px;
+      box-shadow: inset 0 0 12px rgba(179,0,0,.35);
+    }
+
+    .content{ flex:1 1 auto; min-width:0; }
+    .title{
+      margin:0 0 6px;
+      font-size: clamp(16px, 2.2vw, 18px);
+      font-weight:800;
+      letter-spacing:.2px;
+      color:#f5f7fa;
+    }
+    .desc{ margin:0; color: var(--muted); font-size:14.5px; }
+
+    .actions{ display:flex; align-items:center; gap:10px; margin-left:auto; }
+    .btn{
+      appearance:none;
+      border:0;
+      border-radius: 12px;
+      padding:10px 16px;
+      font-weight:800;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+      text-decoration:none;
+      display:inline-block;
+      color:#fff;
+      background:#0c0c0e;
+      border:2px solid var(--brand);
+      box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(179,0,0,.25);
+    }
+    .btn:hover{
+      background: var(--brand);
+      color:#fff;
+      box-shadow: 0 4px 10px rgba(179,0,0,.35);
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn:focus-visible{
+      outline: 3px solid #fff2;
+      outline-offset: 2px;
+    }
+
+    /* Footer */
+    .footer{
+      text-align:center;
+      color:#8c96a3;
+      font-size:12px;
+      margin: 20px 0 32px;
+    }
+    .footer strong{ color:#cfd6de; }
+  </style>
+</head>
+<body>
+  <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="wrapper">
+    <div class="frame">
+      <div class="header">
+        <h1>Panel Principal</h1>
+      </div>
+
+      <div class="grid" role="list">
+        <!-- Gestión de Vehículos -->
+        <article class="card" role="listitem">
+          <div class="icon">🚗</div>
+          <div class="content">
+            <h2 class="title">Gestión de Vehículos</h2>
+            <p class="desc">Añadir, buscar y actualizar el estado de los autos del taller.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="gestion_autos.html">Abrir</a>
+          </div>
+        </article>
+
+        <!-- Diagnóstico Computadoras -->
+        <article class="card" role="listitem">
+          <div class="icon">💻</div>
+          <div class="content">
+            <h2 class="title">Diagnóstico Computadoras</h2>
+            <p class="desc">Registro y consulta de ECUs/BCMs, fallas y reparaciones.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="computador.html">Abrir</a>
+          </div>
+        </article>
+
+        <!-- Informes de Diagnóstico -->
+        <article class="card" role="listitem">
+          <div class="icon">📄</div>
+          <div class="content">
+            <h2 class="title">Informes de Diagnóstico</h2>
+            <p class="desc">Crear informes. Se abre en una pestaña nueva.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="https://taller-todo.vercel.app/informes.html">Abrir</a>
+          </div>
+        </article>
+
+        <!-- Orden de llegada -->
+        <article class="card" role="listitem">
+          <div class="icon">🕰️</div>
+          <div class="content">
+            <h2 class="title">Orden de llegada</h2>
+            <p class="desc">Gestión de turnos de clientes por orden de ingreso.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="clientes_turno.html">Abrir</a>
+          </div>
+        </article>
+
+        <!-- Panel clientes -->
+        <article class="card" role="listitem">
+          <div class="icon">🧾</div>
+          <div class="content">
+            <h2 class="title">Panel clientes (Orden)</h2>
+            <p class="desc">Vista pública para que el cliente vea su turno.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="panel_clientes.html">Abrir</a>
+          </div>
+        </article>
+
+        <!-- Buscador de códigos -->
+        <article class="card" role="listitem">
+          <div class="icon">🏎️</div>
+          <div class="content">
+            <h2 class="title">Buscador de códigos</h2>
+            <p class="desc">Consulta rápida de DTC y descripciones.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="buscador_averias.html">Abrir</a>
+          </div>
+        </article>
+
+        <!-- Patentes Chile -->
+        <article class="card" role="listitem">
+          <div class="icon">🔢</div>
+          <div class="content">
+            <h2 class="title">Patentes Chile</h2>
+            <p class="desc">Consulta externa de información por patente.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="https://www.patentechile.com/" target="_blank" rel="noopener">Abrir</a>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
+  </div>
+</body>
+</html>

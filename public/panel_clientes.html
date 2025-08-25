@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="img/scanner.png">
+  <title>Turnos en Espera</title>
+  <style>
+    :root{
+      --brand:#900000; --brand-900:#700000;
+      --ink:#e9ecef; --muted:#b9c0c7;
+      --bg:#0b0b0c; --panel:#0f0f11;
+      --card:#16181b; --card-border:#272a2f;
+      --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.45);
+      --ok:#3ddc97; --warn:#ffbc49;
+    }
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.55}
+    .topbar{background:#000;color:#fff;text-align:center;padding:14px 10px;font-weight:800;letter-spacing:.6px;border-bottom:4px solid var(--brand)}
+    .wrapper{max-width:900px;margin:28px auto 44px;padding:0 16px}
+    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow)}
+    .header{margin:10px;background:var(--brand);color:#fff;border-radius:18px;padding:18px 22px;text-align:center;box-shadow:0 10px 22px rgba(144,0,0,.35)}
+    .header h1{margin:0;font-size:clamp(22px,3.2vw,30px)}
+    .h2{margin:10px 0 6px 0;color:#fff;opacity:.9;font-weight:900;text-align:center}
+    .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;margin:12px auto;max-width:620px}
+    .patente{font-weight:900;letter-spacing:.5px}
+    .atendiendo .patente{font-size:40px;color:var(--ok);text-align:center}
+    .proximo .patente{font-size:24px;color:#fff;text-align:center}
+    .modelo{text-align:center;margin-top:8px;color:#cfd6de}
+    .muted{text-align:center;color:var(--muted)}
+    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:6px 0 0}
+    .fs{position:fixed;bottom:18px;right:18px;z-index:9999;padding:10px 14px;font-size:18px;background:#0c0c0e;color:#fff;border:2px solid var(--brand);border-radius:50%;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.5)}
+  </style>
+</head>
+<body>
+  <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="wrapper">
+    <div class="frame">
+      <div class="header"><h1>🔧 Turnos en Espera</h1></div>
+
+      <button class="fs" onclick="activarPantallaCompleta()">🔲</button>
+      <div id="totalPendientes" class="muted">Autos en espera: 0</div>
+
+      <div id="actual"></div>
+      <div class="h2">🔜 Próximos</div>
+      <div id="siguientes"></div>
+
+      <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbx9IohpNqpxDdqTHrsNqa8gBzwn9w3CHC53JyubyXir6vIqf2LO1SBFxo0AMNVuMPAO8A/exec";
+
+    async function obtenerClientes() {
+      try {
+        const res = await fetch(`${API_URL}?funcion=obtenerClientes`);
+        return await res.json();
+      } catch (err) {
+        console.error("Error al obtener clientes", err);
+        return [];
+      }
+    }
+
+    async function actualizarVista() {
+      const lista = await obtenerClientes();
+      const actual = document.getElementById("actual");
+      const siguientes = document.getElementById("siguientes");
+      const totalPendientes = document.getElementById("totalPendientes");
+
+      actual.innerHTML = ""; siguientes.innerHTML = ""; totalPendientes.textContent = "";
+
+      if (!lista.length) {
+        actual.innerHTML = `<div class="card muted">No hay clientes en espera 🚫</div>`;
+        totalPendientes.textContent = "Autos en espera: 0";
+        return;
+      }
+
+      // Cliente actual
+      const cliente = lista[0];
+      const bloqueActual = document.createElement("div");
+      bloqueActual.className = "card atendiendo";
+      bloqueActual.innerHTML = `
+        <div class="patente">🚗 ${cliente["Patente"]}</div>
+        <div class="modelo">Modelo: ${cliente["Modelo"] || "-"}</div>
+      `;
+      actual.appendChild(bloqueActual);
+
+      totalPendientes.textContent = `Autos en espera: ${lista.length - 1}`;
+
+      // Próximos 2
+      lista.slice(1, 3).forEach(c => {
+        const div = document.createElement("div");
+        div.className = "card proximo";
+        div.innerHTML = `
+          <div class="patente">🚗 ${c["Patente"]}</div>
+          <div class="modelo">Modelo: ${c["Modelo"] || "-"}</div>
+        `;
+        siguientes.appendChild(div);
+      });
+    }
+
+    function activarPantallaCompleta() {
+      const docElm = document.documentElement;
+      if (docElm.requestFullscreen) docElm.requestFullscreen();
+      else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
+      else if (docElm.mozRequestFullScreen) docElm.mozRequestFullScreen();
+      else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
+    }
+
+    setInterval(actualizarVista, 3000);
+    actualizarVista();
+  </script>
+</body>
+</html>

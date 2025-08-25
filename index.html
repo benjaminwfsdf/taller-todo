@@ -3,41 +3,39 @@
 <head>
   <link rel="manifest" href="manifest.json">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taller">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Taller">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#000000">
 
-<meta name="theme-color" content="#000000">
-
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("service-worker.js");
-    });
-  }
-</script>
-
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js");
+      });
+    }
+  </script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="img/scanner.png">
   <title>Panel Principal</title>
+
   <style>
     :root{
-  --brand:#900000; /* nuevo rojo */
-  --brand-900:#700000; /* tono más oscuro opcional */
-  --ink:#e9ecef;
-  --muted:#b9c0c7;
-  --bg:#0b0b0c;
-  --panel:#0f0f11;
-  --card:#16181b;
-  --card-border:#272a2f;
-  --shadow:0 10px 28px rgba(0,0,0,.45);
-  --shadow-hover:0 14px 40px rgba(0,0,0,.6);
-  --radius:16px;
-}
-
+      --brand:#900000; /* nuevo rojo */
+      --brand-900:#700000; /* tono más oscuro opcional */
+      --ink:#e9ecef;
+      --muted:#b9c0c7;
+      --bg:#0b0b0c;
+      --panel:#0f0f11;
+      --card:#16181b;
+      --card-border:#272a2f;
+      --shadow:0 10px 28px rgba(0,0,0,.45);
+      --shadow-hover:0 14px 40px rgba(0,0,0,.6);
+      --radius:16px;
+    }
 
     @media (prefers-reduced-motion: reduce){
       *{animation:none!important;transition:none!important}
@@ -186,6 +184,19 @@
       outline-offset: 2px;
     }
 
+    /* Variante compacta para enlaces dentro del texto (opcional) */
+    .btn-inline{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:.35rem .75rem;
+      border-radius:12px;
+      border:2px solid var(--brand);
+      background:#0c0c0e;
+      color:#fff; text-decoration:none; font-weight:800;
+      box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 10px rgba(179,0,0,.2);
+    }
+    .btn-inline:hover{ background:var(--brand); }
+    .btn-inline:visited{ color:#fff; }
+
     /* Footer */
     .footer{
       text-align:center;
@@ -218,30 +229,27 @@
           </div>
         </article>
 
-        <!-- Diagnóstico Computadoras -->
+        <!-- Computadoras -->
         <article class="card" role="listitem">
           <div class="icon">💻</div>
           <div class="content">
-            <h2 class="title"> Computadoras</h2>
-            <p class="desc">Gestión de DPF OFF y registro/consulta de ECUs/BCMs.
-    </p></p>
+            <h2 class="title">Computadoras</h2>
+            <p class="desc">Gestión de DPF OFF y registro/consulta de ECUs/BCMs.</p>
           </div>
           <div class="actions">
             <a class="btn" href="dpf_off.html">Abrir</a>
           </div>
         </article>
 
-     
-
-        <!-- Informes de Diagnóstico -->
+        <!-- Informes de Diagnóstico (Safari) -->
         <article class="card" role="listitem">
-          <div class="icon">📄</div>
+          <div class="icon">📑</div>
           <div class="content">
             <h2 class="title">Informes de Diagnóstico</h2>
             <p class="desc">Crear informes. Se abre en una pestaña nueva.</p>
           </div>
           <div class="actions">
-            <a class="btn" href="https://taller-todo.vercel.app/informes.html" target="_blank">Abrir</a>
+            <a class="btn" href="informes.html" target="_blank" rel="noopener" data-pwa="external">Abrir</a>
           </div>
         </article>
 
@@ -269,19 +277,19 @@
           </div>
         </article>
 
-        <!-- Buscador de códigos -->
+        <!-- Buscador de códigos (Safari) -->
         <article class="card" role="listitem">
-          <div class="icon">🏎️</div>
+          <div class="icon">🔍</div>
           <div class="content">
             <h2 class="title">Buscador de códigos</h2>
             <p class="desc">Consulta rápida de DTC y descripciones.</p>
           </div>
           <div class="actions">
-            <a class="btn" href="buscador_averias.html"" target="_blank">Abrir</a>
+            <a class="btn" href="buscador_averias.html" target="_blank" rel="noopener" data-pwa="external">Abrir</a>
           </div>
         </article>
 
-        <!-- Patentes Chile -->
+        <!-- Patentes Chile (externo) -->
         <article class="card" role="listitem">
           <div class="icon">🔢</div>
           <div class="content">
@@ -297,5 +305,8 @@
 
     <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
   </div>
+
+  <!-- Mantener navegación dentro de la PWA (y permitir solo los externos marcados) -->
+  <script src="pwa-standalone.js"></script>
 </body>
 </html>
