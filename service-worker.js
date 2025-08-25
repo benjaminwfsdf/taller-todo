@@ -1,12 +1,13 @@
 // app/service-worker.js
-const VERSION = "v1.0.6";  // súbela en 1
+const VERSION = "v1.0.7";
+
 
 const PRECACHE = `precache-${VERSION}`;
 const RUNTIME  = `runtime-${VERSION}`;
 
 const PRECACHE_URLS = [
   // HTML
-  "/index.html",
+  "index.html",
   "agregar.html",
   "buscador_averias.html",
   "buscar_computadores.html",
