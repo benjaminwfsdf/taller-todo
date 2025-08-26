@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <base target="_self">
+
+  <link rel="manifest" href="/manifest.json">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Taller">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<meta name="theme-color" content="#000000">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="img/scanner.png">
@@ -127,5 +137,77 @@
 
     <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
   </div>
+
+  <script>
+(function () {
+  // Actúa solo en la app instalada (PWA)
+  const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!isStandalone) return;
+
+  // ✅ Edita esta lista:
+  // - deja SOLO externos reales (dominios de fuera)
+  // - si de verdad quieres que "informes.html" o "buscador_averias.html" salgan a Safari,
+  //   añádelos aquí también.
+  const EXTERN = new Set([
+    'https://www.patentechile.com/',
+    'https://taller-todo.vercel.app/informes.html',
+    'https://taller-todo.vercel.app/buscador_averias.html'
+
+    // 'informes.html',
+    // 'buscador_averias.html'
+  ]);
+
+  const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
+  const sameOrigin = (u) => u && u.origin === location.origin;
+  const fileName = (u) => u ? u.pathname.split('/').pop() : '';
+  const go = (u) => location.assign(u.pathname + u.search + u.hash);
+
+  // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]'); if (!a) return;
+    if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
+    const u = toURL(a.getAttribute('href')); if (!u) return;
+
+    const isExternalWhitelisted =
+      EXTERN.has(u.href) || EXTERN.has(fileName(u));
+
+    if (sameOrigin(u) && !isExternalWhitelisted) {
+      e.preventDefault();
+      go(u);
+    }
+    // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
+  }, true); // captura para adelantarnos a handlers que modifiquen target
+
+  // 2) window.open internos -> misma ventana (salvo EXTERN)
+  const _open = window.open;
+  window.open = function (url, target, features) {
+    const u = toURL(url);
+    const isExternalWhitelisted =
+      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+    if (sameOrigin(u) && !isExternalWhitelisted) {
+      go(u);
+      return null;
+    }
+    return _open.call(window, url, target, features);
+  };
+
+  // 3) Formularios internos -> _self
+  document.addEventListener('submit', (e) => {
+    const f = e.target;
+    if (!(f && f.tagName === 'FORM')) return;
+    const u = toURL(f.getAttribute('action') || location.href);
+    if (sameOrigin(u)) f.target = '_self';
+  }, true);
+
+  // 4) Limpieza: si quedó algún _blank interno por error, quítalo
+  document.querySelectorAll('a[target="_blank"]').forEach((a) => {
+    const u = toURL(a.getAttribute('href'));
+    const isExternalWhitelisted =
+      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+    if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
+  });
+})();
+</script>
+
 </body>
 </html>
