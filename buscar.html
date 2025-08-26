@@ -3,7 +3,7 @@
 <head>
   <base target="_self">
 
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="/manifest.json">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -79,106 +79,73 @@
   </div>
 
   <script>
-    const tipo = new URLSearchParams(window.location.search).get('tipo');
-    const etiqueta = document.getElementById('etiqueta');
-    const input = document.getElementById('valor');
-
-    const campoSheets = { patente: "Patente", nombre: "Nombre", telefono: "Teléfono" };
-
-    if (tipo === 'patente') {
-      etiqueta.textContent = 'Buscar por Patente:';
-      input.placeholder = 'Escribe la patente';
-    } else if (tipo === 'nombre') {
-      etiqueta.textContent = 'Buscar por Nombre del Dueño:';
-      input.placeholder = 'Escribe el nombre del dueño';
-    } else if (tipo === 'telefono') {
-      etiqueta.textContent = 'Buscar por Teléfono del Dueño:';
-      input.placeholder = '+56 9 XXXXXXXX';
-      input.value = '+56 9 ';
-      input.setAttribute("maxlength", 14);
-      input.style.textTransform = 'none';
-    }
-
-    async function buscar() {
-      const valor = input.value.trim().toUpperCase();
-      if (!valor || (tipo === 'telefono' && valor.length !== 14)) {
-        alert("⚠️ Por favor ingresa un dato válido para buscar.");
-        return;
-      }
-
-      try {
-        const respuesta = await fetch("https://script.google.com/macros/s/AKfycbwxpj3-u99NZiHjiRQY-srOG6Xd0uazLd9dVaEL-MS3H77BvwOrSwHZPGKaH-vlMnlkSQ/exec");
-        const datos = await respuesta.json();
-
-        const campo = campoSheets[tipo];
-        if (!campo) { alert("❌ Tipo de búsqueda no válido."); return; }
-
-        const resultado = datos.find(item =>
-          (item[campo] || "").toString().toUpperCase().trim() === valor
-        );
-
-        const contenedor = document.getElementById("resultado");
-        contenedor.style.display = "block";
-
-        if (resultado) {
-          contenedor.innerHTML = `
-            <strong>Nombre:</strong> ${resultado["Nombre"] || "-"}<br>
-            <strong>Teléfono:</strong> ${resultado["Teléfono"] || "-"}<br>
-            <strong>Dirección:</strong> ${resultado["Dirección"] || "-"}<br>
-            <strong>Marca:</strong> ${resultado["Marca"] || "-"}<br>
-            <strong>Modelo:</strong> ${resultado["Modelo"] || "-"}<br>
-            <strong>Patente:</strong> ${resultado["Patente"] || "-"}<br>
-          `;
-        } else {
-          contenedor.innerHTML = `<strong>No se encontró ningún resultado con ese dato.</strong>`;
-        }
-
-      } catch (error) {
-        alert("❌ Error al conectarse a la base de datos.");
-        console.error(error);
-      }
-    }
-  </script>
-  
-<script>
 (function () {
+  // Actúa solo en la app instalada (PWA)
   const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   if (!isStandalone) return;
 
-  // Aquí pon lo que SÍ quieres que salga a Safari
-  const EXTERN = new Set(['informes.html','buscador_averias.html']);
+  // ✅ Edita esta lista:
+  // - deja SOLO externos reales (dominios de fuera)
+  // - si de verdad quieres que "informes.html" o "buscador_averias.html" salgan a Safari,
+  //   añádelos aquí también.
+  const EXTERN = new Set([
+    'https://www.patentechile.com/',
+    'https://taller-todo.vercel.app/informes.html',
+    'https://taller-todo.vercel.app/buscador_averias.html'
 
-  const toURL = h => { try { return new URL(h, location.href); } catch { return null; } };
-  const sameOrigin = u => u && u.origin === location.origin;
-  const fileName = u => u ? u.pathname.split('/').pop() : '';
-  const go = u => location.assign(u.pathname + u.search + u.hash);
+    // 'informes.html',
+    // 'buscador_averias.html'
+  ]);
 
-  // Enlaces <a>: internos -> misma ventana
-  document.addEventListener('click', e => {
+  const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
+  const sameOrigin = (u) => u && u.origin === location.origin;
+  const fileName = (u) => u ? u.pathname.split('/').pop() : '';
+  const go = (u) => location.assign(u.pathname + u.search + u.hash);
+
+  // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
+  document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href]'); if (!a) return;
     if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
     const u = toURL(a.getAttribute('href')); if (!u) return;
-    const interno = sameOrigin(u);
-    const whitelisted = EXTERN.has(fileName(u)) || EXTERN.has(u.href);
-    if (interno && !whitelisted) { e.preventDefault(); go(u); }
-  }, true);
 
-  // window.open interno -> misma ventana
+    const isExternalWhitelisted =
+      EXTERN.has(u.href) || EXTERN.has(fileName(u));
+
+    if (sameOrigin(u) && !isExternalWhitelisted) {
+      e.preventDefault();
+      go(u);
+    }
+    // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
+  }, true); // captura para adelantarnos a handlers que modifiquen target
+
+  // 2) window.open internos -> misma ventana (salvo EXTERN)
   const _open = window.open;
   window.open = function (url, target, features) {
     const u = toURL(url);
-    const interno = sameOrigin(u);
-    const whitelisted = EXTERN.has(fileName(u)) || EXTERN.has(u?.href);
-    if (interno && !whitelisted) { go(u); return null; }
+    const isExternalWhitelisted =
+      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+    if (sameOrigin(u) && !isExternalWhitelisted) {
+      go(u);
+      return null;
+    }
     return _open.call(window, url, target, features);
   };
 
-  // Formularios internos -> _self
-  document.addEventListener('submit', e => {
-    const f = e.target; if (!(f && f.tagName === 'FORM')) return;
+  // 3) Formularios internos -> _self
+  document.addEventListener('submit', (e) => {
+    const f = e.target;
+    if (!(f && f.tagName === 'FORM')) return;
     const u = toURL(f.getAttribute('action') || location.href);
     if (sameOrigin(u)) f.target = '_self';
   }, true);
+
+  // 4) Limpieza: si quedó algún _blank interno por error, quítalo
+  document.querySelectorAll('a[target="_blank"]').forEach((a) => {
+    const u = toURL(a.getAttribute('href'));
+    const isExternalWhitelisted =
+      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+    if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
+  });
 })();
 </script>
 
