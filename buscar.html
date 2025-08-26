@@ -1,27 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <base target="_self">
-
-  <link rel="manifest" href="/manifest.json">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taller">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-
-<meta name="theme-color" content="#000000">
-
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="img/scanner.png">
   <title>Buscar Vehículo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root{
-      --brand:#900000; --brand-900:#700000;
-      --ink:#e9ecef; --muted:#b9c0c7;
-      --bg:#0b0b0c; --panel:#0f0f11;
-      --card:#16181b; --card-border:#272a2f;
+      --brand:#900000; --brand-900:#700000; --ink:#e9ecef; --muted:#b9c0c7;
+      --bg:#0b0b0c; --panel:#0f0f11; --card:#16181b; --card-border:#272a2f;
       --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.45);
     }
     html,body{height:100%}
@@ -35,7 +22,7 @@
     label{display:block;margin:8px 0 6px;font-weight:800}
     input{
       width:100%;padding:12px 14px;border:1px solid #32363d;border-radius:10px;background:#101215;
-      color:#e8edf3;font-size:16px;box-sizing:border-box;text-transform:uppercase;
+      color:#e8edf3;font-size:16px;box-sizing:border-box;
     }
     .btn{
       width:100%;margin-top:14px;appearance:none;border:0;border-radius:12px;padding:12px 16px;
@@ -44,9 +31,7 @@
     }
     .btn:hover{background:var(--brand);box-shadow:0 4px 10px rgba(144,0,0,.35)}
     .btn:active{transform:translateY(1px)}
-    .result{
-      margin-top:16px;background:#0f1114;border:1px solid #2b2f35;border-radius:12px;padding:14px;color:#cfd6de
-    }
+    .result{margin-top:16px;background:#0f1114;border:1px solid #2b2f35;border-radius:12px;padding:14px;color:#cfd6de}
     .result strong{display:inline-block;min-width:140px;color:#fff}
     .back{display:block;margin-top:18px;text-align:center;text-decoration:none;padding:12px;border-radius:12px;border:2px solid var(--brand);background:#15171b;color:#fff;font-weight:800}
     .back:hover{background:var(--brand)}
@@ -54,9 +39,16 @@
   </style>
 </head>
 
-
-
 <body>
+  <script>
+    const CLAVE = "informes@";
+    const ingreso = prompt("🔐 Ingresa la clave para acceder:");
+    if (ingreso !== CLAVE) {
+      alert("❌ Clave incorrecta. Acceso denegado.");
+      location.href = "https://www.elsenordelosescaner.cl/";
+    }
+  </script>
+
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
   <div class="wrapper">
@@ -66,7 +58,6 @@
       <div class="card">
         <label id="etiqueta">Buscar por:</label>
         <input type="text" id="valor" placeholder="">
-
         <button class="btn" onclick="buscar()">Buscar</button>
 
         <div id="resultado" class="result" style="display:none;"></div>
@@ -79,75 +70,119 @@
   </div>
 
   <script>
-(function () {
-  // Actúa solo en la app instalada (PWA)
-  const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if (!isStandalone) return;
+    // ====== CONFIG ======
+    const API_URL = "https://script.google.com/macros/s/AKfycbwxpj3-u99NZiHjiRQY-srOG6Xd0uazLd9dVaEL-MS3H77BvwOrSwHZPGKaH-vlMnlkSQ/exec";
 
-  // ✅ Edita esta lista:
-  // - deja SOLO externos reales (dominios de fuera)
-  // - si de verdad quieres que "informes.html" o "buscador_averias.html" salgan a Safari,
-  //   añádelos aquí también.
-  const EXTERN = new Set([
-    'https://www.patentechile.com/',
-    'https://taller-todo.vercel.app/informes.html',
-    'https://taller-todo.vercel.app/buscador_averias.html'
+    // Utils
+    const norm = s => String(s ?? '')
+      .normalize('NFD').replace(/\p{Diacritic}/gu,'')  // quita tildes
+      .replace(/\s+/g,' ').trim().toUpperCase();
+    const digits = s => String(s ?? '').replace(/\D+/g,'');
 
-    // 'informes.html',
-    // 'buscador_averias.html'
-  ]);
+    const tipo = new URLSearchParams(location.search).get('tipo') || 'patente';
+    const $et = document.getElementById('etiqueta');
+    const $in = document.getElementById('valor');
+    const $out = document.getElementById('resultado');
 
-  const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
-  const sameOrigin = (u) => u && u.origin === location.origin;
-  const fileName = (u) => u ? u.pathname.split('/').pop() : '';
-  const go = (u) => location.assign(u.pathname + u.search + u.hash);
+    // UI según tipo
+    (function setupUI(){
+      if (tipo === 'nombre'){
+        $et.textContent = 'Buscar por Nombre del Dueño:';
+        $in.placeholder = 'Escribe el nombre del dueño';
+        $in.style.textTransform = 'none';
+      } else if (tipo === 'telefono'){
+        $et.textContent = 'Buscar por Teléfono del Dueño:';
+        $in.placeholder = 'Ej: +56 9 12345678';
+        $in.style.textTransform = 'none';
+      } else {
+        $et.textContent = 'Buscar por Patente:';
+        $in.placeholder = 'Ej: PHHT84';
+        $in.style.textTransform = 'uppercase';
+      }
+    })();
 
-  // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href]'); if (!a) return;
-    if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
-    const u = toURL(a.getAttribute('href')); if (!u) return;
-
-    const isExternalWhitelisted =
-      EXTERN.has(u.href) || EXTERN.has(fileName(u));
-
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      e.preventDefault();
-      go(u);
-    }
-    // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
-  }, true); // captura para adelantarnos a handlers que modifiquen target
-
-  // 2) window.open internos -> misma ventana (salvo EXTERN)
-  const _open = window.open;
-  window.open = function (url, target, features) {
-    const u = toURL(url);
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      go(u);
+    // Busca una clave en el objeto (tolerante a tildes/variantes)
+    function keyOf(row, guess, aliases=[]){
+      const want = norm(guess);
+      const keys = Object.keys(row);
+      for (const k of keys){ if (norm(k) === want) return k; }
+      for (const a of aliases){
+        const w = norm(a);
+        for (const k of keys){ if (norm(k) === w) return k; }
+      }
+      for (const k of keys){ if (norm(k).includes(want)) return k; }
       return null;
     }
-    return _open.call(window, url, target, features);
-  };
 
-  // 3) Formularios internos -> _self
-  document.addEventListener('submit', (e) => {
-    const f = e.target;
-    if (!(f && f.tagName === 'FORM')) return;
-    const u = toURL(f.getAttribute('action') || location.href);
-    if (sameOrigin(u)) f.target = '_self';
-  }, true);
+    async function buscar(){
+      let v = $in.value.trim();
+      if (!v) { alert('Ingresa un dato para buscar'); return; }
 
-  // 4) Limpieza: si quedó algún _blank interno por error, quítalo
-  document.querySelectorAll('a[target="_blank"]').forEach((a) => {
-    const u = toURL(a.getAttribute('href'));
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-    if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
-  });
-})();
-</script>
+      // Normaliza input según tipo
+      let needle;
+      if (tipo === 'telefono') needle = digits(v);        // solo dígitos
+      else if (tipo === 'nombre') needle = norm(v);       // sin tildes/espacios
+      else needle = norm(v.replace(/[^A-Z0-9]/gi,''));    // patente sin guiones/espacios
 
+      try {
+        const res = await fetch(API_URL, { cache:'no-store' });
+        const rows = await res.json();
+        if (!Array.isArray(rows) || rows.length === 0) throw new Error('Sin datos');
+
+        // Mapear columnas por nombre (tolerante)
+        const K = {
+          NOMBRE   : keyOf(rows[0], 'Nombre',   ['Cliente','Dueño']),
+          TELEFONO : keyOf(rows[0], 'Teléfono', ['Telefono','Celular','Fono','Whatsapp']),
+          DIRECCION: keyOf(rows[0], 'Dirección',['Direccion']),
+          MARCA    : keyOf(rows[0], 'Marca'),
+          MODELO   : keyOf(rows[0], 'Modelo'),
+          PATENTE  : keyOf(rows[0], 'Patente',  ['Placa'])
+        };
+
+        let match = null;
+        for (const r of rows){
+          const nombre  = K.NOMBRE   ? r[K.NOMBRE]   : '';
+          const fono    = K.TELEFONO ? r[K.TELEFONO] : '';
+          const patente = K.PATENTE  ? r[K.PATENTE]  : '';
+
+          if (tipo === 'nombre'){
+            if (norm(nombre).includes(needle)) { match = r; break; }           // parcial
+          } else if (tipo === 'telefono'){
+            const d = digits(fono);
+            if (d === needle || d.endsWith(needle)) { match = r; break; }      // acepta últimos 8
+          } else { // patente
+            const p = norm(String(patente).replace(/\s|-/g,''));
+            if (p === needle) { match = r; break; }                            // exacta normalizada
+          }
+        }
+
+        $out.style.display = 'block';
+        if (!match){
+          $out.innerHTML = `<strong>No se encontró ningún resultado con ese dato.</strong>`;
+          return;
+        }
+
+        // Solo los campos pedidos
+        const nombre = K.NOMBRE    ? (match[K.NOMBRE]    ?? '-') : '-';
+        const tel    = K.TELEFONO  ? (match[K.TELEFONO]  ?? '-') : '-';
+        const dir    = K.DIRECCION ? (match[K.DIRECCION] ?? '-') : '-';
+        const marca  = K.MARCA     ? (match[K.MARCA]     ?? '-') : '-';
+        const modelo = K.MODELO    ? (match[K.MODELO]    ?? '-') : '-';
+        const pat    = K.PATENTE   ? (match[K.PATENTE]   ?? '-') : '-';
+
+        $out.innerHTML = `
+          <strong>Nombre:</strong> ${nombre}<br>
+          <strong>Teléfono:</strong> ${tel}<br>
+          <strong>Dirección:</strong> ${dir}<br>
+          <strong>Marca:</strong> ${marca}<br>
+          <strong>Modelo:</strong> ${modelo}<br>
+          <strong>Patente:</strong> ${pat}
+        `;
+      } catch (e) {
+        console.error(e);
+        alert('❌ Error al conectarse a la base de datos.');
+      }
+    }
+  </script>
 </body>
 </html>

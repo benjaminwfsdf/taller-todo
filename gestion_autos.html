@@ -1,221 +1,48 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <base target="_self">
-
-   <link rel="manifest" href="/manifest.json">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taller">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-
-<meta name="theme-color" content="#000000">
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="img/scanner.png">
   <title>Gestor de Vehículos</title>
   <style>
     :root{
-      --brand:#900000;        /* rojo solicitado */
-      --brand-900:#700000;    /* tono más oscuro opcional */
-      --ink:#e9ecef;          /* texto principal claro */
-      --muted:#b9c0c7;        /* texto secundario */
-      --bg:#0b0b0c;           /* fondo de la página */
-      --panel:#0f0f11;        /* fondo del marco */
-      --card:#16181b;         /* fondo de tarjetas */
-      --card-border:#272a2f;  /* borde de tarjetas */
-      --shadow:0 10px 28px rgba(0,0,0,.45);
-      --shadow-hover:0 14px 40px rgba(0,0,0,.6);
-      --radius:16px;
-      --radius-sm:12px;
+      --brand:#900000; --brand-900:#700000; --ink:#e9ecef; --muted:#b9c0c7;
+      --bg:#0b0b0c; --panel:#0f0f11; --card:#16181b; --card-border:#272a2f;
+      --shadow:0 10px 28px rgba(0,0,0,.45); --shadow-hover:0 14px 40px rgba(0,0,0,.6);
+      --radius:16px; --radius-sm:12px;
     }
-
-    @media (prefers-reduced-motion: reduce){
-      *{animation:none!important;transition:none!important}
-    }
-
-    /* ----- Layout base ----- */
+    @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
     html,body{height:100%}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      -webkit-font-smoothing: antialiased;
-      line-height: 1.55;
-    }
-
-    .topbar{
-      background:#000;
-      color:#fff;
-      text-align:center;
-      padding:14px 10px;
-      font-weight:700;
-      letter-spacing:.6px;
-      border-bottom:4px solid var(--brand);
-      box-shadow: 0 6px 16px rgba(0,0,0,.55);
-    }
-
-    .wrapper{
-      max-width: 1100px;
-      margin: 28px auto 44px;
-      padding: 0 16px;
-    }
-
-    /* Marco con borde */
-    .frame{
-      border: 3px solid var(--brand);
-      border-radius: var(--radius);
-      padding: 20px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-    }
-
-    .header{
-      margin: 10px;
-      background: var(--brand);
-      color:#fff;
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      text-align:center;
-      box-shadow: 0 10px 22px rgba(144,0,0,.35);
-    }
-    .header h1{
-      margin:0;
-      font-size: clamp(20px, 3.2vw, 28px);
-      letter-spacing:.5px;
-    }
-
-    /* ----- Grid de tarjetas ----- */
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: 20px;
-      padding: 12px;
-    }
-    @media (max-width: 900px){
-      .grid{grid-template-columns: 1fr;}
-    }
-
-    /* ----- Tarjeta ----- */
-    .card{
-      position: relative;
-      background: var(--card);
-      border:1px solid var(--card-border);
-      border-radius: var(--radius);
-      box-shadow: 0 6px 18px rgba(0,0,0,.35);
-      padding: 18px 18px 16px 18px;
-      display:flex;
-      gap:16px;
-      align-items:flex-start;
-      isolation:isolate;
-      transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease, background .2s ease;
-    }
-    .card::before{
-      /* franja roja a la izquierda */
-      content:"";
-      position:absolute;
-      inset:0 auto 0 0;
-      width:8px;
-      border-radius: var(--radius) 0 0 var(--radius);
-      background: var(--brand);
-    }
-    .card:hover{
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
-      border-color:#32363d;
-      background:#191c20;
-    }
-
-    .icon{
-      flex:0 0 44px;
-      height:44px;
-      border-radius: 12px;
-      display:grid;
-      place-items:center;
-      background: #0c0c0e;
-      border:2px solid var(--brand);
-      color:#fff;
-      font-size:22px;
-      margin-left: 6px; /* compensa la franja */
-      box-shadow: inset 0 0 12px rgba(144,0,0,.35);
-    }
-
-    .content{
-      flex:1 1 auto;
-      min-width:0;
-    }
-    .title{
-      margin:0 0 6px;
-      font-size: clamp(16px, 2.2vw, 18px);
-      font-weight:800;
-      letter-spacing:.2px;
-      color:#f5f7fa;
-    }
-    .desc{
-      margin:0;
-      color: var(--muted);
-      font-size: 14.5px;
-    }
-
-    .actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-left:auto;
-    }
-    .btn{
-      appearance:none;
-      border:0;
-      border-radius: 12px;
-      padding:10px 16px;
-      font-weight:800;
-      cursor:pointer;
-      transition: transform .12s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
-      box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(144,0,0,.25);
-      text-decoration:none;
-      display:inline-block;
-    }
-    .btn-primary{
-      background:#0c0c0e;
-      color:#fff;
-      border:2px solid var(--brand);
-    }
-    .btn-primary:hover{ background: var(--brand); }
-    .btn:active{ transform: translateY(1px); }
-
-    /* ----- Botón volver ----- */
-    .back{
-      display:inline-block;
-      margin: 10px 10px 0;
-      padding: 10px 14px;
-      border:2px solid var(--brand);
-      border-radius: 12px;
-      background:#0c0c0e;
-      color:#fff;
-      text-decoration:none;
-      font-weight:800;
-      transition: background .2s ease, transform .12s ease;
-      box-shadow: 0 2px 0 rgba(0,0,0,.6);
-    }
-    .back:hover{ background: var(--brand); }
-    .back:active{ transform: translateY(1px); }
-
-    /* ----- Footer ----- */
-    .footer{
-      text-align:center;
-      color:#8c96a3;
-      font-size:12px;
-      margin: 24px 0 40px;
-    }
-    .footer strong{ color:#cfd6de; }
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.55}
+    .topbar{background:#000;color:#fff;text-align:center;padding:14px 10px;font-weight:700;letter-spacing:.6px;border-bottom:4px solid var(--brand);box-shadow:0 6px 16px rgba(0,0,0,.55)}
+    .wrapper{max-width:1100px;margin:28px auto 44px;padding:0 16px}
+    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow)}
+    .header{margin:10px;background:var(--brand);color:#fff;border-radius:var(--radius);padding:20px 24px;text-align:center;box-shadow:0 10px 22px rgba(144,0,0,.35)}
+    .header h1{margin:0;font-size:clamp(20px,3.2vw,28px);letter-spacing:.5px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding:12px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{position:relative;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;display:flex;gap:16px;align-items:flex-start;transition:box-shadow .2s,transform .2s,border-color .2s,background .2s}
+    .card::before{content:"";position:absolute;inset:0 auto 0 0;width:8px;border-radius:var(--radius) 0 0 var(--radius);background:var(--brand)}
+    .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);border-color:#32363d;background:#191c20}
+    .icon{flex:0 0 44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#0c0c0e;border:2px solid var(--brand);color:#fff;font-size:22px;margin-left:6px;box-shadow:inset 0 0 12px rgba(144,0,0,.35)}
+    .content{flex:1 1 auto;min-width:0}
+    .title{margin:0 0 6px;font-size:clamp(16px,2.2vw,18px);font-weight:800;letter-spacing:.2px;color:#f5f7fa}
+    .desc{margin:0;color:var(--muted);font-size:14.5px}
+    .actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+    .btn{appearance:none;border:0;border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer;transition:transform .12s,box-shadow .2s,background .2s,color .2s,border-color .2s;box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(144,0,0,.25);text-decoration:none;display:inline-block}
+    .btn-primary{background:#0c0c0e;color:#fff;border:2px solid var(--brand)}
+    .btn-primary:hover{background:var(--brand)}
+    .btn:active{transform:translateY(1px)}
+    .back{display:inline-block;margin:10px 10px 0;padding:10px 14px;border:2px solid var(--brand);border-radius:12px;background:#0c0c0e;color:#fff;text-decoration:none;font-weight:800;transition:background .2s,transform .12s;box-shadow:0 2px 0 rgba(0,0,0,.6)}
+    .back:hover{background:var(--brand)}
+    .back:active{transform:translateY(1px)}
+    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:24px 0 40px}
+    .footer strong{color:#cfd6de}
   </style>
 </head>
 <body>
   <script>
-    // Protección simple por clave (como tenías)
     const CLAVE = "informes@";
     const pin = prompt("🔐 Ingresa la clave para acceder:");
     if(pin !== CLAVE){
@@ -228,9 +55,7 @@
 
   <div class="wrapper">
     <div class="frame">
-      <div class="header">
-        <h1>GESTOR DE VEHÍCULOS</h1>
-      </div>
+      <div class="header"><h1>GESTOR DE VEHÍCULOS</h1></div>
 
       <div class="grid" role="list">
         <!-- Añadir vehículo -->
@@ -250,7 +75,7 @@
           <div class="icon">🔎</div>
           <div class="content">
             <h2 class="title">Buscar por Patente</h2>
-            <p class="desc">Encuentra rápidamente un auto usando su placa para ver o actualizar su información.</p>
+            <p class="desc">Encuentra rápidamente un auto usando su placa.</p>
           </div>
           <div class="actions">
             <a class="btn btn-primary" href="buscar.html?tipo=patente">Abrir</a>
@@ -262,7 +87,7 @@
           <div class="icon">🧑</div>
           <div class="content">
             <h2 class="title">Buscar por Nombre</h2>
-            <p class="desc">Localiza vehículos por el nombre del dueño. Útil cuando no tienes la patente a mano.</p>
+            <p class="desc">Localiza vehículos por el nombre del dueño.</p>
           </div>
           <div class="actions">
             <a class="btn btn-primary" href="buscar.html?tipo=nombre">Abrir</a>
@@ -274,9 +99,10 @@
           <div class="icon">📞</div>
           <div class="content">
             <h2 class="title">Buscar por Teléfono</h2>
-            <p class="desc">Filtra por número de contacto del cliente para revisar su historial.</p>
+            <p class="desc">Filtra por número de contacto del cliente.</p>
           </div>
           <div class="actions">
+            <!-- CORREGIDO: antes decía tipo=patente -->
             <a class="btn btn-primary" href="buscar.html?tipo=telefono">Abrir</a>
           </div>
         </article>
@@ -286,7 +112,7 @@
           <div class="icon">🛠️</div>
           <div class="content">
             <h2 class="title">Actualizar Estado</h2>
-            <p class="desc">Cambia el estado del trabajo (recepción, diagnóstico, reparación, listo, etc.).</p>
+            <p class="desc">Cambia el estado del trabajo.</p>
           </div>
           <div class="actions">
             <a class="btn btn-primary" href="estado.html">Abrir</a>
@@ -296,83 +122,10 @@
 
       <div style="text-align:center;">
         <a href="index.html" class="back">← Volver al Panel Principal</a>
-
       </div>
     </div>
 
     <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
   </div>
-  
-<script>
-(function () {
-  // Actúa solo en la app instalada (PWA)
-  const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if (!isStandalone) return;
-
-  // ✅ Edita esta lista:
-  // - deja SOLO externos reales (dominios de fuera)
-  // - si de verdad quieres que "informes.html" o "buscador_averias.html" salgan a Safari,
-  //   añádelos aquí también.
-  const EXTERN = new Set([
-    'https://www.patentechile.com/',
-    'https://taller-todo.vercel.app/informes.html',
-    'https://taller-todo.vercel.app/buscador_averias.html'
-
-    // 'informes.html',
-    // 'buscador_averias.html'
-  ]);
-
-  const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
-  const sameOrigin = (u) => u && u.origin === location.origin;
-  const fileName = (u) => u ? u.pathname.split('/').pop() : '';
-  const go = (u) => location.assign(u.pathname + u.search + u.hash);
-
-  // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href]'); if (!a) return;
-    if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
-    const u = toURL(a.getAttribute('href')); if (!u) return;
-
-    const isExternalWhitelisted =
-      EXTERN.has(u.href) || EXTERN.has(fileName(u));
-
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      e.preventDefault();
-      go(u);
-    }
-    // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
-  }, true); // captura para adelantarnos a handlers que modifiquen target
-
-  // 2) window.open internos -> misma ventana (salvo EXTERN)
-  const _open = window.open;
-  window.open = function (url, target, features) {
-    const u = toURL(url);
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      go(u);
-      return null;
-    }
-    return _open.call(window, url, target, features);
-  };
-
-  // 3) Formularios internos -> _self
-  document.addEventListener('submit', (e) => {
-    const f = e.target;
-    if (!(f && f.tagName === 'FORM')) return;
-    const u = toURL(f.getAttribute('action') || location.href);
-    if (sameOrigin(u)) f.target = '_self';
-  }, true);
-
-  // 4) Limpieza: si quedó algún _blank interno por error, quítalo
-  document.querySelectorAll('a[target="_blank"]').forEach((a) => {
-    const u = toURL(a.getAttribute('href'));
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-    if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
-  });
-})();
-</script>
-
 </body>
 </html>
