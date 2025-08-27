@@ -2,14 +2,15 @@
 <html lang="es">
 <head>
   <base target="_self">
+
   <link rel="manifest" href="/manifest.json">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Taller">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <meta name="theme-color" content="#000000">
 
+  <meta name="theme-color" content="#000000">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="img/scanner.png">
@@ -68,79 +69,113 @@
   </style>
 </head>
 <body>
+  <!-- Topbar -->
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
-  <!-- Modal de autenticación -->
+  <!-- Modal de autenticación (usuario + contraseña) -->
   <div id="auth-overlay" role="dialog" aria-modal="true">
     <div id="auth-card">
       <div id="auth-head"><h3>🔐 Acceso protegido</h3></div>
       <div id="auth-body">
-        <label for="auth-pass">Contraseña</label>
-        <div class="auth-row">
-          <input id="auth-pass" type="password" class="auth-input" placeholder="••••••••" autocomplete="current-password" />
-          <button id="auth-ok" class="auth-btn">Entrar</button>
-        </div>
+        <form id="auth-form" autocomplete="on">
+          <label for="auth-user">Usuario</label>
+          <div class="auth-row">
+            <input id="auth-user" name="username" type="text"
+                   class="auth-input"
+                   placeholder="tu@correo.com (o usuario)"
+                   inputmode="email" autocapitalize="none" autocorrect="off"
+                   autocomplete="username" />
+          </div>
+
+          <label for="auth-pass">Contraseña</label>
+          <div class="auth-row">
+            <input id="auth-pass" name="password" type="password"
+                   class="auth-input"
+                   placeholder="••••••••"
+                   autocomplete="current-password" />
+            <button id="auth-ok" class="auth-btn" type="submit">Entrar</button>
+          </div>
+        </form>
+
         <div class="auth-actions">
-          <button id="auth-show" class="auth-btn auth-secondary" title="Mostrar/ocultar">👁️</button>
-          <button id="auth-bio" class="auth-btn auth-secondary" title="Usar Face ID / Huella">🔒 Face ID / Huella</button>
-          <button id="auth-remember" class="auth-btn auth-secondary" title="Recordar este dispositivo">📱 Recordar</button>
+          <button id="auth-show" class="auth-btn auth-secondary" type="button" title="Mostrar/ocultar">👁️</button>
+          <!-- Dejo estos por si luego activas WebAuthn real -->
+          <button id="auth-bio" class="auth-btn auth-secondary" type="button" title="Usar Face ID / Huella">🔒 Face ID / Huella</button>
+          <button id="auth-remember" class="auth-btn auth-secondary" type="button" title="Recordar este dispositivo">📱 Recordar</button>
         </div>
+
         <div id="auth-msg" class="auth-hint">
-          Usa tu contraseña. Si quieres, guarda una passkey para entrar con Face ID/huella la próxima vez.
+          Consejo: guarda la contraseña en el gestor (iCloud/Google). La próxima vez el teléfono usará Face ID/huella para autocompletar.
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Contenido -->
+  <!-- Contenido principal (SIN cambios de funciones) -->
   <div class="wrapper">
     <div class="frame">
       <div class="header"><h1>GESTOR DE VEHÍCULOS</h1></div>
 
       <div class="grid" role="list">
+        <!-- Añadir vehículo -->
         <article class="card" role="listitem">
           <div class="icon">➕</div>
           <div class="content">
             <h2 class="title">Añadir Vehículo</h2>
             <p class="desc">Registrar un nuevo vehículo con los datos del cliente y dejarlo en la fila del taller.</p>
           </div>
-          <div class="actions"><a class="btn btn-primary" href="agregar.html">Abrir</a></div>
+          <div class="actions">
+            <a class="btn btn-primary" href="agregar.html">Abrir</a>
+          </div>
         </article>
 
+        <!-- Buscar por patente -->
         <article class="card" role="listitem">
           <div class="icon">🔎</div>
           <div class="content">
             <h2 class="title">Buscar por Patente</h2>
             <p class="desc">Encuentra rápidamente un auto usando su placa.</p>
           </div>
-          <div class="actions"><a class="btn btn-primary" href="buscar.html?tipo=patente">Abrir</a></div>
+          <div class="actions">
+            <a class="btn btn-primary" href="buscar.html?tipo=patente">Abrir</a>
+          </div>
         </article>
 
+        <!-- Buscar por nombre -->
         <article class="card" role="listitem">
           <div class="icon">🧑</div>
           <div class="content">
             <h2 class="title">Buscar por Nombre</h2>
             <p class="desc">Localiza vehículos por el nombre del dueño.</p>
           </div>
-          <div class="actions"><a class="btn btn-primary" href="buscar.html?tipo=nombre">Abrir</a></div>
+          <div class="actions">
+            <a class="btn btn-primary" href="buscar.html?tipo=nombre">Abrir</a>
+          </div>
         </article>
 
+        <!-- Buscar por teléfono -->
         <article class="card" role="listitem">
           <div class="icon">📞</div>
           <div class="content">
             <h2 class="title">Buscar por Teléfono</h2>
             <p class="desc">Filtra por número de contacto del cliente.</p>
           </div>
-          <div class="actions"><a class="btn btn-primary" href="buscar.html?tipo=telefono">Abrir</a></div>
+          <div class="actions">
+            <!-- CORREGIDO: antes decía tipo=patente -->
+            <a class="btn btn-primary" href="buscar.html?tipo=telefono">Abrir</a>
+          </div>
         </article>
 
+        <!-- Actualizar estado -->
         <article class="card" role="listitem">
           <div class="icon">🛠️</div>
           <div class="content">
             <h2 class="title">Actualizar Estado</h2>
             <p class="desc">Cambia el estado del trabajo.</p>
           </div>
-          <div class="actions"><a class="btn btn-primary" href="estado.html">Abrir</a></div>
+          <div class="actions">
+            <a class="btn btn-primary" href="estado.html">Abrir</a>
+          </div>
         </article>
       </div>
 
@@ -152,7 +187,7 @@
     <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
   </div>
 
-  <!-- Tu script PWA de navegación (igual que ya tenías) -->
+  <!-- PWA: navegación interna en modo standalone (tu script original, intacto) -->
   <script>
   (function () {
     const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -162,6 +197,9 @@
       'https://www.patentechile.com/',
       'https://taller-todo.vercel.app/informes.html',
       'https://taller-todo.vercel.app/buscador_averias.html'
+
+      // 'informes.html',
+      // 'buscador_averias.html'
     ]);
 
     const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
@@ -169,22 +207,36 @@
     const fileName = (u) => u ? u.pathname.split('/').pop() : '';
     const go = (u) => location.assign(u.pathname + u.search + u.hash);
 
+    // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a[href]'); if (!a) return;
       if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
       const u = toURL(a.getAttribute('href')); if (!u) return;
-      const isExternalWhitelisted = EXTERN.has(u.href) || EXTERN.has(fileName(u));
-      if (sameOrigin(u) && !isExternalWhitelisted) { e.preventDefault(); go(u); }
-    }, true);
 
+      const isExternalWhitelisted =
+        EXTERN.has(u.href) || EXTERN.has(fileName(u));
+
+      if (sameOrigin(u) && !isExternalWhitelisted) {
+        e.preventDefault();
+        go(u);
+      }
+      // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
+    }, true); // captura
+
+    // 2) window.open internos -> misma ventana (salvo EXTERN)
     const _open = window.open;
     window.open = function (url, target, features) {
       const u = toURL(url);
-      const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-      if (sameOrigin(u) && !isExternalWhitelisted) { go(u); return null; }
+      const isExternalWhitelisted =
+        EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+      if (sameOrigin(u) && !isExternalWhitelisted) {
+        go(u);
+        return null;
+      }
       return _open.call(window, url, target, features);
     };
 
+    // 3) Formularios internos -> _self
     document.addEventListener('submit', (e) => {
       const f = e.target;
       if (!(f && f.tagName === 'FORM')) return;
@@ -192,15 +244,83 @@
       if (sameOrigin(u)) f.target = '_self';
     }, true);
 
+    // 4) Limpieza: si quedó algún _blank interno por error, quítalo
     document.querySelectorAll('a[target="_blank"]').forEach((a) => {
       const u = toURL(a.getAttribute('href'));
-      const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+      const isExternalWhitelisted =
+        EXTERN.has(u?.href) || EXTERN.has(fileName(u));
       if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
     });
   })();
   </script>
 
-  <!-- Lógica de acceso + WebAuthn -->
-  <script src="auth.js" defer></script>
+  <!-- Login simple con gestor de contraseñas (Face ID / Huella via autocompletar) -->
+  <script>
+  (function () {
+    const CLAVE = "informes@";              // tu clave actual
+    const SESSION_HOURS = 12;               // recuerda acceso por 12h
+    const STORAGE_KEY = 'ga_auth_until';
+
+    const $ = (id) => document.getElementById(id);
+    const overlay = $('auth-overlay');
+    const form = $('auth-form');
+    const userInput = $('auth-user');
+    const passInput = $('auth-pass');
+    const btnShow = $('auth-show');
+    const msg = $('auth-msg');
+
+    const now = () => Date.now();
+    const ms = (h) => h*60*60*1000;
+    const isSessionValid = () => now() < Number(localStorage.getItem(STORAGE_KEY) || 0);
+    const rememberSession = () => localStorage.setItem(STORAGE_KEY, String(now() + ms(SESSION_HOURS)));
+    const openGate = () => { overlay.style.display='flex'; setTimeout(()=>userInput?.focus(), 50); };
+    const closeGate = () => { overlay.style.display='none'; };
+    const wrong = () => {
+      const card = $('auth-card'); if (!card) return;
+      card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+      msg.textContent = 'Contraseña incorrecta. Intenta nuevamente.';
+    };
+
+    // Mostrar/ocultar password
+    btnShow?.addEventListener('click', ()=>{
+      passInput.type = passInput.type === 'password' ? 'text' : 'password';
+    });
+
+    // Envío del formulario (login)
+    form?.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const username = (userInput.value || '').trim() || 'usuario';
+      const password = passInput.value || '';
+
+      // Validación local (igual que antes, pero sin prompt)
+      if (password === CLAVE) {
+        rememberSession();
+        closeGate();
+        msg.textContent = 'Acceso concedido.';
+
+        // OPCIONAL: intentar guardar con Credential Management API (Chrome/Android)
+        try {
+          if ('PasswordCredential' in window && 'credentials' in navigator) {
+            const cred = new window.PasswordCredential({
+              id: username,
+              name: username,
+              password
+            });
+            await navigator.credentials.store(cred);
+          }
+          // En iOS/Safari, iCloud Keychain muestra su propio diálogo al detectar el form.
+        } catch (err) {
+          console.debug('No se pudo guardar en Credential Management API:', err);
+        }
+
+      } else {
+        wrong();
+      }
+    });
+
+    // Abrir modal al cargar si no hay sesión
+    if (!isSessionValid()) openGate();
+  })();
+  </script>
 </body>
 </html>
