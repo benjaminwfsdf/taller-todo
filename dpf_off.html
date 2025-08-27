@@ -218,7 +218,7 @@
 
 <script>
   // ===== Config =====
-  const CLAVE = "informes@";
+  const CLAVE = "informes@";  // 🔑 CONTRASEÑA ACTUALIZADA
   const STORAGE_KEY = "acceso_computadores";
   const HORAS = 12;
 
@@ -311,7 +311,7 @@
       expiraTs = guardarAcceso();
     }
 
-    // Guardar en el gestor de contraseñas del navegador (si está disponible)
+    // Guardar en gestor de contraseñas del navegador
     try{
       if ('PasswordCredential' in window && 'credentials' in navigator){
         const username = (els.user.value || 'usuario').trim();
