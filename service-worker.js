@@ -1,5 +1,5 @@
 // app/service-worker.js
-const VERSION = "v1.0.61";
+const VERSION = "v1.0.70";
 
 
 const PRECACHE = `precache-${VERSION}`;
