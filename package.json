@@ -1,0 +1,11 @@
+{
+  "name": "taller-vehiculos",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "^10.0.1"
+  }
+}
