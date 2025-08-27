@@ -5,118 +5,112 @@
 
   <link rel="manifest" href="/manifest.json">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taller">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Taller">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#000000">
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Taller · Panel DPF OFF & Computadores</title>
-<meta name="theme-color" content="#c50000">
-<style>
-  :root{
-    --bg:#0b0b0d;--panel:#121215;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;
-    --accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f;--ok:#39ff78;--err:#ffb3b3
-  }
-  /* ====== Base ====== */
-  html,body{height:100%}
-  body{margin:0;font-family:system-ui,Arial,sans-serif;color:var(--text);background:var(--bg)}
-  .top{background:#000;border-bottom:3px solid var(--stroke);padding:10px 16px;text-align:center;font-weight:800;letter-spacing:.08em}
-  .top a{color:#fff;text-decoration:none}
-  .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
-  .panel{
-    background:linear-gradient(180deg,#920000,#540000);border:3px solid #000;border-radius:18px;
-    box-shadow:0 10px 30px #0008,inset 0 0 0 3px var(--stroke);padding:18px;text-align:center;margin-bottom:22px
-  }
-  .panel h1{margin:0;color:#fff;text-shadow:0 2px 0 #000;font-size:28px}
-  .section-title{margin:18px 2px 10px;font-weight:900;letter-spacing:.02em;color:#fff;opacity:.9}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  .card{
-    background:var(--card);border:2px solid #000;border-radius:16px;box-shadow:8px 10px 0 #000,0 0 0 3px var(--stroke) inset;
-    padding:18px;display:flex;align-items:center;gap:16px
-  }
-  .icon{
-    min-width:64px;height:64px;border-radius:14px;background:#0f0f12;border:2px solid #000;box-shadow:0 0 0 2px var(--stroke) inset;
-    display:flex;align-items:center;justify-content:center;font-size:28px
-  }
-  .info{flex:1}
-  .title{font-weight:900;font-size:18px;margin:0 0 4px}
-  .desc{margin:0;color:var(--muted)}
-  .btn{
-    text-decoration:none;background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff;border:2px solid #000;border-radius:12px;
-    padding:10px 16px;font-weight:900;box-shadow:6px 8px 0 #000,0 0 0 2px var(--stroke) inset;display:inline-block;text-align:center
-  }
-  .footer{margin-top:28px;text-align:center}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Taller · Panel DPF OFF & Computadores</title>
+  <meta name="theme-color" content="#c50000">
+  <style>
+    :root{
+      --bg:#0b0b0d;--panel:#121215;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;
+      --accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f;--ok:#39ff78;--err:#ffb3b3
+    }
+    /* ====== Base ====== */
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,Arial,sans-serif;color:var(--text);background:var(--bg)}
+    .top{background:#000;border-bottom:3px solid var(--stroke);padding:10px 16px;text-align:center;font-weight:800;letter-spacing:.08em}
+    .top a{color:#fff;text-decoration:none}
+    .wrap{max-width:1100px;margin:28px auto;padding:0 16px}
+    .panel{
+      background:linear-gradient(180deg,#920000,#540000);border:3px solid #000;border-radius:18px;
+      box-shadow:0 10px 30px #0008,inset 0 0 0 3px var(--stroke);padding:18px;text-align:center;margin-bottom:22px
+    }
+    .panel h1{margin:0;color:#fff;text-shadow:0 2px 0 #000;font-size:28px}
+    .section-title{margin:18px 2px 10px;font-weight:900;letter-spacing:.02em;color:#fff;opacity:.9}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{
+      background:var(--card);border:2px solid #000;border-radius:16px;box-shadow:8px 10px 0 #000,0 0 0 3px var(--stroke) inset;
+      padding:18px;display:flex;align-items:center;gap:16px
+    }
+    .icon{
+      min-width:64px;height:64px;border-radius:14px;background:#0f0f12;border:2px solid #000;box-shadow:0 0 0 2px var(--stroke) inset;
+      display:flex;align-items:center;justify-content:center;font-size:28px
+    }
+    .info{flex:1}
+    .title{font-weight:900;font-size:18px;margin:0 0 4px}
+    .desc{margin:0;color:var(--muted)}
+    .btn{
+      text-decoration:none;background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff;border:2px solid #000;border-radius:12px;
+      padding:10px 16px;font-weight:900;box-shadow:6px 8px 0 #000,0 0 0 2px var(--stroke) inset;display:inline-block;text-align:center
+    }
+    .footer{margin-top:28px;text-align:center}
 
-  /* ====== Modal de acceso ====== */
-  .lock-overlay{
-    position:fixed; inset:0; z-index:9999;
-    background:
-      radial-gradient(1000px 600px at 50% -10%, #1c0b0b50, transparent 60%),
-      linear-gradient(180deg,#0a0a0b 0%, #000 100%);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .lock-card{
-    width:min(92vw, 460px);
-    background:#121215; border:2px solid #000; border-radius:18px;
-    box-shadow:12px 14px 0 #000, 0 0 0 3px var(--stroke) inset;
-    padding:20px;
-  }
-  .lock-head{
-    display:flex; gap:12px; align-items:center; margin-bottom:10px;
-  }
-  .badge{
-    width:54px; height:54px; border-radius:14px; background:#0f0f12;
-    border:2px solid #000; box-shadow:0 0 0 2px var(--stroke) inset;
-    display:flex; align-items:center; justify-content:center; font-size:26px;
-  }
-  .lock-title{margin:0; font-size:20px}
-  .lock-desc{margin:2px 0 0; color:var(--muted); font-size:14px}
-  .lock-form{margin-top:10px}
-  .field{margin-top:12px}
-  .label{display:flex;justify-content:space-between; font-weight:800; font-size:14px; margin-bottom:6px}
-  .input-wrap{
-    display:flex; align-items:stretch; gap:8px;
-    background:#0f0f12; border:2px solid #000; border-radius:12px;
-    box-shadow:0 0 0 2px var(--stroke) inset; padding:6px;
-  }
-  .input-wrap input{
-    flex:1; border:0; outline:none; background:transparent; color:#fff; font-size:16px; padding:8px;
-  }
-  .toggle{
-    padding:0 10px; border-left:2px dashed #000; cursor:pointer; user-select:none; display:flex; align-items:center;
-  }
-  .remember{
-    margin-top:10px; display:flex; align-items:center; gap:8px; font-size:14px; color:#ddd;
-  }
-  .lock-actions{margin-top:14px; display:flex; gap:10px}
-  .btn-full{
-    width:100%; text-align:center; padding:12px 16px; font-weight:900; border-radius:12px; border:2px solid #000;
-    background:linear-gradient(180deg,var(--accent),var(--accent2)); color:#fff;
-    box-shadow:6px 8px 0 #000, 0 0 0 2px var(--stroke) inset; cursor:pointer;
-  }
-  .btn-ghost{
-    width:100%; text-align:center; padding:12px 16px; font-weight:900; border-radius:12px; border:2px solid #000;
-    background:#0f0f12; color:#fff; box-shadow:0 0 0 2px var(--stroke) inset; cursor:pointer;
-  }
-  .msg{margin-top:10px; font-weight:700; min-height:20px}
-  .msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
-  .shake{animation:shake .28s ease-in-out}
-  @keyframes shake{
-    0%,100%{transform:translateX(0)}
-    20%{transform:translateX(-6px)} 40%{transform:translateX(6px)}
-    60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
-  }
+    /* ====== Modal de acceso ====== */
+    .lock-overlay{
+      position:fixed; inset:0; z-index:9999;
+      background:
+        radial-gradient(1000px 600px at 50% -10%, #1c0b0b50, transparent 60%),
+        linear-gradient(180deg,#0a0a0b 0%, #000 100%);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .lock-card{
+      width:min(92vw, 460px);
+      background:#121215; border:2px solid #000; border-radius:18px;
+      box-shadow:12px 14px 0 #000, 0 0 0 3px var(--stroke) inset;
+      padding:20px;
+    }
+    .lock-head{display:flex; gap:12px; align-items:center; margin-bottom:10px;}
+    .badge{
+      width:54px; height:54px; border-radius:14px; background:#0f0f12;
+      border:2px solid #000; box-shadow:0 0 0 2px var(--stroke) inset;
+      display:flex; align-items:center; justify-content:center; font-size:26px;
+    }
+    .lock-title{margin:0; font-size:20px}
+    .lock-desc{margin:2px 0 0; color:var(--muted); font-size:14px}
+    .lock-form{margin-top:10px}
+    .field{margin-top:12px}
+    .label{display:flex;justify-content:space-between; font-weight:800; font-size:14px; margin-bottom:6px}
+    .input-wrap{
+      display:flex; align-items:stretch; gap:8px;
+      background:#0f0f12; border:2px solid #000; border-radius:12px;
+      box-shadow:0 0 0 2px var(--stroke) inset; padding:6px;
+    }
+    .input-wrap input{
+      flex:1; border:0; outline:none; background:transparent; color:#fff; font-size:16px; padding:8px;
+    }
+    .toggle{
+      padding:0 10px; border-left:2px dashed #000; cursor:pointer; user-select:none; display:flex; align-items:center;
+    }
+    .remember{margin-top:10px; display:flex; align-items:center; gap:8px; font-size:14px; color:#ddd;}
+    .lock-actions{margin-top:14px; display:flex; gap:10px}
+    .btn-full{
+      width:100%; text-align:center; padding:12px 16px; font-weight:900; border-radius:12px; border:2px solid #000;
+      background:linear-gradient(180deg,var(--accent),var(--accent2)); color:#fff;
+      box-shadow:6px 8px 0 #000, 0 0 0 2px var(--stroke) inset; cursor:pointer;
+    }
+    .btn-ghost{
+      width:100%; text-align:center; padding:12px 16px; font-weight:900; border-radius:12px; border:2px solid #000;
+      background:#0f0f12; color:#fff; box-shadow:0 0 0 2px var(--stroke) inset; cursor:pointer;
+    }
+    .msg{margin-top:10px; font-weight:700; min-height:20px}
+    .msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+    .shake{animation:shake .28s ease-in-out}
+    @keyframes shake{
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)} 40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+    }
 
-  /* Evita desplazamiento del fondo cuando el lock está activo */
-  body.locked{overflow:hidden}
-  /* Oculta el contenido hasta desbloquear */
-  #app{display:none}
-</style>
+    body.locked{overflow:hidden}
+    #app{display:none}
+  </style>
 </head>
 <body class="locked">
   <!-- Modal de acceso -->
@@ -126,18 +120,26 @@
         <div class="badge">🔐</div>
         <div>
           <h2 class="lock-title">Acceso restringido</h2>
-          <p class="lock-desc">Ingresa la contraseña para abrir el panel. Se recordará por 12 horas.</p>
+          <p class="lock-desc">Ingresa tus credenciales. La sesión se puede recordar por 12 horas.</p>
         </div>
       </div>
 
-      <form class="lock-form" id="lockForm">
+      <form class="lock-form" id="lockForm" autocomplete="on">
+        <div class="field">
+          <div class="label"><span>Usuario</span></div>
+          <div class="input-wrap">
+            <input id="user" name="username" type="text" inputmode="email" autocapitalize="none" autocorrect="off"
+                   placeholder="tu@correo.com" autocomplete="username" />
+          </div>
+        </div>
+
         <div class="field">
           <div class="label">
             <span>Contraseña</span>
             <small id="expiresHint" style="opacity:.8"></small>
           </div>
           <div class="input-wrap" id="inputWrap">
-            <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password" autofocus />
+            <input id="pass" name="password" type="password" placeholder="••••••••" autocomplete="current-password" />
             <div class="toggle" id="togglePass" title="Mostrar/Ocultar">👁️</div>
           </div>
         </div>
@@ -216,7 +218,7 @@
 
 <script>
   // ===== Config =====
-  const CLAVE = "computador@";
+  const CLAVE = "informes@";
   const STORAGE_KEY = "acceso_computadores";
   const HORAS = 12;
 
@@ -224,6 +226,7 @@
     lock: document.getElementById('lock'),
     lockCard: document.getElementById('lockCard'),
     app: document.getElementById('app'),
+    user: document.getElementById('user'),
     pass: document.getElementById('pass'),
     msg: document.getElementById('msg'),
     inputWrap: document.getElementById('inputWrap'),
@@ -258,15 +261,12 @@
   }
 
   function desbloquear(expiraTs){
-    // Mostrar app
     els.lock.style.display = 'none';
     els.body.classList.remove('locked');
     els.app.style.display = 'block';
-    // Hint (opcional) arriba del campo
     if(expiraTs) els.expiresHint.textContent = `Recordado hasta ${fmtHora(expiraTs)}`;
   }
 
-  // Al cargar: si ya es válido, desbloquear
   (function init(){
     const saved = cargarAcceso();
     if(saved){
@@ -275,7 +275,7 @@
       els.body.classList.add('locked');
       els.app.style.display = 'none';
       els.lock.style.display = 'flex';
-      setTimeout(()=> els.pass.focus(), 100);
+      setTimeout(()=> (els.user.value ? els.pass.focus() : els.user.focus()), 100);
     }
   })();
 
@@ -292,32 +292,40 @@
     window.location.href = "https://www.elsenordelosescaner.cl/";
   });
 
-  // Envío del formulario
-  els.form.addEventListener('submit', (e)=>{
+  // Envío del formulario (con soporte a gestor de contraseñas)
+  els.form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const val = els.pass.value.trim();
     if(val !== CLAVE){
       els.msg.className = 'msg err';
       els.msg.textContent = '❌ Contraseña incorrecta';
-      els.lockCard.classList.remove('shake'); // reinicia animación
-      void els.lockCard.offsetWidth;
+      els.lockCard.classList.remove('shake'); void els.lockCard.offsetWidth;
       els.lockCard.classList.add('shake');
       els.pass.select();
       return;
     }
+
+    // Recordar 12h (opcional)
     let expiraTs = null;
     if(els.remember.checked){
       expiraTs = guardarAcceso();
-    }else{
-      // Si NO recuerda, igual desbloquea esta sesión pero no persiste.
-      // (podrías usar sessionStorage si quieres recordarlo solo en esta pestaña)
     }
+
+    // Guardar en el gestor de contraseñas del navegador (si está disponible)
+    try{
+      if ('PasswordCredential' in window && 'credentials' in navigator){
+        const username = (els.user.value || 'usuario').trim();
+        const cred = new window.PasswordCredential({ id: username, name: username, password: val });
+        await navigator.credentials.store(cred);
+      }
+    }catch(e){ /* silencioso */ }
+
     els.msg.className = 'msg ok';
     els.msg.textContent = '✅ Acceso concedido';
     setTimeout(()=> desbloquear(expiraTs), 150);
   });
 
-  
+  // Atajo: Esc para salir del lock
   document.addEventListener('keydown', (e)=>{
     if(e.key === 'Escape' && els.lock.style.display !== 'none') els.salir.click();
   });
@@ -329,17 +337,10 @@
   const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   if (!isStandalone) return;
 
-  // ✅ Edita esta lista:
-  // - deja SOLO externos reales (dominios de fuera)
-  // - si de verdad quieres que "informes.html" o "buscador_averias.html" salgan a Safari,
-  //   añádelos aquí también.
   const EXTERN = new Set([
     'https://www.patentechile.com/',
     'https://taller-todo.vercel.app/informes.html',
     'https://taller-todo.vercel.app/buscador_averias.html'
-
-    // 'informes.html',
-    // 'buscador_averias.html'
   ]);
 
   const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
@@ -347,32 +348,22 @@
   const fileName = (u) => u ? u.pathname.split('/').pop() : '';
   const go = (u) => location.assign(u.pathname + u.search + u.hash);
 
-  // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
+  // 1) Enlaces internos -> misma ventana
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href]'); if (!a) return;
     if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
     const u = toURL(a.getAttribute('href')); if (!u) return;
 
-    const isExternalWhitelisted =
-      EXTERN.has(u.href) || EXTERN.has(fileName(u));
+    const isExternalWhitelisted = EXTERN.has(u.href) || EXTERN.has(fileName(u));
+    if (sameOrigin(u) && !isExternalWhitelisted) { e.preventDefault(); go(u); }
+  }, true);
 
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      e.preventDefault();
-      go(u);
-    }
-    // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
-  }, true); // captura para adelantarnos a handlers que modifiquen target
-
-  // 2) window.open internos -> misma ventana (salvo EXTERN)
+  // 2) window.open internos -> misma ventana
   const _open = window.open;
   window.open = function (url, target, features) {
     const u = toURL(url);
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      go(u);
-      return null;
-    }
+    const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+    if (sameOrigin(u) && !isExternalWhitelisted) { go(u); return null; }
     return _open.call(window, url, target, features);
   };
 
@@ -384,16 +375,13 @@
     if (sameOrigin(u)) f.target = '_self';
   }, true);
 
-  // 4) Limpieza: si quedó algún _blank interno por error, quítalo
+  // 4) Limpieza target _blank interno
   document.querySelectorAll('a[target="_blank"]').forEach((a) => {
     const u = toURL(a.getAttribute('href'));
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+    const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
     if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
   });
 })();
 </script>
 </body>
 </html>
-
-
