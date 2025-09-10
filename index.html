@@ -1,45 +1,42 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  
   <link rel="manifest" href="manifest.json">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taller">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Taller">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#000000">
 
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("service-worker.js");
-    });
-  }
-</script>
-
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js");
+      });
+    }
+  </script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="img/scanner.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
   <title>Panel Principal</title>
+
   <style>
     :root{
-  --brand:#900000; /* nuevo rojo */
-  --brand-900:#700000; /* tono más oscuro opcional */
-  --ink:#e9ecef;
-  --muted:#b9c0c7;
-  --bg:#0b0b0c;
-  --panel:#0f0f11;
-  --card:#16181b;
-  --card-border:#272a2f;
-  --shadow:0 10px 28px rgba(0,0,0,.45);
-  --shadow-hover:0 14px 40px rgba(0,0,0,.6);
-  --radius:16px;
-}
-
+      --brand:#900000;
+      --brand-900:#700000;
+      --ink:#e9ecef;
+      --muted:#b9c0c7;
+      --bg:#0b0b0c;
+      --panel:#0f0f11;
+      --card:#16181b;
+      --card-border:#272a2f;
+      --shadow:0 10px 28px rgba(0,0,0,.45);
+      --shadow-hover:0 14px 40px rgba(0,0,0,.6);
+      --radius:16px;
+    }
 
     @media (prefers-reduced-motion: reduce){
       *{animation:none!important;transition:none!important}
@@ -55,6 +52,67 @@
       line-height: 1.55;
     }
 
+    /* === SPLASH SCREEN === */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.6s ease;
+      text-align:center;
+      padding: 24px;
+    }
+    #splash img {
+      width: 160px; height: 160px;
+      margin-bottom: 14px;
+      animation: zoomIn 1.4s ease-in-out infinite alternate;
+      filter: drop-shadow(0 6px 16px rgba(255,255,255,.05));
+    }
+    #splash .brand {
+      color:#fff;
+      font-size: clamp(18px, 4vw, 26px);
+      font-weight: 900;
+      letter-spacing:.6px;
+      line-height:1.15;
+      margin: 2px 0 6px;
+    }
+    #splash .tagline{
+      color:#c9ced6;
+      font-size: 14px;
+      letter-spacing:.3px;
+      opacity:.9;
+    }
+    #splash .bar{
+      width: 180px; height: 4px;
+      margin-top: 16px;
+      background: #1d1d1f;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    #splash .bar::after{
+      content:"";
+      position:absolute; inset:0;
+      width:40%;
+      background: linear-gradient(90deg, var(--brand-900), var(--brand));
+      border-radius:999px;
+      animation: slide 1.2s ease-in-out infinite;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.9); opacity: 0.9; }
+      to   { transform: scale(1.05); opacity: 1; }
+    }
+    @keyframes slide {
+      0% { transform: translateX(-60%); }
+      50%{ transform: translateX(40%); }
+      100%{ transform: translateX(160%); }
+    }
+
     /* Barra superior */
     .topbar{
       background:#000;
@@ -67,7 +125,6 @@
       box-shadow: 0 6px 16px rgba(0,0,0,.55);
     }
 
-    /* Contenedor central con borde */
     .wrapper{
       max-width: 1100px;
       margin: 28px auto 44px;
@@ -81,7 +138,6 @@
       box-shadow: var(--shadow);
     }
 
-    /* Header rojo */
     .header{
       margin: 10px;
       background: var(--brand);
@@ -97,7 +153,6 @@
       letter-spacing:.5px;
     }
 
-    /* Grid de tarjetas */
     .grid{
       display:grid;
       grid-template-columns: repeat(2,minmax(0,1fr));
@@ -108,7 +163,6 @@
       .grid{grid-template-columns: 1fr;}
     }
 
-    /* Tarjeta */
     .card{
       position: relative;
       background: var(--card);
@@ -188,7 +242,6 @@
       outline-offset: 2px;
     }
 
-    /* Footer */
     .footer{
       text-align:center;
       color:#8c96a3;
@@ -199,9 +252,17 @@
   </style>
 </head>
 <body>
+  <!-- SPLASH -->
+  <div id="splash" aria-live="polite">
+    <img src="icons/icon-192.png" alt="Logo Taller">
+    <div class="brand">El Señor de los scanner</div>
+    <div class="tagline">Cargando panel principal…</div>
+    <div class="bar" aria-hidden="true"></div>
+  </div>
+
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
-  <div class="wrapper">
+  <div class="wrapper" style="opacity:0; transition:opacity 0.6s ease;">
     <div class="frame">
       <div class="header">
         <h1>Panel Principal</h1>
@@ -220,22 +281,19 @@
           </div>
         </article>
 
-        <!-- Diagnóstico Computadoras -->
+        <!-- Computadoras -->
         <article class="card" role="listitem">
           <div class="icon">💻</div>
           <div class="content">
-            <h2 class="title"> Computadoras</h2>
-            <p class="desc">Gestión de DPF OFF y registro/consulta de ECUs/BCMs.
-    </p></p>
+            <h2 class="title">Computadoras</h2>
+            <p class="desc">Gestión de DPF OFF y registro/consulta de ECUs/BCMs.</p>
           </div>
           <div class="actions">
             <a class="btn" href="dpf_off.html">Abrir</a>
           </div>
         </article>
 
-     
-
-        <!-- Informes de Diagnóstico -->
+        <!-- Informes -->
         <article class="card" role="listitem">
           <div class="icon">📄</div>
           <div class="content">
@@ -271,7 +329,7 @@
           </div>
         </article>
 
-        <!-- Buscador de códigos -->
+        <!-- Buscador -->
         <article class="card" role="listitem">
           <div class="icon">🏎️</div>
           <div class="content">
@@ -279,7 +337,7 @@
             <p class="desc">Consulta rápida de DTC y descripciones.</p>
           </div>
           <div class="actions">
-            <a class="btn" href="buscador_averias.html"" target="_blank">Abrir</a>
+            <a class="btn" href="buscador_averias.html" target="_blank">Abrir</a>
           </div>
         </article>
 
@@ -296,8 +354,40 @@
         </article>
       </div>
     </div>
-
     <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
   </div>
+
+  <script>
+    // Cambia esta constante para alargar/acortar el splash
+    const MIN_SPLASH_MS = 3000; // 3 segundos
+
+    // Espera imagen del logo para evitar parpadeos y cumplir tiempo mínimo
+    function waitForLogo() {
+      return new Promise(res => {
+        const img = document.querySelector('#splash img');
+        if (!img) return res();
+        if (img.complete) return res();
+        img.addEventListener('load', res, { once:true });
+        img.addEventListener('error', res, { once:true });
+      });
+    }
+
+    window.addEventListener("load", async () => {
+      const splash = document.getElementById("splash");
+      const wrapper = document.querySelector(".wrapper");
+      const start = performance.now();
+
+      await waitForLogo();
+
+      const elapsed = performance.now() - start;
+      const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+
+      setTimeout(() => {
+        splash.style.opacity = "0";
+        wrapper.style.opacity = "1";
+        setTimeout(()=> splash.remove(), 600);
+      }, remaining);
+    });
+  </script>
 </body>
 </html>
