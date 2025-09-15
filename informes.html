@@ -97,6 +97,21 @@
     }
     .fab button:hover { transform: translateY(1px); }
   </style>
+
+  <!-- ===== MOD 1: SOLO para CÓDIGOS y DETALLE (override) ===== -->
+  <style>
+    #codigo_area, #detalle_area {
+      width: 100%;
+      min-height: 220px;
+      height: auto;
+      border: none;
+      font-size: 16px;
+      box-sizing: border-box;
+      padding: 6px;
+      resize: vertical;
+      overflow: hidden;
+    }
+  </style>
 </head>
 
 <body onload="document.getElementById('fecha').innerText = new Date().toLocaleDateString('es-CL');">
@@ -266,12 +281,8 @@
   <script>
     
     const CODIGOS_BASE = {
-  "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
-  "P2096": "Sistema de ajuste de combustible post-catalizador demasiado pobre (Banco 1))",
-  "P2198": "Sensor de oxígeno (Banco 2, Sensor 1) - Mezcla de combustible demasiado rica",
-  "P252F": "Presión del depósito de aceite demasiado baja",
+      "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
   "P0171": "Sistema demasiado pobre (Banco 1)",
-  "P0014": "Desfasador del árbol de levas de escape",
   "P0300": "Falla de encendido aleatoria o múltiple",
   "P0113": "Sensor de temperatura del aire de admisión - entrada alta",
   "P0340": "Circuito del sensor de posición del árbol de levas - mal funcionamiento",
@@ -304,35 +315,35 @@
   "P0122": "Sensor de posición del acelerador A – señal baja.",
   "P0123": "Sensor de posición del acelerador A – señal alta.",
   "P0128": "La temperatura del refrigerante está por debajo del rango regulado por el termostato.",
-  "P0130": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 1).",
-  "P0131": "Sensor de O₂ Banco 1, sensor 1 – bajo voltaje.",
-  "P0132": "Sensor de O₂ Banco 1, sensor 1 – alto voltaje.",
-  "P0134": "Sensor de O₂ Banco 1, sensor 1 – sin actividad.",
-  "P0135": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 1).",
-  "P0136": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 2).",
-  "P0137": "Sensor de O₂ Banco 1, sensor 2 – bajo voltaje.",
-  "P0138": "Sensor de O₂ Banco 1, sensor 2 – alto voltaje.",
-  "P0141": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 2).",
-  "P0171": "Sistema demasiado pobre (Banco 1).",
-  "P0172": "Sistema demasiado rico (Banco 1).",
-  "P0174": "Sistema demasiado pobre (Banco 2).",
-  "P0200": "Mal funcionamiento del circuito del inyector de combustible (rango 0200‑0299).",
+  "P0130": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 1).",
+  "P0131": "Sensor de O₂ Banco 1, sensor 1 – bajo voltaje.",
+  "P0132": "Sensor de O₂ Banco 1, sensor 1 – alto voltaje.",
+  "P0134": "Sensor de O₂ Banco 1, sensor 1 – sin actividad.",
+  "P0135": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 1).",
+  "P0136": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 2).",
+  "P0137": "Sensor de O₂ Banco 1, sensor 2 – bajo voltaje.",
+  "P0138": "Sensor de O₂ Banco 1, sensor 2 – alto voltaje.",
+  "P0141": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 2).",
+  "P0171": "Sistema demasiado pobre (Banco 1).",
+  "P0172": "Sistema demasiado rico (Banco 1).",
+  "P0174": "Sistema demasiado pobre (Banco 2).",
+  "P0200": "Mal funcionamiento del circuito del inyector de combustible (rango 0200-0299).",
   "P0234": "Turbo/sobrealimentador – presión excesiva detectada.",
   "P0299": "Turbo/sobrealimentador – rendimiento/nivel bajo.",
   "P0300": "Fallo de encendido aleatorio/múltiple cilindros detectado.",
-  "P0301": "Fallo de encendido en el cilindro 1.",
-  "P0302": "Fallo de encendido en el cilindro 2.",
-  "P0303": "Fallo de encendido en el cilindro 3.",
-  "P0304": "Fallo de encendido en el cilindro 4.",
-  "P0305": "Fallo de encendido en el cilindro 5.",
-  "P0306": "Fallo de encendido en el cilindro 6.",
-  "P0307": "Fallo de encendido en el cilindro 7.",
-  "P0308": "Fallo de encendido en el cilindro 8.",
-  "P0305": "Fallo de encendido en el cilindro 5.",
-  "P0306": "Fallo de encendido en el cilindro 6.",
+  "P0301": "Fallo de encendido en el cilindro 1.",
+  "P0302": "Fallo de encendido en el cilindro 2.",
+  "P0303": "Fallo de encendido en el cilindro 3.",
+  "P0304": "Fallo de encendido en el cilindro 4.",
+  "P0305": "Fallo de encendido en el cilindro 5.",
+  "P0306": "Fallo de encendido en el cilindro 6.",
+  "P0307": "Fallo de encendido en el cilindro 7.",
+  "P0308": "Fallo de encendido en el cilindro 8.",
+  "P0305": "Fallo de encendido en el cilindro 5.",
+  "P0306": "Fallo de encendido en el cilindro 6.",
   "P0321": "Sensor knock – rango/rendimiento fuera de especificación.",
-  "P0325": "Sensor knock – mal funcionamiento del circuito (Banco 1).",
-  "P0328": "Sensor knock – señal alta (Banco 1 o sensor único).",
+  "P0325": "Sensor knock – mal funcionamiento del circuito (Banco 1).",
+  "P0328": "Sensor knock – señal alta (Banco 1 o sensor único).",
   "P0335": "Mal funcionamiento del circuito del sensor de posición del cigüeñal (CKP).",
   "P0340": "Mal funcionamiento del circuito del sensor de posición del árbol de levas (CMP).",
   "P0341": "Anomalía en comparación CKP/CMP detectada.",
@@ -343,7 +354,7 @@
   "P0440": "Mal funcionamiento del sistema de control de emisiones evaporativas (EVAP).",
   "P0441": "Fuga del sistema EVAP detectada (fuga pequeña o intermedia).",
   "P0442": "Fuga pequeña del sistema EVAP detectada.",
-  "P0443": "Circuito de control EVAP‑VSV mal funcionando.",
+  "P0443": "Circuito de control EVAP-VSV mal funcionando.",
   "P0444": "Circuito del sensor EVAP mal funcionamiento.",
   "P0446": "Mal funcionamiento del control del sistema EVAP.",
   "P0449": "Circuito VSV EVAP intermitente o rango/rendimiento fuera especificación.",
@@ -375,15 +386,15 @@
   "P0115": "Mal funcionamiento del circuito del sensor de temperatura del refrigerante del motor.",
   "P0117": "Sensor de temperatura del refrigerante  señal baja.",
   "P0191": "Sensor de presión de combustión  rango/performance fuera especificación.",
-  "P0201‑P0204": "Circuito del inyector de combustible  mal funcionamiento en cilindros 1 y4.",
+  "P0201-P0204": "Circuito del inyector de combustible  mal funcionamiento en cilindros 1 y4.",
   "P0222": "Sensor de posición del acelerador B  señal baja.",
   "P0223": "Sensor de posición del acelerador B – señal alta.",
   "P0238": "Sensor de presión turbo – rango/performance fuera especificación.",
   "P0315": "Valores del sistema de posición del cigüeñal no almacenados.",
   "P0320": "Mal funcionamiento en la señal de velocidad del distribuidor/encendido.",
-  "P0336": "Sensor knock – bajo voltaje (Banco 2).",
+  "P0336": "Sensor knock – bajo voltaje (Banco 2).",
   "P0342": "Sensor CMP – señal baja o rango fuera especificación.",
-  "P0351‑P0354": "Bobina de encendido – mal funcionamiento del circuito (cilindros 1‑4).",
+  "P0351-P0354": "Bobina de encendido – mal funcionamiento del circuito (cilindros 1-4).",
   "P0380": "Circuito del calentador del sensor de posición del cigüeñal (CKP).",
   "P0410": "Sistema de aire secundario – mal funcionamiento.",
   "P0463": "Sensor de temperatura de combustible – señal fuera de rango.",
@@ -400,7 +411,7 @@
   "P0730": "Relación de engranaje incorrecta.",
   "P0740": "Solenoide de control de torque – mal funcionamiento del circuito.",
   "P0753": "Switch cambio/transmisión mal intermitente.",
-  "P0990": "Circuito del sistema de infoentretenimiento/diagnóstico extendido (vehicle‑specific).",
+  "P0990": "Circuito del sistema de infoentretenimiento/diagnóstico extendido (vehicle-specific).",
    "U0001": "Red de alta velocidad CAN C personalizada 1",
   "U0002": "Red de alta velocidad CAN C personalizada 2",
   "U0003": "Red de alta velocidad CAN C personalizada 3",
@@ -949,12 +960,27 @@
     });
   </script>
 
+  <!-- ===== MOD 2: Auto-grow SOLO para #codigo_area y #detalle_area ===== -->
+  <script>
+    (function(){
+      const ids = ['codigo_area','detalle_area'];
+      function fit(el){
+        el.style.height = 'auto';
+        el.style.height = (el.scrollHeight + 2) + 'px';
+      }
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){
+          fit(el); // ajuste inicial (si hay texto cargado)
+          el.addEventListener('input', ()=>fit(el)); // ajuste al escribir/pegar/borrar
+        }
+      });
+    })();
+  </script>
+
   <div class="fab">
     <button id="boton-imprimir" onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
     <button id="boton-borrar" onclick="borrarTodo()">🧹 Borrar todo</button>
   </div> 
 </body>
 </html>
-
-
-
