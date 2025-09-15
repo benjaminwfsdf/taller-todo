@@ -31,6 +31,21 @@
     .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow)}
     .header{margin:10px;background:var(--brand);color:#fff;border-radius:18px;padding:18px 22px;text-align:center;box-shadow:0 10px 22px rgba(144,0,0,.35)}
     .header h1{margin:0;font-size:clamp(22px,3.2vw,30px)}
+    /* === NUEVO: reloj bonito === */
+    .clock{
+      margin:8px 12px 16px;
+      padding:10px 14px;
+      text-align:center;
+      color:#e9ecef;
+      background:#0c0c0e;
+      border:1px solid var(--card-border);
+      border-radius:12px;
+      box-shadow:inset 0 0 14px rgba(144,0,0,.15), 0 4px 10px rgba(0,0,0,.35);
+      font-weight:900;
+      letter-spacing:.5px;
+    }
+    .clock .time{font-size:clamp(22px,4vw,32px);letter-spacing:1px}
+    .clock .date{opacity:.85;font-size:clamp(13px,2.2vw,16px)}
     .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;margin:12px}
     label{display:block;margin:8px 0 6px;font-weight:800}
     input{
@@ -58,6 +73,12 @@
   <div class="wrapper">
     <div class="frame">
       <div class="header"><h1>Recepción y Turnos</h1></div>
+
+      <!-- === NUEVO: reloj bajo el título === -->
+      <div id="reloj" class="clock">
+        <div class="date">—</div>
+        <div class="time">—:—:—</div>
+      </div>
 
       <div class="card">
         <label for="patente">Patente</label>
@@ -123,7 +144,7 @@
           document.getElementById("contadorTotal").textContent = `🚘 Autos en espera: ${total}`;
 
           const actual = data[0];
-          // === CAMBIO CLAVE: ahora tomamos TODOS los siguientes, no solo 2 ===
+          // ahora mostramos TODOS los siguientes
           const siguientes = data.slice(1);
 
           document.getElementById("patenteActual").textContent = actual.Patente || "-";
@@ -139,6 +160,19 @@
           });
         });
     }
+
+    // === NUEVO: reloj en tiempo real ===
+    function actualizarReloj() {
+      const el = document.getElementById('reloj');
+      if (!el) return;
+      const ahora = new Date();
+      const fecha = ahora.toLocaleDateString('es-CL', { weekday:'long', day:'2-digit', month:'long' });
+      const hora  = ahora.toLocaleTimeString('es-CL', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+      el.querySelector('.date').textContent = fecha.charAt(0).toUpperCase() + fecha.slice(1);
+      el.querySelector('.time').textContent = hora;
+    }
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj();
 
     setInterval(cargarTurnos, 3000);
     cargarTurnos();
