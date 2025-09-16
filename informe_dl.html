@@ -121,9 +121,7 @@
       if(!res || !res.ok) throw new Error('fetch img fail: '+url);
       const blob = await res.blob();
       return await new Promise((resolve)=>{
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.readAsDataURL(blob);
+        const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(blob);
       });
     }
     async function inlineAllImages(container){
@@ -136,24 +134,66 @@
       }
       await waitImagesLoaded(container);
     }
+    function cloneForPdf(el){
+      const clone = el.cloneNode(true);
+      // (No hay textareas aquí, pero dejamos por consistencia)
+      clone.querySelectorAll('textarea').forEach((ta)=>{
+        const styles = getComputedStyle(ta);
+        const div = document.createElement('div');
+        div.textContent = ta.value;
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.minHeight = styles.height;
+        div.style.border = styles.border || '1px solid #000';
+        div.style.padding = styles.padding || '6px';
+        div.style.fontSize = styles.fontSize;
+        div.style.lineHeight = styles.lineHeight;
+        div.style.boxSizing = 'border-box';
+        ta.parentNode.replaceChild(div, ta);
+      });
+      return clone;
+    }
+    async function settleLayout(){
+      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
+      await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
+      await new Promise(r => setTimeout(r, 60));
+    }
 
+    /* ===== NUEVA versión robusta ===== */
     async function descargarPdf(){
       const cont = document.getElementById('informe');
-      await inlineAllImages(cont);
+
+      const sandbox = document.createElement('div');
+      sandbox.style.position = 'fixed';
+      sandbox.style.left = '-10000px';
+      const clone = cloneForPdf(cont);
+      sandbox.appendChild(clone);
+      document.body.appendChild(sandbox);
+
+      await inlineAllImages(clone);
+      await settleLayout();
+
       const patente = (document.getElementById('patente').textContent || 'SIN_PATENTE').replace(/\s+/g,'');
       const nombre = `Informe_${patente}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`;
       const opt = {
         filename: nombre,
         margin: [10, 10],
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          scrollY: 0,
+          windowWidth: clone.scrollWidth,
+          windowHeight: Math.max(clone.scrollHeight, 1123)
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       try{
-        await html2pdf().set(opt).from(cont).save();
+        await html2pdf().set(opt).from(clone).save();
         document.getElementById('status').textContent = 'PDF descargado.';
       }catch(e){
         document.getElementById('status').textContent = 'No se pudo descargar automáticamente.';
+      }finally{
+        document.body.removeChild(sandbox);
       }
     }
     window.descargarPdf = descargarPdf;
