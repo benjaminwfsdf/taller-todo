@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Descargando Informe…</title>
   <style>
+    body.init { visibility: hidden; } /* evita parpadeo si carga breve */
     @media print { @page { size: A4; margin: 10mm 12mm; } }
     body { font-family: Arial, sans-serif; margin: 20px; color:#000; }
     .titulo{ background:#b30000; color:#fff; padding:10px; font-weight:bold; text-align:center; margin-bottom:12px; }
@@ -19,7 +20,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" referrerpolicy="no-referrer"></script>
 </head>
-<body>
+<body class="init">
   <div class="topbar">
     <button onclick="descargarPdf()">📄 Descargar PDF</button>
     <button onclick="window.print()">🖨️ Imprimir</button>
@@ -76,12 +77,10 @@
     function parseDatos(){
       const hash = location.hash.replace(/^#/, '');
       if (!hash) return null;
-      try {
-        const json = LZString.decompressFromEncodedURIComponent(hash);
-        return JSON.parse(json);
-      } catch(e){ console.error(e); return null; }
+      try { return JSON.parse(LZString.decompressFromEncodedURIComponent(hash)); }
+      catch(e){ console.error(e); return null; }
     }
-    function set(id, val){ document.getElementById(id).textContent = val || ''; }
+    function set(id, val){ const el = document.getElementById(id); if (el) el.textContent = val || ''; }
     function render(d){
       set('marca', d.marca); set('modelo', d.modelo); set('patente', d.patente);
       set('ano', d.ano); set('km', d.km); set('motor', d.motor);
@@ -112,11 +111,17 @@
 
     const datos = parseDatos();
     if (!datos) {
-      document.body.innerHTML = '<p style="padding:20px">No se encontraron datos en el link.</p>';
+      document.body.classList.remove('init');
+      document.body.insertAdjacentHTML('beforeend','<p style="padding:20px">No se encontraron datos en el link.</p>');
     } else {
       render(datos);
-      // Auto-descarga una vez que el DOM está listo
-      requestAnimationFrame(()=> setTimeout(descargarPdf, 250));
+      requestAnimationFrame(async ()=>{
+        try { await descargarPdf(); }
+        finally {
+          document.body.classList.remove('init');
+          setTimeout(()=>{ window.close(); }, 400); // algunos móviles lo permiten
+        }
+      });
     }
   </script>
 </body>
