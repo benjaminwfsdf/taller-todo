@@ -953,7 +953,7 @@
     <button onclick="borrarTodo()">🧹 Borrar todo</button>
   </div>
 
-  <!-- ====== Lógica QR + Descarga PDF local ====== -->
+  <!-- ====== Lógica QR + Descarga PDF local (robusta) ====== -->
   <script>
     function construirLinkDescarga(datos){
       const packed = LZString.compressToEncodedURIComponent(JSON.stringify(datos));
@@ -973,43 +973,72 @@
       mostrarQr(construirLinkDescarga(recogerDatosInforme()));
     }
 
-    // === Utilidades para asegurar imágenes en PDF ===
+    /* ===== Helpers comunes para exportar ===== */
     function waitImagesLoaded(container){
       const imgs = Array.from(container.querySelectorAll('img'));
       if (!imgs.length) return Promise.resolve();
       return Promise.all(imgs.map(img => img.complete ? Promise.resolve() :
         new Promise(res => { img.onload = res; img.onerror = res; })));
     }
-
     async function toDataURLFromUrl(url){
       const res = await fetch(url, {mode:'cors'}).catch(()=>null) || await fetch(url).catch(()=>null);
       if(!res || !res.ok) throw new Error('fetch img fail: '+url);
       const blob = await res.blob();
       return await new Promise((resolve)=>{
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.readAsDataURL(blob);
+        const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(blob);
       });
     }
-
     async function inlineAllImages(container){
       const imgs = Array.from(container.querySelectorAll('img')).filter(i => i && i.src && !i.src.startsWith('data:'));
       for (const img of imgs){
         try{
           const data = await toDataURLFromUrl(img.src);
           await new Promise((resolve)=>{ img.onload = resolve; img.onerror = resolve; img.src = data; });
-        }catch(e){ /* sigue sin romper */ }
+        }catch(e){ /* continuar sin romper */ }
       }
       await waitImagesLoaded(container);
     }
+    function cloneForPdf(el){
+      const clone = el.cloneNode(true);
+      // Reemplazar textareas por divs con el mismo texto (html2canvas a veces los corta)
+      clone.querySelectorAll('textarea').forEach((ta)=>{
+        const styles = getComputedStyle(ta);
+        const div = document.createElement('div');
+        div.textContent = ta.value;
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.minHeight = styles.height;
+        div.style.border = styles.border || '1px solid #000';
+        div.style.padding = styles.padding || '6px';
+        div.style.fontSize = styles.fontSize;
+        div.style.lineHeight = styles.lineHeight;
+        div.style.boxSizing = 'border-box';
+        ta.parentNode.replaceChild(div, ta);
+      });
+      return clone;
+    }
+    async function settleLayout(){
+      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch(e){}
+      await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
+      await new Promise(r => setTimeout(r, 60));
+    }
 
+    /* ===== NUEVA versión robusta ===== */
     async function descargarPDFLocal(){
       const paper = document.getElementById('paper');
       const fab = document.querySelector('.fab');
       const prev = fab.style.display; fab.style.display = 'none'; // no exportar botones
 
-      // Asegurar logos/QR en el PDF
-      await inlineAllImages(paper);
+      // Crear sandbox oculto y clonar el contenido ya con textareas "planchadas"
+      const sandbox = document.createElement('div');
+      sandbox.style.position = 'fixed';
+      sandbox.style.left = '-10000px';
+      const clone = cloneForPdf(paper);
+      sandbox.appendChild(clone);
+      document.body.appendChild(sandbox);
+
+      // Incrustar imágenes en base64 dentro del CLON
+      await inlineAllImages(clone);
+      await settleLayout();
 
       const patente = (document.querySelector('input[name="patente"]').value || 'SIN_PATENTE')
                       .toUpperCase().replace(/\s+/g,'');
@@ -1017,15 +1046,26 @@
         filename: `Informe_${patente}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`,
         margin: 0,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          scrollY: 0,
+          windowWidth: clone.scrollWidth,
+          windowHeight: Math.max(clone.scrollHeight, 1123) // ~A4 @96DPI
+        },
         jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
       };
+
       try{
-        await html2pdf().set(opt).from(paper).save();
+        await html2pdf().set(opt).from(clone).save();
       } finally {
         fab.style.display = prev || '';
+        document.body.removeChild(sandbox);
       }
     }
+
+    // Exponer por si lo llamas desde botones
+    window.descargarPDFLocal = descargarPDFLocal;
   </script>
 </body>
 </html>
