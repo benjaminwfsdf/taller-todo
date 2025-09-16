@@ -43,7 +43,7 @@
     @media print {
       @page { size: letter; margin: 6mm 20mm; }
       body { margin: 0; padding: 0; box-shadow: none; border: none; }
-      #boton-imprimir, #boton-borrar { display: none !important; }
+      #boton-imprimir, #boton-borrar, #boton-mostrar-qr { display: none !important; }
     }
 
     body {
@@ -203,6 +203,7 @@
     <strong>NOTA: COMPROBANTE VALIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
   </div>
 
+  <!-- ========== TUS SCRIPTS ORIGINALES ========== -->
   <script>
     /* ====== Auth modal (usuario + clave informes@) con persistencia en localStorage (12h) ====== */
     (function(){
@@ -244,8 +245,6 @@
           setAuthed(HOURS_VALID);
           $ov.style.display = "none";
           $ov.setAttribute("aria-hidden","true");
-
-          
           try{
             if ('PasswordCredential' in window && 'credentials' in navigator){
               const username = ($user.value || 'usuario').trim();
@@ -253,7 +252,6 @@
               await navigator.credentials.store(cred);
             }
           }catch(e){ /* silencioso */ }
-
         } else {
           $err.textContent = "Clave incorrecta.";
           const card = document.getElementById('auth-card');
@@ -271,7 +269,6 @@
       $btn.addEventListener('click', tryLogin);
       $pin.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') tryLogin(); });
 
-     
       document.addEventListener('keydown', (e)=>{
         if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); logout(); }
       });
@@ -279,7 +276,6 @@
   </script>
 
   <script>
-    
     const CODIGOS_BASE = {
       "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
   "P0171": "Sistema demasiado pobre (Banco 1)",
@@ -867,8 +863,7 @@
   "C0229": "Circuito del sensor de posición del árbol de levas B 194",
   "C0230": "Circuito del sensor de posición del árbol de levas B 195",
   "C0040": "Fallo en el circuito de velocidad de la rueda delantera derecha"
-    // 🔁 Puedes seguir agregando más
-  };
+    };
 
     /* ====== Autorrelleno: SOLO descripciones en “DETALLE” ====== */
     const txtCodigos = document.getElementById("codigo_area");
@@ -939,7 +934,6 @@
       }
     }
 
-    
     function borrarTodo() {
       if (!confirm("¿Seguro que quieres borrar todo el contenido del informe?")) return;
       document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
@@ -971,16 +965,86 @@
       ids.forEach(id=>{
         const el = document.getElementById(id);
         if(el){
-          fit(el); // ajuste inicial (si hay texto cargado)
-          el.addEventListener('input', ()=>fit(el)); // ajuste al escribir/pegar/borrar
+          fit(el);
+          el.addEventListener('input', ()=>fit(el));
         }
       });
     })();
   </script>
 
+  <!-- ========= NUEVOS: Librerías para QR y compresión del enlace ========= -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" referrerpolicy="no-referrer"></script>
+
+  <!-- ========= NUEVO: Modal QR ========= -->
+  <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:99999;">
+    <div style="background:#fff; width:min(92vw,420px); border:1px solid #000; border-radius:10px; padding:18px; box-shadow:0 4px 0 #000; text-align:center;">
+      <h3 style="margin:0 0 10px">Escanea para descargar el PDF</h3>
+      <div id="qr-box" style="display:flex; justify-content:center; margin:10px 0;"></div>
+      <div style="word-break:break-all; font-size:12px; margin:8px 0;">
+        <a id="qr-link" href="#" target="_blank" rel="noopener"></a>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
+        <button onclick="navigator.clipboard.writeText(document.getElementById('qr-link').href)">Copiar link</button>
+        <button onclick="document.getElementById('qr-modal').style.display='none'">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= NUEVO: Botonera (agregamos “Mostrar QR”) ========= -->
   <div class="fab">
     <button id="boton-imprimir" onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
+    <button id="boton-mostrar-qr" onclick="generarQRDeDescargaPDF()">📲 Mostrar QR</button>
     <button id="boton-borrar" onclick="borrarTodo()">🧹 Borrar todo</button>
-  </div> 
+  </div>
+
+  <!-- ========= NUEVO: Lógica para construir link + QR ========= -->
+  <script>
+    // Toma los datos del formulario actual
+    function recogerDatosInforme(){
+      return {
+        marca: document.querySelector('input[name="marca"]').value.trim(),
+        modelo: document.querySelector('input[name="modelo"]').value.trim(),
+        patente: document.querySelector('input[name="patente"]').value.trim().toUpperCase(),
+        ano: document.querySelector('input[name="ano"]').value.trim(),
+        km: document.querySelector('input[name="km"]').value.trim(),
+        motor: document.querySelector('input[name="motor"]').value.trim(),
+        codigo: document.getElementById("codigo_area").value.trim(),
+        detalle: document.getElementById("detalle_area").value.trim(),
+        valor_area: document.getElementById("valor_area").value.trim(),
+        causas: document.getElementById("causas").value.trim(),
+        recomendaciones: document.getElementById("recomendaciones").value.trim(),
+        valor_final: document.getElementById("valor_final").value.trim(),
+        fecha: document.getElementById("fecha").innerText.trim()
+      };
+    }
+
+    // Construye el link del "visor-descargador" con datos comprimidos en el #hash
+    function construirLinkDescarga(datos){
+      const json = JSON.stringify(datos);
+      const packed = LZString.compressToEncodedURIComponent(json); // compacto y URL-safe
+      const base = location.origin + location.pathname.replace(/\/[^\/]*$/, '/'); // carpeta actual
+      return base + 'informe_dl.html#' + packed;
+    }
+
+    // Muestra el QR en el modal
+    function mostrarQr(url){
+      const link = document.getElementById('qr-link');
+      const box = document.getElementById('qr-box');
+      link.textContent = url;
+      link.href = url;
+      box.innerHTML = "";
+      new QRCode(box, { text: url, width: 220, height: 220 });
+      document.getElementById('qr-modal').style.display = 'flex';
+    }
+
+    // Botón principal: “Mostrar QR”
+    function generarQRDeDescargaPDF(){
+      const datos = recogerDatosInforme();
+      const url = construirLinkDescarga(datos);
+      mostrarQr(url);
+    }
+    window.generarQRDeDescargaPDF = generarQRDeDescargaPDF;
+  </script>
 </body>
 </html>
