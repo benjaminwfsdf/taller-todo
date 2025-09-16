@@ -15,14 +15,14 @@
 
   <!-- === Protección ligera con usuario+PIN (modal + persistencia 12h en localStorage) === -->
   <style>
-    #auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(2px); }
-    #auth-card { background:#fff; width:min(92vw, 380px); border:1px solid #000; border-radius:10px; padding:18px; box-shadow:0 4px 0 #000; font-family: Arial, sans-serif; }
-    #auth-card h3 { margin:0 0 10px; font-size:18px; }
+    #auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(2px)}
+    #auth-card{background:#fff;width:min(92vw,380px);border:1px solid #000;border-radius:10px;padding:18px;box-shadow:0 4px 0 #000;font-family:Arial,sans-serif}
+    #auth-card h3{margin:0 0 10px;font-size:18px}
     #auth-card .row{margin:8px 0}
-    #auth-card input[type=text], #auth-card input[type=password]{ width:100%; padding:10px; font-size:16px; border:1px solid #000; border-radius:6px; }
-    #auth-card button{ margin-top:10px; width:100%; padding:10px; font-size:14px; cursor:pointer; border:1px solid #000; border-radius:6px; background:#fff; box-shadow:0 2px 0 #000; }
-    #auth-error { color:#b30000; font-size:12px; height:16px; margin-top:6px; font-weight:bold; }
-    .shake { animation:shake .2s linear 2; }
+    #auth-card input[type=text],#auth-card input[type=password]{width:100%;padding:10px;font-size:16px;border:1px solid #000;border-radius:6px}
+    #auth-card button{margin-top:10px;width:100%;padding:10px;font-size:14px;cursor:pointer;border:1px solid #000;border-radius:6px;background:#fff;box-shadow:0 2px 0 #000}
+    #auth-error{color:#b30000;font-size:12px;height:16px;margin-top:6px;font-weight:bold}
+    .shake{animation:shake .2s linear 2}
     @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
   </style>
 
@@ -30,55 +30,68 @@
     @media print {
       @page { size: letter; margin: 6mm 20mm; }
       body { margin: 0; padding: 0; box-shadow: none; border: none; }
-      .fab, #boton-imprimir, #boton-borrar, #boton-mostrar-qr, #boton-descargar-local { display: none !important; }
+      .fab { display: none !important; }
     }
 
     body { font-family: Arial, sans-serif; margin: 0; background: #f2f2f2; }
-    /* Contenedor de “la hoja” (lo exportaremos a PDF) */
+
+    /* Contenedor exportable (la “hoja”) */
     #paper {
-      width: 21cm; min-height: 29.7cm; margin: 32px auto; padding: 40px; background: #fff;
+      width: 21cm; min-height: 29.7cm;
+      margin: 32px auto; padding: 40px; background: #fff;
       border: 1px solid #000; box-sizing: border-box; font-size: 13px;
+      position: relative; /* estable */
     }
 
-    .titulo { width: 100%; background: #b30000; color: #fff; font-weight: bold; font-size: 24px; padding: 12px 0; text-align: center; box-sizing: border-box; margin: 0 0 10px 0; }
-
-    .contacto-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; }
-    .contacto { text-align: center; font-size: 14px; line-height: 1.4; flex: 1; font-weight: bold; }
-    .contacto-wrap img { max-height: 170px; object-fit: contain; }
-
-    .form-grid { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    .form-grid td { padding: 6px; border: 1px solid #000; vertical-align: middle; }
-    .form-grid label { font-weight: bold; margin-right: 6px; min-width: 60px; font-size: 14px; }
-    .inline { display: flex; align-items: center; gap: 6px; }
-    .form-grid input[type="text"] { width: 100%; padding: 2px 4px; box-sizing: border-box; border: 1px solid #000; font-size: 16px; }
-
-    .seccion-titulo {
-      font-weight: bold; margin-top: 20px; margin-bottom: 5px; text-transform: uppercase;
-      background: #f0f0f0; padding: 6px; border: 1px solid #000;
+    .titulo {
+      width: 100%; background: #b30000; color: #fff; font-weight: bold;
+      font-size: 24px; padding: 12px 0; text-align: center; box-sizing: border-box; margin: 0 0 10px 0;
     }
 
-    .tabla-codigos { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
-    .tabla-codigos th, .tabla-codigos td { border: 1px solid #000; padding: 8px; vertical-align: top; }
-    .tabla-codigos th { background: #d9d9d9; font-weight: bold; text-align: left; }
-    .tabla-codigos textarea { width: 100%; height: 220px; border: none; resize: none; font-size: 16px; box-sizing: border-box; padding: 6px; }
+    .contacto-wrap { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:12px; }
+    .contacto { text-align:center; font-size:14px; line-height:1.4; flex:1; font-weight:bold; }
+    .contacto-wrap img { max-height:170px; object-fit:contain; }
 
-    textarea { width: 100%; height: 100px; margin-top: 5px; padding: 6px; border: 1px solid #000; box-sizing: border-box; font-size: 16px; }
+    .form-grid { width:100%; border-collapse:collapse; margin-bottom:20px; }
+    .form-grid td { padding:6px; border:1px solid #000; vertical-align:middle; }
+    .form-grid label { font-weight:bold; margin-right:6px; min-width:60px; font-size:14px; }
+    .inline { display:flex; align-items:center; gap:6px; }
+    .form-grid input[type="text"] { width:100%; padding:2px 4px; box-sizing:border-box; border:1px solid #000; font-size:16px; }
 
-    .valor-final { margin-top: 20px; font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .valor-final input { padding: 10px 16px; border: 2px solid #000; font-size: 20px; font-weight: bold; width: 180px; text-align: right; }
-    .fecha-final { border: 1px solid #000; padding: 6px 12px; font-size: 13px; color: #000; }
+    .seccion-titulo { font-weight:bold; margin-top:20px; margin-bottom:5px; text-transform:uppercase; background:#f0f0f0; padding:6px; border:1px solid #000; }
 
-    .nota-footer { font-size: 10px; text-align: center; margin-top: 10px; font-weight: bold; }
+    .tabla-codigos { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:fixed; }
+    .tabla-codigos th, .tabla-codigos td { border:1px solid #000; padding:8px; vertical-align:top; }
+    .tabla-codigos th { background:#d9d9d9; font-weight:bold; text-align:left; }
+    .tabla-codigos textarea { width:100%; height:220px; border:none; resize:none; font-size:16px; box-sizing:border-box; padding:6px; }
 
-    .fab { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 999; }
-    .fab button { padding: 10px 16px; font-size: 14px; border: 1px solid #000; background: #fff; cursor: pointer; box-shadow: 0 2px 0 #000; border-radius: 6px; }
-    .fab button:hover { transform: translateY(1px); }
+    textarea { width:100%; height:100px; margin-top:5px; padding:6px; border:1px solid #000; box-sizing:border-box; font-size:16px; }
 
-    /* Solo códigos/detalle crecen */
+    .valor-final { margin-top:20px; font-weight:bold; font-size:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .valor-final input { padding:10px 16px; border:2px solid #000; font-size:20px; font-weight:bold; width:180px; text-align:right; }
+    .fecha-final { border:1px solid #000; padding:6px 12px; font-size:13px; color:#000; }
+
+    .nota-footer { font-size:10px; text-align:center; margin-top:10px; font-weight:bold; }
+
+    /* Botonera: SIEMPRE visible (móvil) */
+    .fab {
+      position: fixed; bottom: 16px; right: 16px;
+      display:flex; flex-direction:column; gap:10px;
+      z-index: 2147483647; /* super alto para móvil/PWA */
+    }
+    .fab button {
+      padding: 12px 18px; font-size: 15px;
+      border:1px solid #000; background:#fff; cursor:pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,.25); border-radius:10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .fab button:active { transform: translateY(1px); }
+    @supports (-webkit-touch-callout: none) { .fab { bottom: 12px; right: 12px; } }
+
+    /* Auto-grow SOLO códigos/detalle */
     #codigo_area, #detalle_area {
-      width: 100%;
-      min-height: 220px; height: auto; border: none; font-size: 16px;
-      box-sizing: border-box; padding: 6px; resize: vertical; overflow: hidden;
+      width:100%; min-height:220px; height:auto; border:none; font-size:16px;
+      box-sizing:border-box; padding:6px; resize:vertical; overflow:hidden;
     }
   </style>
 </head>
@@ -97,12 +110,13 @@
     </div>
   </div>
 
-  <!-- CONTENIDO DEL INFORME (exportaremos #paper a PDF) -->
+  <!-- ===== CONTENIDO DEL INFORME (exportaremos #paper a PDF) ===== -->
   <div id="paper">
     <div class="titulo">INFORME DE DIAGNOSTICO</div>
 
     <div class="contacto-wrap">
-      <img src="img/logo-scanners.png" alt="logo scanners" />
+      <!-- IMPORTANTE: rutas relativas y CORS para html2canvas -->
+      <img src="img/logo-scanners.png" alt="logo scanners" loading="eager" crossorigin="anonymous" />
       <div class="contacto">
         WWW.ELSEÑORDELOSESCANER.CL<br />
         DORSAL (ALTURA 6200) METRO NEPTUNO<br />
@@ -111,7 +125,7 @@
         SCANNER ORIGINAL TODAS LAS MARCAS<br />
         LIMPIEZA INYECTORES – SISTEMAS DPF - GASES LLAVES CON CHIP – PROGRAMACION
       </div>
-      <img src="img/qr-whatsapp.png" alt="QR whatsapp" />
+      <img src="img/qr-whatsapp.png" alt="QR whatsapp" loading="eager" crossorigin="anonymous" />
     </div>
 
     <table class="form-grid">
@@ -162,7 +176,7 @@
     </div>
   </div><!-- /#paper -->
 
-  <!-- ====== AUTH + FUNCIONES ORIGINALES ====== -->
+  <!-- ====== AUTH ====== -->
   <script>
     (function(){
       // SHA-256("informes@")
@@ -182,10 +196,7 @@
         const until = parseInt(STORAGE.getItem(storeKey) || "0", 10);
         return until && until > now();
       };
-      const setAuthed = (h) => {
-        const ms = (h || HOURS_VALID) * 60 * 60 * 1000;
-        STORAGE.setItem(storeKey, String(now() + ms));
-      };
+      const setAuthed = (h) => STORAGE.setItem(storeKey, String(now() + (h||HOURS_VALID)*3600*1000));
       const logout = () => { STORAGE.removeItem(storeKey); sessionStorage.removeItem(storeKey); location.reload(); };
 
       async function sha256Hex(text){
@@ -233,9 +244,10 @@
     })();
   </script>
 
+  <!-- ====== Autorrelleno de DETALLE por códigos ====== -->
   <script>
     const CODIGOS_BASE = {
- "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
+     "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
   "P0171": "Sistema demasiado pobre (Banco 1)",
   "P0300": "Falla de encendido aleatoria o múltiple",
   "P0113": "Sensor de temperatura del aire de admisión - entrada alta",
@@ -823,7 +835,6 @@
   "C0040": "Fallo en el circuito de velocidad de la rueda delantera derecha"
     };
 
-    // Autorrelleno (solo descripciones) en DETALLE según códigos escritos
     const txtCodigos = document.getElementById("codigo_area");
     const txtDetalle = document.getElementById("detalle_area");
     const RE_CODIGO = /^[PBCU]\d{4}$/;
@@ -845,8 +856,10 @@
       clearTimeout(window.__debAutoTimer);
       window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 120);
     });
+  </script>
 
-    // Guardar en Google Sheets + imprimir
+  <!-- ====== Guardar en Sheets + Borrar + Atajos + Auto-grow + Recolectar datos ====== -->
+  <script>
     async function guardarEnGoogleSheetsYImprimir() {
       const datos = recogerDatosInforme();
       try {
@@ -868,21 +881,18 @@
       mezclarDetalleSoloDescripcion();
     }
 
-    // Atajos
     document.addEventListener("keydown", (ev) => {
       if (ev.ctrlKey && ev.shiftKey && (ev.key === 'S' || ev.key === 's')) { ev.preventDefault(); guardarEnGoogleSheetsYImprimir(); }
       if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) { ev.preventDefault(); borrarTodo(); }
       if (ev.ctrlKey && (ev.key === 'l' || ev.key === 'L')) { ev.preventDefault(); localStorage.removeItem('auth_until_ts'); sessionStorage.removeItem('auth_until_ts'); location.reload(); }
     });
 
-    // Auto-grow
     (function(){ ['codigo_area','detalle_area'].forEach(id=>{
       const el = document.getElementById(id);
       function fit(){ el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
       if(el){ fit(); el.addEventListener('input', fit); }
     }); })();
 
-    // Recolectar datos (usado por QR y por Sheets)
     function recogerDatosInforme(){
       return {
         marca: document.querySelector('input[name="marca"]').value.trim(),
@@ -902,13 +912,13 @@
     }
   </script>
 
-  <!-- ====== Librerías para QR / compresión / PDF local ====== -->
+  <!-- ====== Librerías: QR / compresión / PDF local ====== -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" referrerpolicy="no-referrer"></script>
 
   <!-- ====== Modal QR ====== -->
-  <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:99999;">
+  <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:99998;">
     <div style="background:#fff; width:min(92vw,420px); border:1px solid #000; border-radius:10px; padding:18px; box-shadow:0 4px 0 #000; text-align:center;">
       <h3 style="margin:0 0 10px">Escanea para descargar el PDF</h3>
       <div id="qr-box" style="display:flex; justify-content:center; margin:10px 0;"></div>
@@ -922,43 +932,45 @@
 
   <!-- ====== Botonera flotante ====== -->
   <div class="fab">
-    <button id="boton-imprimir" onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
-    <button id="boton-descargar-local" onclick="descargarPDFLocal()">📄 Descargar PDF</button>
-    <button id="boton-mostrar-qr" onclick="generarQRDeDescargaPDF()">📲 Mostrar QR</button>
-    <button id="boton-borrar" onclick="borrarTodo()">🧹 Borrar todo</button>
+    <button onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
+    <button onclick="descargarPDFLocal()">📄 Descargar PDF</button>
+    <button onclick="generarQRDeDescargaPDF()">📲 Mostrar QR</button>
+    <button onclick="borrarTodo()">🧹 Borrar todo</button>
   </div>
 
   <!-- ====== Lógica QR + Descarga PDF local ====== -->
   <script>
-    // Construir link robusto (sirve en http(s) y en file://)
     function construirLinkDescarga(datos){
-      const json = JSON.stringify(datos);
-      const packed = LZString.compressToEncodedURIComponent(json);
-      const href = location.href;                       // ej. file:///C:/.../informes.html  ó  https://.../informes.html
-      const base = href.substring(0, href.lastIndexOf('/') + 1);
+      const packed = LZString.compressToEncodedURIComponent(JSON.stringify(datos));
+      const base = location.href.substring(0, location.href.lastIndexOf('/') + 1);
       return base + 'informe_dl.html#' + packed;
     }
 
     function mostrarQr(url){
       const link = document.getElementById('qr-link');
       const box = document.getElementById('qr-box');
-      link.textContent = url;
-      link.href = url;
-      box.innerHTML = "";
+      link.textContent = url; link.href = url; box.innerHTML = "";
       new QRCode(box, { text: url, width: 220, height: 220 });
       document.getElementById('qr-modal').style.display = 'flex';
     }
 
     function generarQRDeDescargaPDF(){
-      const datos = recogerDatosInforme();
-      const url = construirLinkDescarga(datos);
-      mostrarQr(url);
+      mostrarQr(construirLinkDescarga(recogerDatosInforme()));
     }
 
-    // PDF local idéntico (mismo equipo)
+    // Espera a que las imágenes del papel estén listas (evita que falten en el PDF)
+    function waitImagesLoaded(container){
+      const imgs = Array.from(container.querySelectorAll('img'));
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(img => img.complete ? Promise.resolve() :
+        new Promise(res => { img.onload = res; img.onerror = res; })));
+    }
+
     async function descargarPDFLocal(){
+      const paper = document.getElementById('paper');
       const fab = document.querySelector('.fab');
-      const prev = fab.style.display; fab.style.display = 'none'; // que no salga en el PDF
+      const prev = fab.style.display; fab.style.display = 'none'; // no exportar botones
+      await waitImagesLoaded(paper);
 
       const patente = (document.querySelector('input[name="patente"]').value || 'SIN_PATENTE')
                       .toUpperCase().replace(/\s+/g,'');
@@ -970,8 +982,7 @@
         jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
       };
       try{
-        // Exporta SOLO el papel:
-        await html2pdf().set(opt).from(document.getElementById('paper')).save();
+        await html2pdf().set(opt).from(paper).save();
       } finally {
         fab.style.display = prev || '';
       }
