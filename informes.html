@@ -9,31 +9,18 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <meta name="theme-color" content="#000000">
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Informe de Diagnóstico</title>
 
   <!-- === Protección ligera con usuario+PIN (modal + persistencia 12h en localStorage) === -->
   <style>
-    #auth-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.6);
-      display: none; align-items: center; justify-content: center; z-index: 9999;
-      backdrop-filter: blur(2px);
-    }
-    #auth-card {
-      background:#fff; width:min(92vw, 380px); border:1px solid #000; border-radius:10px;
-      padding:18px; box-shadow:0 4px 0 #000; font-family: Arial, sans-serif;
-    }
+    #auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(2px); }
+    #auth-card { background:#fff; width:min(92vw, 380px); border:1px solid #000; border-radius:10px; padding:18px; box-shadow:0 4px 0 #000; font-family: Arial, sans-serif; }
     #auth-card h3 { margin:0 0 10px; font-size:18px; }
     #auth-card .row{margin:8px 0}
-    #auth-card input[type=text], #auth-card input[type=password]{
-      width:100%; padding:10px; font-size:16px; border:1px solid #000; border-radius:6px;
-    }
-    #auth-card button{
-      margin-top:10px; width:100%; padding:10px; font-size:14px; cursor:pointer;
-      border:1px solid #000; border-radius:6px; background:#fff; box-shadow:0 2px 0 #000;
-    }
+    #auth-card input[type=text], #auth-card input[type=password]{ width:100%; padding:10px; font-size:16px; border:1px solid #000; border-radius:6px; }
+    #auth-card button{ margin-top:10px; width:100%; padding:10px; font-size:14px; cursor:pointer; border:1px solid #000; border-radius:6px; background:#fff; box-shadow:0 2px 0 #000; }
     #auth-error { color:#b30000; font-size:12px; height:16px; margin-top:6px; font-weight:bold; }
     .shake { animation:shake .2s linear 2; }
     @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
@@ -43,23 +30,19 @@
     @media print {
       @page { size: letter; margin: 6mm 20mm; }
       body { margin: 0; padding: 0; box-shadow: none; border: none; }
-      #boton-imprimir, #boton-borrar, #boton-mostrar-qr { display: none !important; }
+      .fab, #boton-imprimir, #boton-borrar, #boton-mostrar-qr, #boton-descargar-local { display: none !important; }
     }
 
-    body {
-      font-family: Arial, sans-serif;
-      width: 21cm; min-height: 29.7cm;
-      margin: auto; padding: 40px; background: #fff;
+    body { font-family: Arial, sans-serif; margin: 0; background: #f2f2f2; }
+    /* Contenedor de “la hoja” (lo exportaremos a PDF) */
+    #paper {
+      width: 21cm; min-height: 29.7cm; margin: 32px auto; padding: 40px; background: #fff;
       border: 1px solid #000; box-sizing: border-box; font-size: 13px;
     }
 
-    .titulo {
-      width: 100%; background: #b30000; color: #fff; font-weight: bold;
-      font-size: 24px; padding: 12px 0; text-align: center;
-      box-sizing: border-box; margin: 0 0 10px 0;
-    }
+    .titulo { width: 100%; background: #b30000; color: #fff; font-weight: bold; font-size: 24px; padding: 12px 0; text-align: center; box-sizing: border-box; margin: 0 0 10px 0; }
 
-    .contacto-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .contacto-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; }
     .contacto { text-align: center; font-size: 14px; line-height: 1.4; flex: 1; font-weight: bold; }
     .contacto-wrap img { max-height: 170px; object-fit: contain; }
 
@@ -67,9 +50,7 @@
     .form-grid td { padding: 6px; border: 1px solid #000; vertical-align: middle; }
     .form-grid label { font-weight: bold; margin-right: 6px; min-width: 60px; font-size: 14px; }
     .inline { display: flex; align-items: center; gap: 6px; }
-    .form-grid input[type="text"] {
-      width: 100%; padding: 2px 4px; box-sizing: border-box; border: 1px solid #000; font-size: 16px;
-    }
+    .form-grid input[type="text"] { width: 100%; padding: 2px 4px; box-sizing: border-box; border: 1px solid #000; font-size: 16px; }
 
     .seccion-titulo {
       font-weight: bold; margin-top: 20px; margin-bottom: 5px; text-transform: uppercase;
@@ -89,27 +70,15 @@
 
     .nota-footer { font-size: 10px; text-align: center; margin-top: 10px; font-weight: bold; }
 
-    .fab {
-      position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px;
-    }
-    .fab button {
-      padding: 10px 16px; font-size: 14px; border: 1px solid #000; background: #fff; cursor: pointer; box-shadow: 0 2px 0 #000; border-radius: 6px;
-    }
+    .fab { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 999; }
+    .fab button { padding: 10px 16px; font-size: 14px; border: 1px solid #000; background: #fff; cursor: pointer; box-shadow: 0 2px 0 #000; border-radius: 6px; }
     .fab button:hover { transform: translateY(1px); }
-  </style>
 
-  <!-- ===== MOD 1: SOLO para CÓDIGOS y DETALLE (override) ===== -->
-  <style>
+    /* Solo códigos/detalle crecen */
     #codigo_area, #detalle_area {
       width: 100%;
-      min-height: 220px;
-      height: auto;
-      border: none;
-      font-size: 16px;
-      box-sizing: border-box;
-      padding: 6px;
-      resize: vertical;
-      overflow: hidden;
+      min-height: 220px; height: auto; border: none; font-size: 16px;
+      box-sizing: border-box; padding: 6px; resize: vertical; overflow: hidden;
     }
   </style>
 </head>
@@ -120,92 +89,81 @@
     <div id="auth-card">
       <h3>Acceso</h3>
       <p style="margin:0 0 6px; font-size:13px">Ingresa tus credenciales para continuar.</p>
-      <div class="row">
-        <input id="auth-user" name="username" type="text" inputmode="email" autocapitalize="none" autocorrect="off"
-               placeholder="tu@correo.com" autocomplete="username" />
-      </div>
-      <div class="row">
-        <input id="auth-pin" name="password" type="password" autocomplete="current-password" placeholder="••••••••" />
-      </div>
+      <div class="row"><input id="auth-user" name="username" type="text" inputmode="email" autocapitalize="none" autocorrect="off" placeholder="tu@correo.com" autocomplete="username" /></div>
+      <div class="row"><input id="auth-pin" name="password" type="password" autocomplete="current-password" placeholder="••••••••" /></div>
       <div id="auth-error"></div>
       <button id="auth-btn">Entrar</button>
       <p style="font-size:11px;opacity:.7;margin-top:8px">Cerrar sesión: <b>Ctrl+L</b></p>
     </div>
   </div>
 
-  <div class="titulo">INFORME DE DIAGNOSTICO</div>
+  <!-- CONTENIDO DEL INFORME (exportaremos #paper a PDF) -->
+  <div id="paper">
+    <div class="titulo">INFORME DE DIAGNOSTICO</div>
 
-  <div class="contacto-wrap">
-    <img src="img/logo-scanners.png" alt="logo scanners" />
-    <div class="contacto">
-      WWW.ELSEÑORDELOSESCANER.CL<br />
-      DORSAL (ALTURA 6200) METRO NEPTUNO<br />
-      CELULAR: +56976209564<br />
-      (WALDO)<br /><br />
-      SCANNER ORIGINAL TODAS LAS MARCAS<br />
-      LIMPIEZA INYECTORES – SISTEMAS DPF - GASES LLAVES CON CHIP – PROGRAMACION
+    <div class="contacto-wrap">
+      <img src="img/logo-scanners.png" alt="logo scanners" />
+      <div class="contacto">
+        WWW.ELSEÑORDELOSESCANER.CL<br />
+        DORSAL (ALTURA 6200) METRO NEPTUNO<br />
+        CELULAR: +56976209564<br />
+        (WALDO)<br /><br />
+        SCANNER ORIGINAL TODAS LAS MARCAS<br />
+        LIMPIEZA INYECTORES – SISTEMAS DPF - GASES LLAVES CON CHIP – PROGRAMACION
+      </div>
+      <img src="img/qr-whatsapp.png" alt="QR whatsapp" />
     </div>
-    <img src="img/qr-whatsapp.png" alt="QR whatsapp" />
-  </div>
 
-  <table class="form-grid">
-    <tr>
-      <td><div class="inline"><label>MARCA:</label><input type="text" name="marca" style="text-transform: uppercase;"></div></td>
-      <td><div class="inline"><label>MODELO:</label><input type="text" name="modelo" style="text-transform: uppercase;"></div></td>
-    </tr>
-    <tr>
-      <td><div class="inline"><label>PATENTE:</label><input type="text" name="patente" style="text-transform: uppercase;"></div></td>
-      <td><div class="inline"><label>AÑO:</label><input type="text" name="ano" style="text-transform: uppercase;"></div></td>
-    </tr>
-    <tr>
-      <td><div class="inline"><label>KM:</label><input type="text" name="km" style="text-transform: uppercase;"></div></td>
-      <td><div class="inline"><label>MOTOR:</label><input type="text" name="motor" style="text-transform: uppercase;"></div></td>
-    </tr>
-  </table>
-
-  <table class="tabla-codigos">
-    <thead>
+    <table class="form-grid">
       <tr>
-        <th style="width: 15%;">CÓDIGOS</th>
-        <th style="width: 70%;">DETALLE</th>
-        <th style="width: 15%;">VALOR</th>
+        <td><div class="inline"><label>MARCA:</label><input type="text" name="marca" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>MODELO:</label><input type="text" name="modelo" style="text-transform: uppercase;"></div></td>
       </tr>
-    </thead>
-    <tbody>
       <tr>
-        <td>
-          <textarea name="codigo_area" id="codigo_area" style="text-transform: uppercase;"></textarea>
-        </td>
-        <td>
-          <textarea name="detalle_area" id="detalle_area"></textarea>
-        </td>
-        <td>
-          <textarea name="valor_area" id="valor_area"></textarea>
-        </td>
+        <td><div class="inline"><label>PATENTE:</label><input type="text" name="patente" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>AÑO:</label><input type="text" name="ano" style="text-transform: uppercase;"></div></td>
       </tr>
-    </tbody>
-  </table>
+      <tr>
+        <td><div class="inline"><label>KM:</label><input type="text" name="km" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>MOTOR:</label><input type="text" name="motor" style="text-transform: uppercase;"></div></td>
+      </tr>
+    </table>
 
-  <div class="seccion-titulo">POSIBLES CAUSAS</div>
-  <textarea name="causas" id="causas"></textarea>
+    <table class="tabla-codigos">
+      <thead>
+        <tr>
+          <th style="width: 15%;">CÓDIGOS</th>
+          <th style="width: 70%;">DETALLE</th>
+          <th style="width: 15%;">VALOR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><textarea name="codigo_area" id="codigo_area" style="text-transform: uppercase;"></textarea></td>
+          <td><textarea name="detalle_area" id="detalle_area"></textarea></td>
+          <td><textarea name="valor_area" id="valor_area"></textarea></td>
+        </tr>
+      </tbody>
+    </table>
 
-  <div class="seccion-titulo">RECOMENDACIONES</div>
-  <textarea name="recomendaciones" id="recomendaciones"></textarea>
+    <div class="seccion-titulo">POSIBLES CAUSAS</div>
+    <textarea name="causas" id="causas"></textarea>
 
-  <div class="valor-final">
-    <div class="fecha-final" id="fecha"></div>
-    <div>
-      $ <input type="text" name="valor_final" id="valor_final">
+    <div class="seccion-titulo">RECOMENDACIONES</div>
+    <textarea name="recomendaciones" id="recomendaciones"></textarea>
+
+    <div class="valor-final">
+      <div class="fecha-final" id="fecha"></div>
+      <div>$ <input type="text" name="valor_final" id="valor_final"></div>
     </div>
-  </div>
 
-  <div class="nota-footer">
-    <strong>NOTA: COMPROBANTE VALIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
-  </div>
+    <div class="nota-footer">
+      <strong>NOTA: COMPROBANTE VALIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
+    </div>
+  </div><!-- /#paper -->
 
-  <!-- ========== TUS SCRIPTS ORIGINALES ========== -->
+  <!-- ====== AUTH + FUNCIONES ORIGINALES ====== -->
   <script>
-    /* ====== Auth modal (usuario + clave informes@) con persistencia en localStorage (12h) ====== */
     (function(){
       // SHA-256("informes@")
       const PASS_HASH = "76c4d54885353802045d21b7b97d9b892f5b7c72fd0eff29f366d9d44dd0b0cd";
@@ -251,7 +209,7 @@
               const cred = new window.PasswordCredential({ id: username, name: username, password: pin });
               await navigator.credentials.store(cred);
             }
-          }catch(e){ /* silencioso */ }
+          }catch(e){}
         } else {
           $err.textContent = "Clave incorrecta.";
           const card = document.getElementById('auth-card');
@@ -277,7 +235,7 @@
 
   <script>
     const CODIGOS_BASE = {
-      "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
+ "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
   "P0171": "Sistema demasiado pobre (Banco 1)",
   "P0300": "Falla de encendido aleatoria o múltiple",
   "P0113": "Sensor de temperatura del aire de admisión - entrada alta",
@@ -865,62 +823,32 @@
   "C0040": "Fallo en el circuito de velocidad de la rueda delantera derecha"
     };
 
-    /* ====== Autorrelleno: SOLO descripciones en “DETALLE” ====== */
+    // Autorrelleno (solo descripciones) en DETALLE según códigos escritos
     const txtCodigos = document.getElementById("codigo_area");
     const txtDetalle = document.getElementById("detalle_area");
-
     const RE_CODIGO = /^[PBCU]\d{4}$/;
     const normalizar = s => s.toUpperCase().trim().replace(/[^A-Z0-9]/g, "");
-    const codigosDe = (input) =>
-      Array.from(new Set(
-        input.toUpperCase().split(/[\s,;]+/).map(normalizar).filter(c => RE_CODIGO.test(c))
-      ));
-
-    const esLineaAuto = (linea) =>
-      /^•\s+.+/.test(linea.trim()) && !/^[PBCU]\d{4}/.test(linea.trim());
-
-    function construirLineasAutoSoloDescripcion(codigos) {
-      return codigos
-        .filter(c => CODIGOS_BASE[c])
-        .map(c => `• ${CODIGOS_BASE[c]}`);
-    }
+    const codigosDe = (input) => Array.from(new Set(
+      input.toUpperCase().split(/[\s,;]+/).map(normalizar).filter(c => RE_CODIGO.test(c))
+    ));
+    const esLineaAuto = (l) => /^•\s+.+/.test(l.trim()) && !/^[PBCU]\d{4}/.test(l.trim());
+    const construirLineasAutoSoloDescripcion = (codigos) => codigos.filter(c => CODIGOS_BASE[c]).map(c => `• ${CODIGOS_BASE[c]}`);
 
     function mezclarDetalleSoloDescripcion() {
       const cods = codigosDe(txtCodigos.value);
       const nuevasAuto = construirLineasAutoSoloDescripcion(cods);
-
       const lineas = txtDetalle.value.split(/\r?\n/);
       const manual = lineas.filter(l => !esLineaAuto(l) && l.trim() !== "");
-
-      if (nuevasAuto.length === 0) { txtDetalle.value = manual.join("\n"); return; }
-
-      const resultado = [...nuevasAuto, ...(manual.length ? ["", ...manual] : [])].join("\n");
-      txtDetalle.value = resultado;
+      txtDetalle.value = nuevasAuto.length ? [...nuevasAuto, ...(manual.length?["",...manual]:[])].join("\n") : manual.join("\n");
     }
-
     txtCodigos.addEventListener("input", () => {
       clearTimeout(window.__debAutoTimer);
       window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 120);
     });
 
-    /* ====== Guardar en Google Sheets + imprimir (no borra nada) ====== */
+    // Guardar en Google Sheets + imprimir
     async function guardarEnGoogleSheetsYImprimir() {
-      const datos = {
-        marca: document.querySelector('input[name="marca"]').value.trim(),
-        modelo: document.querySelector('input[name="modelo"]').value.trim(),
-        patente: document.querySelector('input[name="patente"]').value.trim(),
-        ano: document.querySelector('input[name="ano"]').value.trim(),
-        km: document.querySelector('input[name="km"]').value.trim(),
-        motor: document.querySelector('input[name="motor"]').value.trim(),
-        codigo: document.getElementById("codigo_area").value.trim(),
-        detalle: document.getElementById("detalle_area").value.trim(),
-        valor_area: document.getElementById("valor_area").value.trim(),
-        causas: document.getElementById("causas").value.trim(),
-        recomendaciones: document.getElementById("recomendaciones").value.trim(),
-        valor_final: document.getElementById("valor_final").value.trim(),
-        fecha: document.getElementById("fecha").innerText.trim()
-      };
-
+      const datos = recogerDatosInforme();
       try {
         await fetch("https://script.google.com/macros/s/AKfycbzTDTkFKdwIqH8E_jDrOWx3chf42XasN-QI0WcCRav9gS9r7gZJ5tRIVVch1T6E1ukw/exec", {
           method: "POST",
@@ -929,7 +857,7 @@
         });
         window.print();
       } catch (e) {
-        alert("⚠️ No se pudo guardar en Google Sheets. Revisa tu conexión o la API.\nSe abrirá la impresión de todos modos.");
+        alert("⚠️ No se pudo guardar en Google Sheets. Se abrirá la impresión de todos modos.");
         window.print();
       }
     }
@@ -937,70 +865,24 @@
     function borrarTodo() {
       if (!confirm("¿Seguro que quieres borrar todo el contenido del informe?")) return;
       document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
+      mezclarDetalleSoloDescripcion();
     }
 
-    /* ====== Atajos de teclado ====== */
+    // Atajos
     document.addEventListener("keydown", (ev) => {
-      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'S' || ev.key === 's')) {
-        ev.preventDefault(); guardarEnGoogleSheetsYImprimir();
-      }
-      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) {
-        ev.preventDefault(); borrarTodo();
-      }
-      if (ev.ctrlKey && (ev.key === 'l' || ev.key === 'L')) {
-        ev.preventDefault();
-        localStorage.removeItem('auth_until_ts'); sessionStorage.removeItem('auth_until_ts'); location.reload();
-      }
+      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'S' || ev.key === 's')) { ev.preventDefault(); guardarEnGoogleSheetsYImprimir(); }
+      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) { ev.preventDefault(); borrarTodo(); }
+      if (ev.ctrlKey && (ev.key === 'l' || ev.key === 'L')) { ev.preventDefault(); localStorage.removeItem('auth_until_ts'); sessionStorage.removeItem('auth_until_ts'); location.reload(); }
     });
-  </script>
 
-  <!-- ===== MOD 2: Auto-grow SOLO para #codigo_area y #detalle_area ===== -->
-  <script>
-    (function(){
-      const ids = ['codigo_area','detalle_area'];
-      function fit(el){
-        el.style.height = 'auto';
-        el.style.height = (el.scrollHeight + 2) + 'px';
-      }
-      ids.forEach(id=>{
-        const el = document.getElementById(id);
-        if(el){
-          fit(el);
-          el.addEventListener('input', ()=>fit(el));
-        }
-      });
-    })();
-  </script>
+    // Auto-grow
+    (function(){ ['codigo_area','detalle_area'].forEach(id=>{
+      const el = document.getElementById(id);
+      function fit(){ el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
+      if(el){ fit(); el.addEventListener('input', fit); }
+    }); })();
 
-  <!-- ========= NUEVOS: Librerías para QR y compresión del enlace ========= -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" referrerpolicy="no-referrer"></script>
-
-  <!-- ========= NUEVO: Modal QR ========= -->
-  <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:99999;">
-    <div style="background:#fff; width:min(92vw,420px); border:1px solid #000; border-radius:10px; padding:18px; box-shadow:0 4px 0 #000; text-align:center;">
-      <h3 style="margin:0 0 10px">Escanea para descargar el PDF</h3>
-      <div id="qr-box" style="display:flex; justify-content:center; margin:10px 0;"></div>
-      <div style="word-break:break-all; font-size:12px; margin:8px 0;">
-        <a id="qr-link" href="#" target="_blank" rel="noopener"></a>
-      </div>
-      <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
-        <button onclick="navigator.clipboard.writeText(document.getElementById('qr-link').href)">Copiar link</button>
-        <button onclick="document.getElementById('qr-modal').style.display='none'">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========= NUEVO: Botonera (agregamos “Mostrar QR”) ========= -->
-  <div class="fab">
-    <button id="boton-imprimir" onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
-    <button id="boton-mostrar-qr" onclick="generarQRDeDescargaPDF()">📲 Mostrar QR</button>
-    <button id="boton-borrar" onclick="borrarTodo()">🧹 Borrar todo</button>
-  </div>
-
-  <!-- ========= NUEVO: Lógica para construir link + QR ========= -->
-  <script>
-    // Toma los datos del formulario actual
+    // Recolectar datos (usado por QR y por Sheets)
     function recogerDatosInforme(){
       return {
         marca: document.querySelector('input[name="marca"]').value.trim(),
@@ -1018,16 +900,45 @@
         fecha: document.getElementById("fecha").innerText.trim()
       };
     }
+  </script>
 
-    // Construye el link del "visor-descargador" con datos comprimidos en el #hash
+  <!-- ====== Librerías para QR / compresión / PDF local ====== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" referrerpolicy="no-referrer"></script>
+
+  <!-- ====== Modal QR ====== -->
+  <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:99999;">
+    <div style="background:#fff; width:min(92vw,420px); border:1px solid #000; border-radius:10px; padding:18px; box-shadow:0 4px 0 #000; text-align:center;">
+      <h3 style="margin:0 0 10px">Escanea para descargar el PDF</h3>
+      <div id="qr-box" style="display:flex; justify-content:center; margin:10px 0;"></div>
+      <div style="word-break:break-all; font-size:12px; margin:8px 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"></a></div>
+      <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
+        <button onclick="navigator.clipboard.writeText(document.getElementById('qr-link').href)">Copiar link</button>
+        <button onclick="document.getElementById('qr-modal').style.display='none'">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== Botonera flotante ====== -->
+  <div class="fab">
+    <button id="boton-imprimir" onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
+    <button id="boton-descargar-local" onclick="descargarPDFLocal()">📄 Descargar PDF</button>
+    <button id="boton-mostrar-qr" onclick="generarQRDeDescargaPDF()">📲 Mostrar QR</button>
+    <button id="boton-borrar" onclick="borrarTodo()">🧹 Borrar todo</button>
+  </div>
+
+  <!-- ====== Lógica QR + Descarga PDF local ====== -->
+  <script>
+    // Construir link robusto (sirve en http(s) y en file://)
     function construirLinkDescarga(datos){
       const json = JSON.stringify(datos);
-      const packed = LZString.compressToEncodedURIComponent(json); // compacto y URL-safe
-      const base = location.origin + location.pathname.replace(/\/[^\/]*$/, '/'); // carpeta actual
+      const packed = LZString.compressToEncodedURIComponent(json);
+      const href = location.href;                       // ej. file:///C:/.../informes.html  ó  https://.../informes.html
+      const base = href.substring(0, href.lastIndexOf('/') + 1);
       return base + 'informe_dl.html#' + packed;
     }
 
-    // Muestra el QR en el modal
     function mostrarQr(url){
       const link = document.getElementById('qr-link');
       const box = document.getElementById('qr-box');
@@ -1038,13 +949,33 @@
       document.getElementById('qr-modal').style.display = 'flex';
     }
 
-    // Botón principal: “Mostrar QR”
     function generarQRDeDescargaPDF(){
       const datos = recogerDatosInforme();
       const url = construirLinkDescarga(datos);
       mostrarQr(url);
     }
-    window.generarQRDeDescargaPDF = generarQRDeDescargaPDF;
+
+    // PDF local idéntico (mismo equipo)
+    async function descargarPDFLocal(){
+      const fab = document.querySelector('.fab');
+      const prev = fab.style.display; fab.style.display = 'none'; // que no salga en el PDF
+
+      const patente = (document.querySelector('input[name="patente"]').value || 'SIN_PATENTE')
+                      .toUpperCase().replace(/\s+/g,'');
+      const opt = {
+        filename: `Informe_${patente}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`,
+        margin: 0,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+      };
+      try{
+        // Exporta SOLO el papel:
+        await html2pdf().set(opt).from(document.getElementById('paper')).save();
+      } finally {
+        fab.style.display = prev || '';
+      }
+    }
   </script>
 </body>
 </html>
