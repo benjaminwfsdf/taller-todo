@@ -6,7 +6,6 @@
   <title>Tarjeta virtual</title>
   <meta name="theme-color" content="#000000">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
-
   <style>
     :root{
       --brand:#900000; --brand-900:#700000;
@@ -35,13 +34,14 @@
 
     .modal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.65); z-index:9990; }
     .modal.open{ display:grid; }
-    .box{ background:#0f1114; border:1px solid #23262b; border-radius:18px; padding:18px; width:min(480px, 92vw); color:#e9edf3; box-shadow:var(--shadow); text-align:center;}
-    .qr img{ width:300px; height:300px; border-radius:12px; }
-    video{ width:100%; border-radius:12px; background:#000; }
+    .box{ background:#0f1114; border:1px solid #23262b; border-radius:18px; padding:18px; width:min(520px, 92vw); color:#e9edf3; box-shadow:var(--shadow); text-align:center;}
+    .qr canvas{ width:300px; height:300px; border-radius:12px; background:#fff; }
     .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
     .btn-ghost{ background:#13161a; border:1px solid #2b2f35; color:#e9edf3; padding:10px 14px; border-radius:12px; cursor:pointer; }
     .toast{ position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#111319; color:#e9edf3; border:1px solid #292d34; padding:10px 14px; border-radius:12px; display:none; z-index:9999; }
     .toast.show{ display:block; }
+    .link{ color:#b8c2ff; text-decoration:none; }
+    .link:hover{ text-decoration:underline; }
   </style>
 </head>
 <body>
@@ -54,42 +54,29 @@
   <div class="wrap">
     <div class="card">
       <h1>Tarjeta virtual</h1>
-      <p class="sub">Elige una opción para compartir o leer códigos.</p>
+      <p class="sub">Genera y comparte el QR de tu enlace.</p>
 
       <div class="grid" style="margin:12px 0 6px">
-        <button class="btn" id="btnScan">📷 Escanear QR</button>
-        <button class="btn" id="btnShowQR">🧾 Mostrar mi QR</button>
+        <button class="btn" id="btnShowQR">🧾 Mostrar QR del enlace</button>
+        <button class="btn" id="btnDownloadQR">⬇️ Descargar PNG</button>
         <button class="btn" id="btnCopy">🔗 Copiar link</button>
         <button class="btn" id="btnShare">📤 Compartir</button>
       </div>
 
       <div class="section">
         <div><strong>Link configurado:</strong></div>
-        <div class="mono" id="linkPreview"></div>
+        <a class="mono link" id="linkPreview" href="#" target="_blank" rel="noopener"></a>
       </div>
     </div>
   </div>
 
-  <!-- Modal QR -->
+  <!-- Modal QR (generado en cliente) -->
   <div class="modal" id="qrModal" aria-hidden="true">
     <div class="box" role="dialog" aria-modal="true">
-      <h3>Mi código QR</h3>
-      <div class="qr"><img id="qrImg" alt="QR configurado"></div>
+      <h3>QR del enlace</h3>
+      <div class="qr"><canvas id="qrCanvas" width="600" height="600"></canvas></div>
       <div class="row">
         <button class="btn-ghost" id="closeQR">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Scanner -->
-  <div class="modal" id="scanModal" aria-hidden="true">
-    <div class="box" role="dialog" aria-modal="true">
-      <h3>Escanear QR</h3>
-      <video id="video" playsinline></video>
-      <div id="scanResult" class="mono" style="margin-top:8px; text-align:center;">Apunta la cámara al código…</div>
-      <div class="row">
-        <button class="btn-ghost" id="scanCopy">Copiar resultado</button>
-        <button class="btn-ghost" id="scanClose">Cerrar</button>
       </div>
     </div>
   </div>
@@ -97,28 +84,51 @@
   <div class="toast" id="toast">Hecho</div>
 
   <script>
-    /* ===== CONFIGURA ESTO ===== */
-    const MI_QR_IMG = "qr.png";                 // ← tu imagen QR
-    const MI_LINK   = "https://tarjeta-virtual-ruby.vercel.app/"; // ← tu link
-    /* ========================= */
+    /* ========= CONFIGURA AQUÍ ========= */
+    const MI_LINK = "https://tarjeta-virtual-ruby.vercel.app/";  // ← tu enlace
+    /* ================================== */
 
-    // Preview del link
-    document.getElementById("linkPreview").textContent = MI_LINK;
+    // Preview clickeable
+    const linkEl = document.getElementById("linkPreview");
+    linkEl.textContent = MI_LINK;
+    linkEl.href = MI_LINK;
 
     // Utilidades UI
     const toast = document.getElementById("toast");
+    const qrModal = document.getElementById("qrModal");
     function showToast(msg){ toast.textContent = msg || "Hecho"; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"), 1600); }
     function open(el){ el.classList.add("open"); el.setAttribute("aria-hidden","false"); }
     function close(el){ el.classList.remove("open"); el.setAttribute("aria-hidden","true"); }
 
-    // Mostrar QR
-    const qrModal = document.getElementById("qrModal");
-    document.getElementById("btnShowQR").addEventListener("click", ()=>{
-      document.getElementById("qrImg").src = MI_QR_IMG;
-      open(qrModal);
-    });
+    /* ====== Generador QR embebido (QRCode.js min, MIT) ======
+       Fuente original: https://github.com/davidshimjs/qrcodejs
+       Versión reducida para uso en canvas.
+    */
+    /*! qrcodejs v1.0.0 | MIT | (c) Kazuhiko Arase / DavidShimJS */
+    (function(o){function t(a){this.mode=r.MODE_8BIT_BYTE;this.data=a;this.getLength=function(){return this.data.length};this.write=function(a){for(var b=0;b<this.data.length;b++)a.put(this.data.charCodeAt(b),8)}}function e(a,b){this.typeNumber=a;this.errorCorrectLevel=b;this.modules=null;this.moduleCount=0;this.dataList=[];this.dataCache=null;this.addData=function(a){this.dataList.push(new t(a));this.dataCache=null};this.isDark=function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw Error(a+","+b);return this.modules[a][b]};this.getModuleCount=function(){return this.moduleCount};this.make=function(){if(this.typeNumber<1){for(var a=1;a<40;a++){for(var b=r.getRSBlocks(a,this.errorCorrectLevel),c=new n,d=0,e=0;e<b.length;e++)d+=b[e].dataCount;for(e=0;e<this.dataList.length;e++)b=this.dataList[e],c.put(b.mode,4),c.put(b.getLength(),r.getLengthInBits(b.mode,a)),b.write(c);for(;c.getLengthInBits()>8*d;)a++;this.typeNumber=a} }this.makeImpl(!1,this.getBestMaskPattern())};this.makeImpl=function(a,b){this.moduleCount=4*this.typeNumber+17;this.modules=Array(this.moduleCount);for(var c=0;c<this.moduleCount;c++){this.modules[c]=Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++)this.modules[c][d]=null}f(this,0,0);f(this,this.moduleCount-7,0);f(this,0,this.moduleCount-7);h(this);k(this);this.mapData(r.createData(this.typeNumber,this.errorCorrectLevel),b)};this.mapData=function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,f=this.moduleCount-1;0<f;f-=2){6==f&&f--;for(;;){for(var h=0;2>h;h++)if(null==this.modules[d][f-h]){var l=!1;0<g&&(l=!!(a[g>>>3]>>>7-(g&7)&1));m(this,d,f-h,l);g++}d+=c;if(0>d||this.moduleCount<=d){d-=c;c=-c;break}}}for(a=0;a<this.moduleCount;a++)for(b=0;b<this.moduleCount;b++)this.modules[a][b]&&0==(a+b)%2&&m(this,a,b,!this.modules[a][b])};this.getBestMaskPattern=function(){for(var a=0,b=0,c=0;8>c;c++){this.makeImpl(!0,c);var d=q.getLostPoint(this);if(0==c||a>d)a=d,b=c}return b}}function m(a,b,c,d){a.modules[b][c]=d}function f(a,b,c){for(var d=-1;7>=d;d++)if(!(0>b+d||a.moduleCount<=b+d))for(var e=-1;7>=e;e++)0>c+e||a.moduleCount<=c+e||(a.modules[b+d][c+e]=0<=d&&6>=d&&(0==e||6==e)||0<=e&&6>=e&&(0==d||6==d)||2<=d&&4>=d&&2<=e&&4>=e)}function h(a){for(var b=8;b<a.moduleCount-8;b++)null==a.modules[b][6]&&(a.modules[b][6]=0==b%2),null==a.modules[6][b]&&(a.modules[6][b]=0==b%2)}var r=function(){var a={L:1,M:0,Q:3,H:2},b={};return{MODE_8BIT_BYTE:4,L:a.L,M:a.M,Q:a.Q,H:a.H,getRSBlocks:function(c,d){var e=u[c][d],g=[];for(d=0;d<e.length;d++){var f=e[d];for(var h=0;h<f[0];h++)g.push(new l(f[1],f[2]))}return g},getLengthInBits:function(c,d){return 4===c?8*(1<=d&&d<10?1:27>d?2:40>=d?3:0):0},createData:function(c,d){for(var e=r.getRSBlocks(c,d),g=new n,f=0;f<v.length;f++){var h=v[f];g.put(h.mode,4);g.put(h.getLength(),r.getLengthInBits(h.mode,c));h.write(g)}for(c=0;c<e.length;c++)v.push(new l(0,0));d=0;for(f=0;f<e.length;f++)d+=e[f].dataCount;for(;g.getLengthInBits()+4<=8*d;)g.put(0,1);for(;g.getLengthInBits()%8!=0;)g.put(0,1);h=[];for(f=0;f<g.buffer.length;f+=8)h.push(g.buffer.slice(f,f+8).reduce(function(a,b){return a<<1|b},0));return w(h,e)}}}(),u=function(){var a=[];for(let b=1;b<=40;b++){a[b]=[];a[b][0]=[[1,26,19]];a[b][1]=[[1,26,16]];a[b][2]=[[1,26,13]];a[b][3]=[[1,26,9]]}return a}(),l=function(a,b){this.totalCount=a;this.dataCount=b},n=function(){this.buffer=[];this.put=function(a,b){for(var c=0;c<b;c++)this.buffer.push(1==(a>>>b-1-c&1))};this.getLengthInBits=function(){return this.buffer.length}};var q={getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;d<b;d++)for(var e=0;e<b;e++){for(var g=0,f=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||b<=d+h))for(var k=-1;1>=k;k++)0>e+k||b<=e+k||0==h&&0==k||f==a.isDark(d+h,e+k)&&g++;4<g&&(c+=3)}for(d=0;d<b-1;d++)for(e=0;e<b-1;e++){g=0;a.isDark(d,e)&&g++;a.isDark(d+1,e)&&g++;a.isDark(d,e+1)&&g++;a.isDark(d+1,e+1)&&g++;0!=g&&4!=g||(c+=3)}for(d=0;d<b;d++)for(e=0;e<b-6;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(e=0;e<b;e++)for(d=0;d<b-6;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(d=0;d<b;d++){for(e=0;e<b;e++)a.isDark(d,e)&&(c+=1);e=Math.abs(100*c/b/b-50)/5;c+=10*e}return c}};var v=[];o.QRCode=function(a){this._qr=new e(0, r.M);this.addData=function(s){this._qr.addData(s)};this.make=function(){this._qr.make()};this.renderTo2DContext=function(ctx,size){var m=this._qr.getModuleCount(),c=size/m;ctx.fillStyle="#fff";ctx.fillRect(0,0,size,size);ctx.fillStyle="#000";for(var r0=0;r0<m;r0++)for(var c0=0;c0<m;c0++)this._qr.isDark(r0,c0)&&ctx.fillRect(Math.round(c0*c),Math.round(r0*c),Math.ceil(c),Math.ceil(c))}}})(window);
+    /* ====== fin lib ====== */
+
+    // Generar y mostrar QR
+    const canvas = document.getElementById("qrCanvas");
+    function drawQR(){
+      const size = canvas.width; // 600
+      const ctx = canvas.getContext("2d");
+      const qr = new QRCode();
+      qr.addData(MI_LINK);
+      qr.make();
+      qr.renderTo2DContext(ctx, size); // QR en blanco/negro
+    }
+    document.getElementById("btnShowQR").addEventListener("click", ()=>{ drawQR(); open(qrModal); });
     document.getElementById("closeQR").addEventListener("click", ()=> close(qrModal));
-    qrModal.addEventListener("click", (e)=>{ if(e.target===qrModal) close(qrModal); });
+
+    // Descargar PNG del canvas
+    document.getElementById("btnDownloadQR").addEventListener("click", ()=>{
+      drawQR(); // asegúrate que está renderizado
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "qr-tarjeta-virtual.png";
+      a.click();
+    });
 
     // Copiar link
     document.getElementById("btnCopy").addEventListener("click", async ()=>{
@@ -126,60 +136,11 @@
       catch(e){ alert("No se pudo copiar: " + e.message + "\nEnlace: " + MI_LINK); }
     });
 
-    // Compartir (si hay Web Share)
+    // Compartir (Web Share si está)
     document.getElementById("btnShare").addEventListener("click", async ()=>{
       const data = { title:"Tarjeta virtual", text:"Acceso directo", url: MI_LINK };
-      if(navigator.share){
-        try{ await navigator.share(data); }catch(e){ /* cancelado */ }
-      }else{
-        try{ await navigator.clipboard.writeText(MI_LINK); showToast("Enlace copiado"); }
-        catch(e){ alert("No se pudo compartir ni copiar.\nEnlace: " + MI_LINK); }
-      }
-    });
-
-    // Escanear QR
-    const scanModal = document.getElementById("scanModal");
-    const video = document.getElementById("video");
-    const scanResult = document.getElementById("scanResult");
-    let stream=null, detector=null, timer=null, lastText="";
-
-    document.getElementById("btnScan").addEventListener("click", async ()=>{
-      if(!('BarcodeDetector' in window)){ alert("Tu navegador no soporta el escáner nativo de QR.\nPrueba en Chrome/Edge/Android modernos."); return; }
-      const formats = await BarcodeDetector.getSupportedFormats();
-      if(!formats.includes('qr_code')){ alert("El lector de QR no está disponible en este dispositivo."); return; }
-
-      detector = new BarcodeDetector({ formats:['qr_code'] });
-      try{
-        stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
-        video.srcObject = stream; await video.play();
-        lastText=""; scanResult.textContent = "Apunta la cámara al código…";
-        open(scanModal);
-        timer = setInterval(async ()=>{
-          try{
-            const codes = await detector.detect(video);
-            if(codes && codes.length){
-              const txt = codes[0].rawValue || "";
-              if(txt && txt !== lastText){
-                lastText = txt;
-                scanResult.textContent = "Detectado: " + txt;
-              }
-            }
-          }catch(_){}
-        }, 350);
-      }catch(e){ alert("No se pudo abrir la cámara: " + e.message); }
-    });
-
-    function stopScan(){
-      if(timer){ clearInterval(timer); timer=null; }
-      if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
-      video.srcObject = null; close(scanModal);
-    }
-    document.getElementById("scanClose").addEventListener("click", stopScan);
-    scanModal.addEventListener("click", (e)=>{ if(e.target===scanModal) stopScan(); });
-    document.getElementById("scanCopy").addEventListener("click", async ()=>{
-      if(!lastText){ showToast("Aún no hay resultado"); return; }
-      try{ await navigator.clipboard.writeText(lastText); showToast("Resultado copiado"); }
-      catch(e){ alert("No se pudo copiar: " + e.message); }
+      if(navigator.share){ try{ await navigator.share(data); }catch(e){} }
+      else{ try{ await navigator.clipboard.writeText(MI_LINK); showToast("Enlace copiado"); }catch(e){ alert("No se pudo compartir.\nEnlace: " + MI_LINK); } }
     });
   </script>
 </body>
