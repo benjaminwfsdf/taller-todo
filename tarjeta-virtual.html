@@ -5,117 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tarjeta virtual</title>
   <meta name="theme-color" content="#000000" />
-  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" href="img/scanner.png" />
 
   <style>
     :root{
-      --brand:#900000; --brand-900:#700000;
-      --ink:#e9ecef; --muted:#b9c0c7;
+      --brand:#900000; --brand-900:#700000; --ink:#e9ecef; --muted:#b9c0c7;
       --bg:#0b0b0c; --panel:#0f0f11; --card:#16181b; --card-border:#272a2f;
-      --shadow:0 10px 28px rgba(0,0,0,.45);
+      --shadow:0 10px 28px rgba(0,0,0,.45); --shadow-hover:0 14px 40px rgba(0,0,0,.6);
+      --radius:16px; --radius-sm:12px;
     }
+    @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
     html,body{height:100%}
-    body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif; background:var(--bg); color:var(--ink);}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+      background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.55;
+    }
 
-    /* Topbar */
+    /* ===== Topbar (igual a Gestión de Vehículos) ===== */
     .topbar{
-      position:sticky; top:0; z-index:20;
-      display:flex; align-items:center; gap:12px;
-      padding:10px 14px;
-      background:#000; border-bottom:4px solid var(--brand);
+      background:#000; color:#fff; text-align:center;
+      padding:14px 10px; font-weight:700; letter-spacing:.6px;
+      border-bottom:4px solid var(--brand);
       box-shadow:0 6px 16px rgba(0,0,0,.55);
-    }
-    .backbtn{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px;
-      background:#121417; color:#fff; text-decoration:none; font-weight:800;
-      border:1px solid #2a2f36; border-radius:999px;
-      transition:background .15s ease, transform .08s ease, border-color .15s ease;
-    }
-    .backbtn:hover{ background:#181b20; border-color:#3a4048; }
-    .backbtn:active{ transform:translateY(1px); }
-    .topbar .sp{flex:1}
-    .toplink{
-      color:#b8c2ff; text-decoration:none; font-weight:700; font-size:14px;
-      padding:6px 8px; border-radius:8px;
-      max-width:60ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-      border:1px dashed #2b2f35; background:#0b0c0f;
-    }
-    .toplink:hover{ text-decoration:underline; }
-
-    /* Página centrada */
-    .page{
-      min-height: calc(100svh - 58px); /* resto de la topbar */
-      display:flex; align-items:center; justify-content:center;
-      padding: 22px 16px 40px;
+      user-select:none;
     }
 
-    .card{
-      background:var(--panel); border:1px solid var(--card-border);
-      border-radius:16px; box-shadow:var(--shadow);
-      padding:18px; width:min(820px, 100%);
-    }
-    h1{ margin:0 0 2px; font-size:clamp(20px,3.2vw,28px); }
-    p.sub{ margin:.2rem 0 1rem; color:var(--muted); }
+    /* ===== Contenedor principal (misma estética) ===== */
+    .wrapper{ max-width:1100px; margin:28px auto 44px; padding:0 16px; }
+    .frame{ border:3px solid var(--brand); border-radius:var(--radius); padding:20px; background:var(--panel); box-shadow:var(--shadow); }
+    .header{ margin:10px; background:var(--brand); color:#fff; border-radius:var(--radius); padding:20px 24px; text-align:center; box-shadow:0 10px 22px rgba(144,0,0,.35); }
+    .header h1{ margin:0; font-size:clamp(20px,3.2vw,28px); letter-spacing:.5px; }
 
-    .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-    @media (max-width:640px){ .grid{grid-template-columns:1fr} .page{align-items:flex-start;} }
+    /* ===== Botones y layout internos ===== */
+    .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; padding:12px; }
+    @media (max-width:900px){ .grid{ grid-template-columns:1fr; } }
 
     .btn{
-      appearance:none; border:0; border-radius:14px; padding:14px 16px;
-      font-weight:800; cursor:pointer; color:#fff; background:#0c0c0e;
-      border:2px solid var(--brand);
-      box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 10px rgba(179,0,0,.25);
-      transition:.2s; width:100%;
+      appearance:none; border:0; border-radius:12px; padding:12px 16px;
+      font-weight:800; cursor:pointer; text-decoration:none; display:inline-block; text-align:center;
+      transition: transform .12s, box-shadow .2s, background .2s, color .2s, border-color .2s;
+      box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(144,0,0,.25);
     }
-    .btn:hover{ background:var(--brand); box-shadow:0 6px 16px rgba(179,0,0,.35); }
+    .btn-primary{ background:#0c0c0e; color:#fff; border:2px solid var(--brand); }
+    .btn-primary:hover{ background:var(--brand); }
     .btn:active{ transform:translateY(1px); }
 
     .section{ margin-top:16px; padding:14px; border:1px dashed #2b2f35; border-radius:12px; }
-    .mono{ font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; color:#cfd6de; word-break:break-all; }
+    .mono{ font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.5px; color:#cfd6de; word-break:break-all; }
     .link{ color:#b8c2ff; text-decoration:none; }
     .link:hover{ text-decoration:underline; }
 
-    /* Modal */
+    /* ===== Modal QR (coherente con tu estilo) ===== */
     .modal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.65); z-index:9990; }
     .modal.open{ display:grid; }
-    .box{ background:#0f1114; border:1px solid #23262b; border-radius:18px; padding:18px; width:min(520px, 92vw); color:#e9edf3; box-shadow:var(--shadow); text-align:center;}
+    .box{ width:min(520px,92vw); background:#0f1114; border:2px solid var(--brand); border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.6); padding:18px; color:#e9edf3; text-align:center; }
+    #qrHolder{ display:grid; place-items:center; margin-top:6px; }
     #qrHolder canvas, #qrHolder img{ width:300px; height:300px; border-radius:12px; background:#fff; }
-    .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
-    .btn-ghost{ background:#13161a; border:1px solid #2b2f35; color:#e9edf3; padding:10px 14px; border-radius:12px; cursor:pointer; }
+    .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+    .btn-ghost{ background:#0c0c0e; border:2px solid var(--brand); color:#fff; padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:800; }
+    .btn-ghost:hover{ background:var(--brand); }
+
     .toast{ position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#111319; color:#e9edf3; border:1px solid #292d34; padding:10px 14px; border-radius:12px; display:none; z-index:9999; }
     .toast.show{ display:block; }
   </style>
 </head>
 <body>
-  <!-- Topbar -->
-  <div class="topbar">
-    <a class="backbtn" href="index.html" title="Volver">
-      <span aria-hidden="true">←</span> Volver
-    </a>
-    <div class="sp"></div>
-    <!-- aquí va tu link real -->
-    <a id="topLink" class="toplink" href="#" target="_blank" rel="noopener">https://www.elsenordelosescaner.cl/</a>
-  </div>
+  <!-- Topbar EXACTA como la de tu gestor -->
+  <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
-  <!-- Página centrada -->
-  <div class="page">
-    <div class="card">
-      <h1>Tarjeta virtual</h1>
-      <p class="sub">Genera y comparte el QR de tu enlace.</p>
+  <div class="wrapper">
+    <div class="frame">
+      <div class="header"><h1>TARJETA VIRTUAL</h1></div>
 
-      <div class="grid" style="margin:12px 0 6px">
-        <button class="btn" id="btnShowQR">🧾 Mostrar QR del enlace</button>
-        <button class="btn" id="btnDownloadQR">⬇️ Descargar PNG</button>
-        <button class="btn" id="btnCopy">🔗 Copiar link</button>
-        <button class="btn" id="btnShare">📤 Compartir</button>
+      <div class="grid">
+        <a class="btn btn-primary" id="btnShowQR" href="#">🧾 Mostrar QR del enlace</a>
+        <a class="btn btn-primary" id="btnDownloadQR" href="#">⬇️ Descargar PNG</a>
+        <a class="btn btn-primary" id="btnCopy" href="#">🔗 Copiar link</a>
+        <a class="btn btn-primary" id="btnShare" href="#">📤 Compartir</a>
       </div>
 
       <div class="section">
         <div><strong>Link configurado:</strong></div>
         <a class="mono link" id="linkPreview" href="#" target="_blank" rel="noopener"></a>
       </div>
+
+      <div style="text-align:center; margin-top:12px;">
+        <a href="index.html" class="btn btn-primary">← Volver al Panel Principal</a>
+      </div>
     </div>
+
+    <div class="toast" id="toast">Hecho</div>
   </div>
 
   <!-- Modal QR -->
@@ -129,36 +109,33 @@
     </div>
   </div>
 
-  <div class="toast" id="toast">Hecho</div>
-
   <!-- Librería QR estable -->
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
   <script>
     /* ========= CONFIGURA AQUÍ ========= */
-    const MI_LINK = "https://tarjeta-virtual-ruby.vercel.app/";  // ← tu enlace
+    const MI_LINK = "https://tarjeta-virtual-ruby.vercel.app/"; // ← pon aquí tu enlace
     /* ================================== */
 
-    // Poner el enlace en la topbar y en el preview
-    const topLink = document.getElementById("topLink");
-    topLink.textContent = MI_LINK;
-    topLink.href = MI_LINK;
-
+    // Mostrar el enlace clickeable abajo
     const linkEl = document.getElementById("linkPreview");
     linkEl.textContent = MI_LINK;
     linkEl.href = MI_LINK;
 
-    // Helpers UI
+    // Toast helper
     const toast = document.getElementById("toast");
-    const qrModal = document.getElementById("qrModal");
     function showToast(msg){ toast.textContent = msg || "Hecho"; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"), 1600); }
-    function open(el){ el.classList.add("open"); el.setAttribute("aria-hidden","false"); }
-    function close(el){ el.classList.remove("open"); el.setAttribute("aria-hidden","true"); }
 
-    // Generar QR en contenedor (qrcodejs crea un canvas)
+    // Modal helpers
+    const qrModal = document.getElementById("qrModal");
+    const closeQR = () => { qrModal.classList.remove("open"); qrModal.setAttribute("aria-hidden","true"); };
+    document.getElementById("closeQR").addEventListener("click", closeQR);
+    qrModal.addEventListener("click", (e)=>{ if(e.target===qrModal) closeQR(); });
+
+    // Generar QR
     function renderQR(){
       const holder = document.getElementById("qrHolder");
-      holder.innerHTML = ""; // limpia anterior
+      holder.innerHTML = "";
       new QRCode(holder, {
         text: MI_LINK,
         width: 300,
@@ -170,15 +147,16 @@
     }
 
     // Mostrar QR
-    document.getElementById("btnShowQR").addEventListener("click", ()=>{
+    document.getElementById("btnShowQR").addEventListener("click", (e)=>{
+      e.preventDefault();
       renderQR();
-      open(qrModal);
+      qrModal.classList.add("open");
+      qrModal.setAttribute("aria-hidden","false");
     });
-    document.getElementById("closeQR").addEventListener("click", ()=> close(qrModal));
-    qrModal.addEventListener("click", (e)=>{ if(e.target===qrModal) close(qrModal); });
 
     // Descargar PNG desde el canvas
-    document.getElementById("btnDownloadQR").addEventListener("click", ()=>{
+    document.getElementById("btnDownloadQR").addEventListener("click", (e)=>{
+      e.preventDefault();
       const canvas = document.querySelector("#qrHolder canvas");
       if(!canvas){ renderQR(); }
       const link = document.createElement("a");
@@ -188,16 +166,21 @@
     });
 
     // Copiar link
-    document.getElementById("btnCopy").addEventListener("click", async ()=>{
+    document.getElementById("btnCopy").addEventListener("click", async (e)=>{
+      e.preventDefault();
       try{ await navigator.clipboard.writeText(MI_LINK); showToast("Enlace copiado"); }
-      catch(e){ alert("No se pudo copiar: " + e.message + "\nEnlace: " + MI_LINK); }
+      catch(err){ alert("No se pudo copiar: " + err.message + "\nEnlace: " + MI_LINK); }
     });
 
     // Compartir
-    document.getElementById("btnShare").addEventListener("click", async ()=>{
+    document.getElementById("btnShare").addEventListener("click", async (e)=>{
+      e.preventDefault();
       const data = { title:"Tarjeta virtual", text:"Acceso directo", url: MI_LINK };
-      if(navigator.share){ try{ await navigator.share(data); }catch(e){} }
-      else{ try{ await navigator.clipboard.writeText(MI_LINK); showToast("Enlace copiado"); }catch(e){ alert("No se pudo compartir.\nEnlace: " + MI_LINK); } }
+      if(navigator.share){ try{ await navigator.share(data); }catch(_){ /* cancelado */ } }
+      else{
+        try{ await navigator.clipboard.writeText(MI_LINK); showToast("Enlace copiado"); }
+        catch(err){ alert("No se pudo compartir.\nEnlace: " + MI_LINK); }
+      }
     });
   </script>
 </body>
