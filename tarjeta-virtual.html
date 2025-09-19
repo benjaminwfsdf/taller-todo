@@ -16,19 +16,58 @@
     }
     html,body{height:100%}
     body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif; background:var(--bg); color:var(--ink);}
-    .topbar{ display:flex; align-items:center; gap:10px; padding:12px 14px; background:#000; border-bottom:4px solid var(--brand); box-shadow:0 6px 16px rgba(0,0,0,.55); }
-    .topbar a{ color:#fff; text-decoration:none; font-weight:700; }
-    .topbar .sp{flex:1}
 
-    .wrap{ max-width:780px; margin:22px auto 40px; padding:0 16px; }
-    .card{ background:var(--panel); border:1px solid var(--card-border); border-radius:16px; box-shadow:var(--shadow); padding:18px; }
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      display:flex; align-items:center; gap:12px;
+      padding:10px 14px;
+      background:#000; border-bottom:4px solid var(--brand);
+      box-shadow:0 6px 16px rgba(0,0,0,.55);
+    }
+    .backbtn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      background:#121417; color:#fff; text-decoration:none; font-weight:800;
+      border:1px solid #2a2f36; border-radius:999px;
+      transition:background .15s ease, transform .08s ease, border-color .15s ease;
+    }
+    .backbtn:hover{ background:#181b20; border-color:#3a4048; }
+    .backbtn:active{ transform:translateY(1px); }
+    .topbar .sp{flex:1}
+    .toplink{
+      color:#b8c2ff; text-decoration:none; font-weight:700; font-size:14px;
+      padding:6px 8px; border-radius:8px;
+      max-width:60ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      border:1px dashed #2b2f35; background:#0b0c0f;
+    }
+    .toplink:hover{ text-decoration:underline; }
+
+    /* Página centrada */
+    .page{
+      min-height: calc(100svh - 58px); /* resto de la topbar */
+      display:flex; align-items:center; justify-content:center;
+      padding: 22px 16px 40px;
+    }
+
+    .card{
+      background:var(--panel); border:1px solid var(--card-border);
+      border-radius:16px; box-shadow:var(--shadow);
+      padding:18px; width:min(820px, 100%);
+    }
     h1{ margin:0 0 2px; font-size:clamp(20px,3.2vw,28px); }
     p.sub{ margin:.2rem 0 1rem; color:var(--muted); }
 
     .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-    @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+    @media (max-width:640px){ .grid{grid-template-columns:1fr} .page{align-items:flex-start;} }
 
-    .btn{ appearance:none; border:0; border-radius:14px; padding:14px 16px; font-weight:800; cursor:pointer; color:#fff; background:#0c0c0e; border:2px solid var(--brand); box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 10px rgba(179,0,0,.25); transition:.2s; width:100%; }
+    .btn{
+      appearance:none; border:0; border-radius:14px; padding:14px 16px;
+      font-weight:800; cursor:pointer; color:#fff; background:#0c0c0e;
+      border:2px solid var(--brand);
+      box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 10px rgba(179,0,0,.25);
+      transition:.2s; width:100%;
+    }
     .btn:hover{ background:var(--brand); box-shadow:0 6px 16px rgba(179,0,0,.35); }
     .btn:active{ transform:translateY(1px); }
 
@@ -49,13 +88,18 @@
   </style>
 </head>
 <body>
+  <!-- Topbar -->
   <div class="topbar">
-    <a href="index.html">← Volver</a>
+    <a class="backbtn" href="index.html" title="Volver">
+      <span aria-hidden="true">←</span> Volver
+    </a>
     <div class="sp"></div>
-    <a href="https://www.elsenordelosescaner.cl" target="_blank" rel="noopener">Sitio web</a>
+    <!-- aquí va tu link real -->
+    <a id="topLink" class="toplink" href="#" target="_blank" rel="noopener">https://www.elsenordelosescaner.cl/</a>
   </div>
 
-  <div class="wrap">
+  <!-- Página centrada -->
+  <div class="page">
     <div class="card">
       <h1>Tarjeta virtual</h1>
       <p class="sub">Genera y comparte el QR de tu enlace.</p>
@@ -95,7 +139,11 @@
     const MI_LINK = "https://tarjeta-virtual-ruby.vercel.app/";  // ← tu enlace
     /* ================================== */
 
-    // Preview clickeable
+    // Poner el enlace en la topbar y en el preview
+    const topLink = document.getElementById("topLink");
+    topLink.textContent = MI_LINK;
+    topLink.href = MI_LINK;
+
     const linkEl = document.getElementById("linkPreview");
     linkEl.textContent = MI_LINK;
     linkEl.href = MI_LINK;
@@ -107,12 +155,11 @@
     function open(el){ el.classList.add("open"); el.setAttribute("aria-hidden","false"); }
     function close(el){ el.classList.remove("open"); el.setAttribute("aria-hidden","true"); }
 
-    // Generar QR en contenedor (qrcodejs se encarga del canvas)
-    let qr = null;
+    // Generar QR en contenedor (qrcodejs crea un canvas)
     function renderQR(){
       const holder = document.getElementById("qrHolder");
       holder.innerHTML = ""; // limpia anterior
-      qr = new QRCode(holder, {
+      new QRCode(holder, {
         text: MI_LINK,
         width: 300,
         height: 300,
@@ -130,7 +177,7 @@
     document.getElementById("closeQR").addEventListener("click", ()=> close(qrModal));
     qrModal.addEventListener("click", (e)=>{ if(e.target===qrModal) close(qrModal); });
 
-    // Descargar PNG desde el canvas generado por qrcodejs
+    // Descargar PNG desde el canvas
     document.getElementById("btnDownloadQR").addEventListener("click", ()=>{
       const canvas = document.querySelector("#qrHolder canvas");
       if(!canvas){ renderQR(); }
@@ -146,7 +193,7 @@
       catch(e){ alert("No se pudo copiar: " + e.message + "\nEnlace: " + MI_LINK); }
     });
 
-    // Compartir (Web Share si está)
+    // Compartir
     document.getElementById("btnShare").addEventListener("click", async ()=>{
       const data = { title:"Tarjeta virtual", text:"Acceso directo", url: MI_LINK };
       if(navigator.share){ try{ await navigator.share(data); }catch(e){} }
