@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarjeta virtual</title>
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+
+  <style>
+    :root{
+      --brand:#900000; --brand-900:#700000;
+      --ink:#e9ecef; --muted:#b9c0c7;
+      --bg:#0b0b0c; --panel:#0f0f11; --card:#16181b; --card-border:#272a2f;
+      --shadow:0 10px 28px rgba(0,0,0,.45);
+    }
+    html,body{height:100%}
+    body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif; background:var(--bg); color:var(--ink);}
+    .topbar{ display:flex; align-items:center; gap:10px; padding:12px 14px; background:#000; border-bottom:4px solid var(--brand); box-shadow:0 6px 16px rgba(0,0,0,.55); }
+    .topbar a{ color:#fff; text-decoration:none; font-weight:700; }
+    .topbar .sp{flex:1}
+    .wrap{ max-width:780px; margin:22px auto 40px; padding:0 16px; }
+    .card{ background:var(--panel); border:1px solid var(--card-border); border-radius:16px; box-shadow:var(--shadow); padding:18px; }
+    h1{ margin:0 0 2px; font-size:clamp(20px,3.2vw,28px); }
+    p.sub{ margin:.2rem 0 1rem; color:var(--muted); }
+
+    .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+    .btn{ appearance:none; border:0; border-radius:14px; padding:14px 16px; font-weight:800; cursor:pointer; color:#fff; background:#0c0c0e; border:2px solid var(--brand); box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 10px rgba(179,0,0,.25); transition:.2s; width:100%; }
+    .btn:hover{ background:var(--brand); box-shadow:0 6px 16px rgba(179,0,0,.35); }
+    .btn:active{ transform:translateY(1px); }
+
+    .section{ margin-top:16px; padding:14px; border:1px dashed #2b2f35; border-radius:12px; }
+    .mono{ font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; color:#cfd6de; word-break:break-all; }
+
+    .modal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.65); z-index:9990; }
+    .modal.open{ display:grid; }
+    .box{ background:#0f1114; border:1px solid #23262b; border-radius:18px; padding:18px; width:min(480px, 92vw); color:#e9edf3; box-shadow:var(--shadow); text-align:center;}
+    .qr img{ width:300px; height:300px; border-radius:12px; }
+    video{ width:100%; border-radius:12px; background:#000; }
+    .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+    .btn-ghost{ background:#13161a; border:1px solid #2b2f35; color:#e9edf3; padding:10px 14px; border-radius:12px; cursor:pointer; }
+    .toast{ position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:#111319; color:#e9edf3; border:1px solid #292d34; padding:10px 14px; border-radius:12px; display:none; z-index:9999; }
+    .toast.show{ display:block; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="index.html">← Volver</a>
+    <div class="sp"></div>
+    <a href="https://www.elsenordelosescaner.cl" target="_blank" rel="noopener">Sitio web</a>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>Tarjeta virtual</h1>
+      <p class="sub">Elige una opción para compartir o leer códigos.</p>
+
+      <div class="grid" style="margin:12px 0 6px">
+        <button class="btn" id="btnScan">📷 Escanear QR</button>
+        <button class="btn" id="btnShowQR">🧾 Mostrar mi QR</button>
+        <button class="btn" id="btnCopy">🔗 Copiar link</button>
+        <button class="btn" id="btnShare">📤 Compartir</button>
+      </div>
+
+      <div class="section">
+        <div><strong>Link configurado:</strong></div>
+        <div class="mono" id="linkPreview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal QR -->
+  <div class="modal" id="qrModal" aria-hidden="true">
+    <div class="box" role="dialog" aria-modal="true">
+      <h3>Mi código QR</h3>
+      <div class="qr"><img id="qrImg" alt="QR configurado"></div>
+      <div class="row">
+        <button class="btn-ghost" id="closeQR">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Scanner -->
+  <div class="modal" id="scanModal" aria-hidden="true">
+    <div class="box" role="dialog" aria-modal="true">
+      <h3>Escanear QR</h3>
+      <video id="video" playsinline></video>
+      <div id="scanResult" class="mono" style="margin-top:8px; text-align:center;">Apunta la cámara al código…</div>
+      <div class="row">
+        <button class="btn-ghost" id="scanCopy">Copiar resultado</button>
+        <button class="btn-ghost" id="scanClose">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Hecho</div>
+
+  <script>
+    /* ===== CONFIGURA ESTO ===== */
+    const MI_QR_IMG = "qr-tarjeta-virtual.png";                 // ← tu imagen QR
+    const MI_LINK   = "https://tarjeta-virtual-ruby.vercel.app/"; // ← tu link
+    /* ========================= */
+
+    // Preview del link
+    document.getElementById("linkPreview").textContent = MI_LINK;
+
+    // Utilidades UI
+    const toast = document.getElementById("toast");
+    function showToast(msg){ toast.textContent = msg || "Hecho"; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"), 1600); }
+    function open(el){ el.classList.add("open"); el.setAttribute("aria-hidden","false"); }
+    function close(el){ el.classList.remove("open"); el.setAttribute("aria-hidden","true"); }
+
+    // Mostrar QR
+    const qrModal = document.getElementById("qrModal");
+    document.getElementById("btnShowQR").addEventListener("click", ()=>{
+      document.getElementById("qrImg").src = MI_QR_IMG;
+      open(qrModal);
+    });
+    document.getElementById("closeQR").addEventListener("click", ()=> close(qrModal));
+    qrModal.addEventListener("click", (e)=>{ if(e.target===qrModal) close(qrModal); });
+
+    // Copiar link
+    document.getElementById("btnCopy").addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(MI_LINK); showToast("Enlace copiado"); }
+      catch(e){ alert("No se pudo copiar: " + e.message + "\nEnlace: " + MI_LINK); }
+    });
+
+    // Compartir (si hay Web Share)
+    document.getElementById("btnShare").addEventListener("click", async ()=>{
+      const data = { title:"Tarjeta virtual", text:"Acceso directo", url: MI_LINK };
+      if(navigator.share){
+        try{ await navigator.share(data); }catch(e){ /* cancelado */ }
+      }else{
+        try{ await navigator.clipboard.writeText(MI_LINK); showToast("Enlace copiado"); }
+        catch(e){ alert("No se pudo compartir ni copiar.\nEnlace: " + MI_LINK); }
+      }
+    });
+
+    // Escanear QR
+    const scanModal = document.getElementById("scanModal");
+    const video = document.getElementById("video");
+    const scanResult = document.getElementById("scanResult");
+    let stream=null, detector=null, timer=null, lastText="";
+
+    document.getElementById("btnScan").addEventListener("click", async ()=>{
+      if(!('BarcodeDetector' in window)){ alert("Tu navegador no soporta el escáner nativo de QR.\nPrueba en Chrome/Edge/Android modernos."); return; }
+      const formats = await BarcodeDetector.getSupportedFormats();
+      if(!formats.includes('qr_code')){ alert("El lector de QR no está disponible en este dispositivo."); return; }
+
+      detector = new BarcodeDetector({ formats:['qr_code'] });
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+        video.srcObject = stream; await video.play();
+        lastText=""; scanResult.textContent = "Apunta la cámara al código…";
+        open(scanModal);
+        timer = setInterval(async ()=>{
+          try{
+            const codes = await detector.detect(video);
+            if(codes && codes.length){
+              const txt = codes[0].rawValue || "";
+              if(txt && txt !== lastText){
+                lastText = txt;
+                scanResult.textContent = "Detectado: " + txt;
+              }
+            }
+          }catch(_){}
+        }, 350);
+      }catch(e){ alert("No se pudo abrir la cámara: " + e.message); }
+    });
+
+    function stopScan(){
+      if(timer){ clearInterval(timer); timer=null; }
+      if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+      video.srcObject = null; close(scanModal);
+    }
+    document.getElementById("scanClose").addEventListener("click", stopScan);
+    scanModal.addEventListener("click", (e)=>{ if(e.target===scanModal) stopScan(); });
+    document.getElementById("scanCopy").addEventListener("click", async ()=>{
+      if(!lastText){ showToast("Aún no hay resultado"); return; }
+      try{ await navigator.clipboard.writeText(lastText); showToast("Resultado copiado"); }
+      catch(e){ alert("No se pudo copiar: " + e.message); }
+    });
+  </script>
+</body>
+</html>
