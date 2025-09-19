@@ -52,19 +52,20 @@
       line-height: 1.55;
     }
 
-    /* === SPLASH (oculto por defecto; solo se muestra 1 vez por sesión) === */
+    /* === SPLASH (ahora visible por defecto; se apaga por JS temprano) === */
     #splash{
       position: fixed;
       inset: 0;
       background: #000;
-      display: none;               /* 👈 oculto por defecto */
+      display: flex;              /* 👈 visible por defecto */
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      transition: opacity .6s ease;
+      transition: opacity .4s ease;
       text-align:center;
       padding: 24px;
+      opacity: 1;
     }
     #splash img{
       width:160px;
@@ -73,7 +74,7 @@
       image-rendering: -webkit-optimize-contrast;
       image-rendering: crisp-edges;
       filter: drop-shadow(0 8px 22px rgba(144,0,0,.35));
-      animation: glow 1.6s ease-in-out infinite alternate;
+      animation: glow 1.2s ease-in-out infinite alternate;
     }
     #splash .brand{
       color:#fff;
@@ -103,7 +104,7 @@
       width:40%;
       background: linear-gradient(90deg, var(--brand-900), var(--brand));
       border-radius:999px;
-      animation: slide 1.2s ease-in-out infinite;
+      animation: slide 1.0s ease-in-out infinite;
     }
     @keyframes glow{
       from{ filter: drop-shadow(0 6px 16px rgba(144,0,0,.25)); }
@@ -131,8 +132,8 @@
       max-width: 1100px;
       margin: 28px auto 44px;
       padding: 0 16px;
-      opacity: 1;                 /* 👈 visible por defecto */
-      transition: opacity .6s ease;
+      opacity: 0;                 /* 👈 oculto por defecto; lo muestra JS */
+      transition: opacity .4s ease;
     }
     .frame{
       border: 3px solid var(--brand);
@@ -254,10 +255,27 @@
     }
     .footer strong{ color:#cfd6de; }
   </style>
+
+  <!-- Decisión temprana: ¿mostrar splash o no? (evita parpadeo) -->
+  <script>
+    (function(){
+      const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
+      const isFirstNav = nav ? nav.type === 'navigate' : true;
+      const alreadyShown = sessionStorage.getItem('splashShownV2') === '1';
+      window.__SHOW_SPLASH__ = isFirstNav && !alreadyShown;
+
+      // Si no se va a mostrar, forzamos estilos antes del primer pintado.
+      if(!window.__SHOW_SPLASH__){
+        const s = document.createElement('style');
+        s.innerHTML = '#splash{display:none!important;opacity:0!important} .wrapper{opacity:1!important}';
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
 </head>
 <body>
-  <!-- SPLASH (se mostrará solo una vez por pestaña) -->
-  <div id="splash" aria-live="polite" style="display:none">
+  <!-- SPLASH -->
+  <div id="splash" aria-live="polite">
     <img src="icons/icon-192.png" alt="Logo Taller">
     <div class="brand">El Señor de los Scanner</div>
     <div class="tagline">Cargando panel principal…</div>
@@ -333,7 +351,7 @@
           </div>
         </article>
 
-          <!-- Orden de llegada -->
+        <!-- Tarjeta virtual -->
         <article class="card" role="listitem">
           <div class="icon">🤳</div>
           <div class="content">
@@ -374,46 +392,28 @@
   </div>
 
   <script>
-    // ⏱️ Tiempo mínimo del splash (ajústalo)
-    const MIN_SPLASH_MS = 3000;
+    // ⏱️ Tiempo mínimo del splash (más corto)
+    const MIN_SPLASH_MS = 900; // 0.9s
 
-    // Tipo de navegación (navigate / reload / back_forward)
-    const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
-    const isFirstNav = nav ? nav.type === 'navigate' : true;
-
-    // ¿Ya se mostró en esta pestaña?
-    const alreadyShown = sessionStorage.getItem('splashShownV1') === '1';
-
-    function waitForLogo() {
-      return new Promise(res => {
-        const img = document.querySelector('#splash img');
-        if (!img) return res();
-        if (img.complete) return res();
-        img.addEventListener('load', res, { once:true });
-        img.addEventListener('error', res, { once:true });
-      });
-    }
-
-    // pageshow cubre volver con bfcache (botón atrás)
-    window.addEventListener('pageshow', async () => {
+    // Mostrar u ocultar según decisión temprana
+    (async function(){
       const splash  = document.getElementById('splash');
       const wrapper = document.querySelector('.wrapper');
 
-      // Si quieres que solo salga cuando está instalada como app:
-      // const inStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-      // const shouldShow = isFirstNav && !alreadyShown && inStandalone;
-
-      const shouldShow = isFirstNav && !alreadyShown; // 👈 solo 1 vez por sesión/pestaña
-      if (!shouldShow) {
+      // Si no debe mostrarse (segunda visita en la pestaña, etc.)
+      if(!window.__SHOW_SPLASH__){
         wrapper.style.opacity = '1';
-        splash?.remove();
+        splash.style.display = 'none';
         return;
       }
 
-      // Mostrar splash
-      splash.style.display = 'flex';
-      splash.style.opacity = '1';
-      wrapper.style.opacity = '0';
+      // Esperar al logo para evitar parpadeos
+      const waitForLogo = () => new Promise(res => {
+        const img = splash.querySelector('img');
+        if (!img || img.complete) return res();
+        img.addEventListener('load', res, { once:true });
+        img.addEventListener('error', res, { once:true });
+      });
 
       const start = performance.now();
       await waitForLogo();
@@ -422,10 +422,10 @@
       setTimeout(() => {
         splash.style.opacity = '0';
         wrapper.style.opacity = '1';
-        setTimeout(() => splash.remove(), 600);
-        sessionStorage.setItem('splashShownV1', '1');
+        setTimeout(() => splash.remove(), 400); // coincide con transition .4s
+        sessionStorage.setItem('splashShownV2', '1');
       }, Math.max(0, MIN_SPLASH_MS - elapsed));
-    });
+    })();
   </script>
 </body>
 </html>
