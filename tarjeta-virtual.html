@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tarjeta virtual</title>
-  <meta name="theme-color" content="#000000">
-  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+
   <style>
     :root{
       --brand:#900000; --brand-900:#700000;
@@ -86,12 +87,8 @@
 
   <div class="toast" id="toast">Hecho</div>
 
-  <!-- QRCode.js (minificado e incrustado) -->
-  <script>
-  /*! qrcode.js v1.0.0 | MIT | (c) Kazuhiko Arase / DavidShimJS */
-  /* Minified single-file build */
-  !function(o){function t(a){this.mode=h.MODE_8BIT_BYTE,this.data=a,this.getLength=function(){return this.data.length},this.write=function(a){for(var b=0;b<this.data.length;b++)a.put(this.data.charCodeAt(b),8)}}function e(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataList=[],this.dataCache=null,this.addData=function(a){this.dataList.push(new t(a)),this.dataCache=null},this.isDark=function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw new Error(a+","+b);return this.modules[a][b]},this.getModuleCount=function(){return this.moduleCount},this.make=function(){if(this.typeNumber<1){for(var a=1;a<40;a++){for(var b=h.getRSBlocks(a,this.errorCorrectLevel),c=new n,d=0,e=0;e<b.length;e++)d+=b[e].dataCount;for(e=0;e<this.dataList.length;e++){var f=this.dataList[e];c.put(f.mode,4),c.put(f.getLength(),h.getLengthInBits(f.mode,a)),f.write(c)}for(;c.getLengthInBits()>8*d;)a++;this.typeNumber=a}this.makeImpl(!1,this.getBestMaskPattern())},this.makeImpl=function(a,b){this.moduleCount=4*this.typeNumber+17,this.modules=new Array(this.moduleCount);for(var c=0;c<this.moduleCount;c++){this.modules[c]=new Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++)this.modules[c][d]=null}r(this,0,0),r(this,this.moduleCount-7,0),r(this,0,this.moduleCount-7),i(this),l(this);var e=h.createData(this.typeNumber,this.errorCorrectLevel);s(this,e,b)},this.getBestMaskPattern=function(){for(var a=0,b=0,c=0;8>c;c++){this.makeImpl(!0,c);var d=u.getLostPoint(this);(0==c||a>d)&&(a=d,b=c)}return b}}function r(a,b,c){for(var d=-1;7>=d;d++)if(!(0>b+d||a.moduleCount<=b+d))for(var e=-1;7>=e;e++)0>c+e||a.moduleCount<=c+e||(a.modules[b+d][c+e]=0<=d&&6>=d&&(0==e||6==e)||0<=e&&6>=e&&(0==d||6==d)||2<=d&&4>=d&&2<=e&&4>=e)}function i(a){for(var b=8;b<a.moduleCount-8;b++)null===a.modules[b][6]&&(a.modules[b][6]=b%2==0),null===a.modules[6][b]&&(a.modules[6][b]=b%2==0)}function l(a){for(var b=h.getPatternPosition(a.typeNumber),c=0;c<b.length;c++)for(var d=0;d<b.length;d++){var e=b[c],f=b[d];if(null===a.modules[e][f])for(var g=-2;2>=g;g++)for(var i=-2;2>=i;i++)a.modules[e+g][f+i]=-2==g||2==g||-2==i||2==i||0==g&&0==i} }function s(a,b,c){for(var d=-1,e=a.moduleCount-1,f=7,g=0,h=a.moduleCount-1;h>0;h-=2){6==h&&h--;for(;;){for(var i=0;2>i;i++)if(null===a.modules[e][h-i]){var l=!1;g<b.length&&(l=1==(b[g>>>3]>>>7-(g&7)&1)),a.modules[e][h-i]=l,g++}if(e+=d,0>e||a.moduleCount<=e){e-=d,d=-d;break}}}for(var m=a.getBestMaskPattern(),n=0;n<a.moduleCount;n++)for(var o=0;o<a.moduleCount;o++)a.modules[n][o]=a.modules[n][o]^((o+n)%2==0&&m==0)}var h=function(){var a={L:1,M:0,Q:3,H:2};return{MODE_8BIT_BYTE:4,L:a.L,M:a.M,Q:a.Q,H:a.H,getRSBlocks:function(b,c){var d=g[b][c],e=[];for(c=0;c<d.length;c++)for(var f=d[c],h=0;h<f[0];h++)e.push(new p(f[1],f[2]));return e},getLengthInBits:function(a,b){return 4===a?8*(1<=b&&10>b?1:27>b?2:40>=b?3:0):0},getPatternPosition:function(a){return m[a-1]},createData:function(a,b){for(var c=this.getRSBlocks(a,b),d=new n,e=0;e<v.length;e++){var f=v[e];d.put(f.mode,4),d.put(f.getLength(),this.getLengthInBits(f.mode,a)),f.write(d)}var g=0;for(e=0;e<c.length;e++)g+=c[e].dataCount;for(;d.getLengthInBits()+4<=8*g;)d.put(0,1);for(;d.getLengthInBits()%8!=0;)d.put(0,1);for(var h=[],i=0;i<d.buffer.length;i+=8)h.push(d.buffer.slice(i,i+8).reduce(function(a,b){return a<<1|b},0));return y(h,c)}}}(),m=[[  ],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]],g=function(){for(var a=[],b=1;40>=b;b++)a[b]=[],a[b][0]=[[1,26,19]],a[b][1]=[[1,26,16]],a[b][2]=[[1,26,13]],a[b][3]=[[1,26,9]];return a}(),p=function(a,b){this.totalCount=a,this.dataCount=b},n=function(){this.buffer=[],this.put=function(a,b){for(var c=0;c<b;c++)this.buffer.push(1==(a>>>b-1-c&1))},this.getLengthInBits=function(){return this.buffer.length}},u={getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;d<b;d++)for(var e=0;e<b;e++){for(var f=0,g=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||b<=d+h))for(var i=-1;1>=i;i++)0>e+i||b<=e+i||0==h&&0==i||g==a.isDark(d+h,e+i)&&f++;f>4&&(c+=3)}for(d=0;d<b-1;d++)for(e=0;e<b-1;e++){f=0,a.isDark(d,e)&&f++,a.isDark(d+1,e)&&f++,a.isDark(d,e+1)&&f++,a.isDark(d+1,e+1)&&f++,0!=f&&4!=f||(c+=3)}for(d=0;d<b;d++)for(e=0;e<b-6;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(e=0;e<b;e++)for(d=0;d<b-6;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(d=0;d<b;d++){for(e=0;e<b;e++)a.isDark(d,e)&&(c+=1);e=Math.abs(100*c/b/b-50)/5,c+=10*e}return c}};var v=[];o.QRCodeLib={QRCode:e,QR8bitByte:t}}(window);
-  </script>
+  <!-- Librería QR estable -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
   <script>
     /* ========= CONFIGURA AQUÍ ========= */
@@ -103,57 +100,44 @@
     linkEl.textContent = MI_LINK;
     linkEl.href = MI_LINK;
 
-    // UI helpers
+    // Helpers UI
     const toast = document.getElementById("toast");
     const qrModal = document.getElementById("qrModal");
     function showToast(msg){ toast.textContent = msg || "Hecho"; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"), 1600); }
     function open(el){ el.classList.add("open"); el.setAttribute("aria-hidden","false"); }
     function close(el){ el.classList.remove("open"); el.setAttribute("aria-hidden","true"); }
 
-    // Generar QR con QRCode.js (en un contenedor)
-    function renderQR() {
+    // Generar QR en contenedor (qrcodejs se encarga del canvas)
+    let qr = null;
+    function renderQR(){
       const holder = document.getElementById("qrHolder");
-      holder.innerHTML = ""; // limpiar anterior (evita fugas y cuelgues)
-      // Usamos la lib incrustada:
-      const QRCode = window.QRCodeLib.QRCode;
-      const qr = new QRCode(0, window.QRCodeLib.QRCode.M); // typeNumber=0 (auto), EC=M
-      qr.addData(MI_LINK);
-      qr.make();
-
-      // Dibujar en canvas para poder descargar PNG
-      const size = 300, cellSize = Math.floor(size / qr.getModuleCount());
-      const canvas = document.createElement("canvas");
-      const realSize = cellSize * qr.getModuleCount();
-      canvas.width = canvas.height = realSize;
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0,0,realSize,realSize);
-      ctx.fillStyle = "#000";
-      for (let r=0; r<qr.getModuleCount(); r++){
-        for (let c=0; c<qr.getModuleCount(); c++){
-          if (qr.isDark(r,c)) ctx.fillRect(c*cellSize, r*cellSize, cellSize, cellSize);
-        }
-      }
-      holder.appendChild(canvas);
-      return canvas;
+      holder.innerHTML = ""; // limpia anterior
+      qr = new QRCode(holder, {
+        text: MI_LINK,
+        width: 300,
+        height: 300,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.M
+      });
     }
 
     // Mostrar QR
-    let lastCanvas = null;
     document.getElementById("btnShowQR").addEventListener("click", ()=>{
-      lastCanvas = renderQR();
+      renderQR();
       open(qrModal);
     });
     document.getElementById("closeQR").addEventListener("click", ()=> close(qrModal));
     qrModal.addEventListener("click", (e)=>{ if(e.target===qrModal) close(qrModal); });
 
-    // Descargar PNG
+    // Descargar PNG desde el canvas generado por qrcodejs
     document.getElementById("btnDownloadQR").addEventListener("click", ()=>{
-      if (!lastCanvas) lastCanvas = renderQR();
-      const a = document.createElement("a");
-      a.href = lastCanvas.toDataURL("image/png");
-      a.download = "qr-tarjeta-virtual.png";
-      a.click();
+      const canvas = document.querySelector("#qrHolder canvas");
+      if(!canvas){ renderQR(); }
+      const link = document.createElement("a");
+      link.href = document.querySelector("#qrHolder canvas").toDataURL("image/png");
+      link.download = "qr-tarjeta-virtual.png";
+      link.click();
     });
 
     // Copiar link
