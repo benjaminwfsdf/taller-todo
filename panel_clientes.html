@@ -1,151 +1,365 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="img/scanner.png">
-  <title>Turnos en Espera</title>
-  <style>
-    :root{
-      --brand:#900000; --brand-900:#700000;
-      --ink:#e9ecef; --muted:#b9c0c7;
-      --bg:#0b0b0c; --panel:#0f0f11;
-      --card:#16181b; --card-border:#272a2f;
-      --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.45);
-      --ok:#3ddc97; --warn:#ffbc49;
-    }
-    html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.55}
-    .topbar{background:#000;color:#fff;text-align:center;padding:14px 10px;font-weight:800;letter-spacing:.6px;border-bottom:4px solid var(--brand)}
-    .wrapper{max-width:900px;margin:28px auto 44px;padding:0 16px}
-    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow)}
-    .header{margin:10px;background:var(--brand);color:#fff;border-radius:18px;padding:18px 22px;text-align:center;box-shadow:0 10px 22px rgba(144,0,0,.35)}
-    .header h1{margin:0;font-size:clamp(22px,3.2vw,30px)}
-    .h2{margin:10px 0 6px 0;color:#fff;opacity:.9;font-weight:900;text-align:center}
-    .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;margin:12px auto;max-width:620px}
-    .patente{font-weight:900;letter-spacing:.5px}
-    .atendiendo .patente{font-size:40px;color:var(--ok);text-align:center}
-    .proximo .patente{font-size:24px;color:#fff;text-align:center}
-    .modelo{text-align:center;margin-top:8px;color:#cfd6de}
-    .muted{text-align:center;color:var(--muted)}
-    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:6px 0 0}
-    .fs{position:fixed;bottom:18px;right:18px;z-index:9999;padding:10px 14px;font-size:18px;background:#0c0c0e;color:#fff;border:2px solid var(--brand);border-radius:50%;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.5)}
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Taller · Reloj + Clima + Turnos</title>
+<meta name="theme-color" content="#000000"/>
 
-    /* === NUEVO: reloj bonito bajo el título === */
-    .clock{
-      margin:8px 12px 16px;
-      padding:10px 14px;
-      text-align:center;
-      color:#e9ecef;
-      background:#0c0c0e;
-      border:1px solid var(--card-border);
-      border-radius:12px;
-      box-shadow:inset 0 0 14px rgba(144,0,0,.15), 0 4px 10px rgba(0,0,0,.35);
-      font-weight:900;
-      letter-spacing:.5px;
-    }
-    .clock .time{font-size:clamp(22px,4vw,32px);letter-spacing:1px}
-    .clock .date{opacity:.85;font-size:clamp(13px,2.2vw,16px)}
-  </style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    /* Paleta Taller */
+    --brand:#900000; --brand-900:#700000;
+    --bg:#0b0b0c; --panel:#0f0f11; --card:#16181b; --card-border:#272a2f;
+    --ink:#e9ecef; --muted:#b9c0c7;
+    --ok:#3ddc97; --warn:#ffbc49; --live:#16a34a;
+    --r:18px; --shadow:0 14px 40px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink); background:var(--bg);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+
+  /* ===== Fondo 100% CSS (sin imágenes) ===== */
+  .bg{
+    position:fixed; inset:0; z-index:-1; overflow:hidden;
+    background:
+      radial-gradient(1200px 800px at 15% 20%, rgba(144,0,0,.18), transparent 60%),
+      radial-gradient(1200px 800px at 85% 15%, rgba(144,0,0,.10), transparent 60%),
+      radial-gradient(1000px 700px  at 80% 85%, rgba(144,0,0,.10), transparent 65%),
+      linear-gradient(180deg, #09090a, #0b0b0c 35%, #0f0f11);
+    filter:saturate(1.02);
+  }
+  .bg::before{
+    content:""; position:absolute; inset:-20vmax;
+    background: conic-gradient(from 0deg at 70% 40%,
+        rgba(144,0,0,.12), rgba(144,0,0,0) 60%,
+        rgba(144,0,0,.18) 75%, rgba(144,0,0,0) 100%);
+    animation: spin 60s linear infinite; mix-blend-mode: screen; pointer-events:none;
+  }
+  .bg::after{
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(60vmax 60vmax at 50% 110%, rgba(0,0,0,.55), transparent 60%),
+      radial-gradient(70vmax 70vmax at -10% -10%, rgba(0,0,0,.35), transparent 55%),
+      radial-gradient(70vmax 70vmax at 110% -10%, rgba(0,0,0,.35), transparent 55%);
+    animation: breathe 18s ease-in-out infinite alternate; pointer-events:none;
+  }
+  @keyframes spin { to{ transform: rotate(360deg) } }
+  @keyframes breathe { 0%{filter:brightness(.95) saturate(1.02)} 100%{filter:brightness(1.05) saturate(1.08)} }
+
+  /* ===== Topbar ===== */
+  .topbar{
+    background:#000; color:#fff; text-align:center; padding:12px 10px;
+    font-weight:900; letter-spacing:.6px; border-bottom:4px solid var(--brand);
+    box-shadow:0 6px 16px rgba(0,0,0,.55);
+  }
+
+  /* ===== Contenido ===== */
+  .wrap{ height:calc(100% - 60px); display:grid; align-items:center; justify-items:center; padding:3vmin; }
+  .panel{
+    width:min(1300px,96vw);
+    background:linear-gradient(180deg, rgba(15,15,17,.60), rgba(15,15,17,.85));
+    border:3px solid var(--brand); border-radius:var(--r); box-shadow:var(--shadow);
+    padding:20px;
+  }
+
+  .grid{
+    display:grid; gap:20px;
+    grid-template-columns: 1.25fr 1fr;  /* izquierda: reloj+clima / derecha: turnos */
+  }
+  @media (max-width:1100px){ .grid{ grid-template-columns:1fr } }
+
+  /* ===== Encabezado de la izquierda ===== */
+  .top-left{ display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center; margin-bottom:10px; }
+  .loc{ font-weight:900; letter-spacing:.6px }
+  .status{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:14px }
+  .dot{ width:10px;height:10px;border-radius:50%;background:#6b7280 }
+  .dot.live{ background:var(--live); box-shadow:0 0 0 3px rgba(22,163,74,.22) }
+
+  /* ===== Reloj ===== */
+  .clock{ display:flex; flex-direction:column; gap:6px }
+  .time{ font-size: clamp(58px, 11vw, 132px); line-height:1; font-weight:900; letter-spacing:1.8px; text-shadow:0 4px 14px rgba(0,0,0,.45) }
+  .time .sec{ opacity:.5; font-weight:700; font-size:.46em; margin-left:.25em }
+  .date{ font-size: clamp(16px,2.4vw,22px); color:var(--muted) }
+
+  /* ===== Tarjetas ===== */
+  .card{
+    background:var(--card); border:1px solid var(--card-border); border-radius:14px; padding:16px;
+    box-shadow:0 10px 24px rgba(0,0,0,.35); position:relative; overflow:hidden;
+  }
+  .card::before{ content:""; position:absolute; inset:0 auto 0 0; width:8px; background:var(--brand); border-radius:14px 0 0 14px }
+
+  /* Clima */
+  .wx h3{ margin:0 0 10px; font-size:16px; color:#f5f7fa; letter-spacing:.3px; font-weight:800 }
+  .wx-now{ display:flex; align-items:center; gap:14px }
+  .wx-temp{ font-size: clamp(38px, 6.4vw, 62px); font-weight:900; letter-spacing:.3px }
+  .wx-desc{ color:#d6e3fb } .wx-icon{ font-size:34px; line-height:1.1; opacity:.95 }
+  .wx-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px }
+  .wx-box{ background:#121316; border:1px solid var(--card-border); border-radius:12px; padding:10px }
+  .k{font-size:12px; color:var(--muted)} .v{font-weight:800}
+
+  /* Turnos */
+  .section-title{ margin:0 0 10px; font-weight:900; letter-spacing:.4px }
+  .muted{ color:var(--muted) }
+  .patente{ font-weight:900; letter-spacing:.5px }
+  .atendiendo .patente{ font-size:40px; color:var(--ok); text-align:center }
+  .proximo   .patente{ font-size:24px; color:#fff;  text-align:center }
+  .modelo{ text-align:center; margin-top:8px; color:#cfd6de }
+
+  /* Botones */
+  .controls{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px }
+  .btn{
+    appearance:none; border:2px solid var(--brand); background:#0c0c0e; color:#fff;
+    padding:12px 16px; border-radius:14px; font-weight:900; cursor:pointer;
+    transition:.15s transform,.2s box-shadow,.2s background,.2s color;
+    font-size:16px; min-width:180px; box-shadow: inset 0 0 12px rgba(179,0,0,.25);
+  }
+  .btn:hover{ background:var(--brand); box-shadow:0 6px 16px rgba(179,0,0,.35) }
+  .btn:active{ transform:translateY(1px) }
+
+  /* Botón flotante fullscreen (opcional) */
+  .fs{
+    position:fixed; bottom:18px; right:18px; z-index:9;
+    padding:10px 14px; font-size:18px; background:#0c0c0e; color:#fff;
+    border:2px solid var(--brand); border-radius:50%; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.5)
+  }
+</style>
 </head>
 <body>
+  <div class="bg" aria-hidden="true"></div>
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
-  <div class="wrapper">
-    <div class="frame">
-      <div class="header"><h1>🔧 Turnos en Espera</h1></div>
+  <main class="wrap">
+    <section class="panel">
+      <div class="grid">
+        <!-- ================== COLUMNA IZQUIERDA: Reloj + Clima ================== -->
+        <div>
+          <header class="top-left">
+            <div class="loc" id="loc">Lo Prado, Santiago</div>
+            <div class="status" aria-live="polite">
+              <span class="dot" id="dot"></span>
+              <span id="stat">Cargando clima…</span>
+            </div>
+          </header>
 
-      <!-- === NUEVO: reloj debajo del título === -->
-      <div id="reloj" class="clock">
-        <div class="date">—</div>
-        <div class="time">—:—:—</div>
+          <section class="clock" aria-label="Hora y fecha">
+            <div class="time" id="hora">--:--<span class="sec">--</span></div>
+            <div class="date" id="fecha">—</div>
+          </section>
+
+          <aside class="card wx" aria-label="Clima actual" style="margin-top:14px">
+            <h3>Clima</h3>
+            <div class="wx-now">
+              <div class="wx-temp"><span id="tActual">--</span>°</div>
+              <div class="wx-desc">
+                <div id="wxText">—</div>
+                <div class="wx-icon" id="wxEmoji" aria-hidden="true">—</div>
+              </div>
+            </div>
+            <div class="wx-grid">
+              <div class="wx-box"><div class="k">Mín</div><div class="v" id="tMin">--°</div></div>
+              <div class="wx-box"><div class="k">Máx</div><div class="v" id="tMax">--°</div></div>
+              <div class="wx-box"><div class="k">Viento</div><div class="v" id="viento">-- km/h</div></div>
+            </div>
+          </aside>
+
+          <div class="controls">
+            <button class="btn" id="btnFull">⛶ Pantalla completa</button>
+            <button class="btn" id="btnRefresh">↻ Actualizar clima</button>
+          </div>
+        </div>
+
+        <!-- ================== COLUMNA DERECHA: Turnos ================== -->
+        <div>
+          <h2 class="section-title">🔧 Turnos en Espera</h2>
+
+          <div id="totalPendientes" class="muted" style="margin:6px 0 10px">Autos en espera: 0</div>
+
+          <div id="actual" class="card atendiendo" style="min-height:120px; display:flex; align-items:center; justify-content:center">
+            <div class="muted">Cargando…</div>
+          </div>
+
+          <h3 class="section-title" style="margin-top:16px">🔜 Próximos</h3>
+          <div id="siguientes"></div>
+        </div>
       </div>
+    </section>
+  </main>
 
-      <button class="fs" onclick="activarPantallaCompleta()">🔲</button>
-      <div id="totalPendientes" class="muted">Autos en espera: 0</div>
+  <!-- Botón flotante extra para full -->
+  <button class="fs" title="Pantalla completa" id="fsFloat">🔲</button>
 
-      <div id="actual"></div>
-      <div class="h2">🔜 Próximos</div>
-      <div id="siguientes"></div>
+<script>
+/* ======================= UTIL ======================= */
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2,'0');
 
-      <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
-    </div>
-  </div>
+/* ======================= RELOJ ======================= */
+let hourFormat = localStorage.getItem("hourFormat") || "24";
+function tick(){
+  const d=new Date();
+  let h=d.getHours(), ampm="";
+  if(hourFormat==="12"){ ampm = h>=12?"PM":"AM"; h = (h%12)||12; }
+  $("#hora").innerHTML = `${pad(h)}:${pad(d.getMinutes())}<span class="sec">${pad(d.getSeconds())}${ampm?(" "+ampm):""}</span>`;
+  const dias=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  $("#fecha").textContent = `${dias[d.getDay()]}, ${d.getDate()} de ${meses[d.getMonth()]}`;
+  setTimeout(tick, 1000);
+}
+tick();
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbx9IohpNqpxDdqTHrsNqa8gBzwn9w3CHC53JyubyXir6vIqf2LO1SBFxo0AMNVuMPAO8A/exec";
+/* ======================= CLIMA (Lo Prado) ======================= */
+let unit = localStorage.getItem("unit") || "C";
+const toUnit = c => unit==="F" ? Math.round(c*9/5+32) : Math.round(c);
+const unitLabel = () => unit==="F" ? "°F" : "°C";
 
-    async function obtenerClientes() {
-      try {
-        const res = await fetch(`${API_URL}?funcion=obtenerClientes`);
-        return await res.json();
-      } catch (err) {
-        console.error("Error al obtener clientes", err);
-        return [];
-      }
-    }
+function wxDesc(code){
+  const m={0:"Despejado",1:"Mayormente despejado",2:"Parcial nublado",3:"Nublado",45:"Niebla",48:"Escarcha",
+           51:"Llovizna ligera",53:"Llovizna",55:"Llovizna fuerte",61:"Lluvia ligera",63:"Lluvia",65:"Lluvia fuerte",
+           66:"Aguanieve ligera",67:"Aguanieve",71:"Nieve",73:"Nieve moderada",75:"Nieve intensa",80:"Chubascos",
+           81:"Chubascos fuertes",82:"Chubascos violentos",95:"Tormenta",96:"Tormenta c/granizo",99:"Tormenta fuerte"};
+  return m[code]||"Tiempo";
+}
+function wxEmoji(code){
+  if([0,1].includes(code)) return "☀️";
+  if([2,3,45,48].includes(code)) return "☁️";
+  if([51,53,55,61,63,65,66,67,80,81,82].includes(code)) return "🌧️";
+  if([95,96,99].includes(code)) return "⛈️";
+  if([71,73,75].includes(code)) return "❄️";
+  return "🌤️";
+}
 
-    async function actualizarVista() {
-      const lista = await obtenerClientes();
-      const actual = document.getElementById("actual");
-      const siguientes = document.getElementById("siguientes");
-      const totalPendientes = document.getElementById("totalPendientes");
+async function cargarClima(){
+  $("#loc").textContent = "Lo Prado, Santiago";
+  const url = "https://api.open-meteo.com/v1/forecast?latitude=-33.45&longitude=-70.72&current=temperature_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto";
+  try{
+    const r = await fetch(url, {cache:"no-store"});
+    const d = await r.json();
+    const now=d.current;
+    $("#tActual").textContent = toUnit(now.temperature_2m);
+    $("#viento").textContent = Math.round(now.wind_speed_10m) + " km/h";
+    $("#tMin").textContent = toUnit(d.daily.temperature_2m_min[0]) + unitLabel();
+    $("#tMax").textContent = toUnit(d.daily.temperature_2m_max[0]) + unitLabel();
+    $("#wxText").textContent = wxDesc(now.weather_code);
+    $("#wxEmoji").textContent = wxEmoji(now.weather_code);
+    $("#stat").textContent = "Clima actualizado";
+    $("#dot").classList.add("live");
+  }catch{
+    $("#stat").textContent="Clima no disponible";
+    $("#dot").classList.remove("live");
+  }
+}
+cargarClima();
+setInterval(cargarClima, 15*60*1000);
 
-      actual.innerHTML = ""; siguientes.innerHTML = ""; totalPendientes.textContent = "";
+/* ======================= TURNOS ======================= */
+const API_URL = "https://script.google.com/macros/s/AKfycbx9IohpNqpxDdqTHrsNqa8gBzwn9w3CHC53JyubyXir6vIqf2LO1SBFxo0AMNVuMPAO8A/exec";
 
-      if (!lista.length) {
-        actual.innerHTML = `<div class="card muted">No hay clientes en espera 🚫</div>`;
-        totalPendientes.textContent = "Autos en espera: 0";
-        return;
-      }
+async function obtenerClientes() {
+  try{
+    const res = await fetch(`${API_URL}?funcion=obtenerClientes`);
+    return await res.json();
+  }catch(e){
+    console.error("Error al obtener clientes", e);
+    return [];
+  }
+}
 
-      // Cliente actual
-      const cliente = lista[0];
-      const bloqueActual = document.createElement("div");
-      bloqueActual.className = "card atendiendo";
-      bloqueActual.innerHTML = `
-        <div class="patente">🚗 ${cliente["Patente"]}</div>
-        <div class="modelo">Modelo: ${cliente["Modelo"] || "-"}</div>
-      `;
-      actual.appendChild(bloqueActual);
+async function actualizarVista() {
+  const lista = await obtenerClientes();
+  const actual = $("#actual");
+  const siguientes = $("#siguientes");
+  const totalPendientes = $("#totalPendientes");
 
-      totalPendientes.textContent = `Autos en espera: ${lista.length - 1}`;
+  actual.innerHTML = ""; siguientes.innerHTML = "";
 
-      // Próximos 2 (se mantiene igual)
-      lista.slice(1, 3).forEach(c => {
-        const div = document.createElement("div");
-        div.className = "card proximo";
-        div.innerHTML = `
-          <div class="patente">🚗 ${c["Patente"]}</div>
-          <div class="modelo">Modelo: ${c["Modelo"] || "-"}</div>
-        `;
-        siguientes.appendChild(div);
-      });
-    }
+  if (!lista.length) {
+    actual.innerHTML = `<div class="muted">No hay clientes en espera 🚫</div>`;
+    totalPendientes.textContent = "Autos en espera: 0";
+    return;
+  }
 
-    function activarPantallaCompleta() {
-      const docElm = document.documentElement;
-      if (docElm.requestFullscreen) docElm.requestFullscreen();
-      else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
-      else if (docElm.mozRequestFullScreen) docElm.mozRequestFullScreen();
-      else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
-    }
+  // Actual
+  const c0 = lista[0];
+  const bloqueActual = document.createElement("div");
+  bloqueActual.innerHTML = `
+    <div class="patente">🚗 ${c0["Patente"] || "-"}</div>
+    <div class="modelo">Modelo: ${c0["Modelo"] || "-"}</div>
+  `;
+  actual.className = "card atendiendo";
+  actual.appendChild(bloqueActual);
 
-    // === NUEVO: reloj en tiempo real ===
-    function actualizarReloj() {
-      const el = document.getElementById('reloj');
-      if (!el) return;
-      const ahora = new Date();
-      const fecha = ahora.toLocaleDateString('es-CL', { weekday:'long', day:'2-digit', month:'long' });
-      const hora  = ahora.toLocaleTimeString('es-CL', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-      el.querySelector('.date').textContent = fecha.charAt(0).toUpperCase() + fecha.slice(1);
-      el.querySelector('.time').textContent = hora;
-    }
-    setInterval(actualizarReloj, 1000);
-    actualizarReloj();
+  totalPendientes.textContent = `Autos en espera: ${Math.max(0, lista.length - 1)}`;
 
-    setInterval(actualizarVista, 3000);
-    actualizarVista();
-  </script>
+  // Próximos 2
+  lista.slice(1, 3).forEach(c => {
+    const div = document.createElement("div");
+    div.className = "card proximo";
+    div.style.marginTop = "10px";
+    div.innerHTML = `
+      <div class="patente">🚗 ${c["Patente"] || "-"}</div>
+      <div class="modelo">Modelo: ${c["Modelo"] || "-"}</div>
+    `;
+    siguientes.appendChild(div);
+  });
+}
+actualizarVista();
+setInterval(actualizarVista, 3000);
+
+/* ======================= CONTROLES ======================= */
+function toggleFull(){
+  if(!document.fullscreenElement){ document.documentElement.requestFullscreen().catch(()=>{}); }
+  else{ document.exitFullscreen().catch(()=>{}); }
+}
+$("#btnFull").addEventListener("click", toggleFull);
+$("#fsFloat").addEventListener("click", toggleFull);
+$("#btnRefresh").addEventListener("click", cargarClima);
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
 </body>
 </html>
