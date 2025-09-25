@@ -11,224 +11,185 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <meta name="theme-color" content="#000000">
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="img/scanner.png">
-  <title>Recepción de Clientes</title>
+  <title>Gestor de Vehículos</title>
+
   <style>
     :root{
-      --brand:#900000; --brand-900:#700000;
-      --ink:#e9ecef; --muted:#b9c0c7;
-      --bg:#0b0b0c; --panel:#0f0f11;
-      --card:#16181b; --card-border:#272a2f;
-      --radius:16px; --shadow:0 10px 28px rgba(0,0,0,.45);
-      --ok:#3ddc97; --warn:#ffbc49; --danger:#ff4d4f;
+      --brand:#900000; --brand-900:#700000; --ink:#e9ecef; --muted:#b9c0c7;
+      --bg:#0b0b0c; --panel:#0f0f11; --card:#16181b; --card-border:#272a2f;
+      --shadow:0 10px 28px rgba(0,0,0,.45); --shadow-hover:0 14px 40px rgba(0,0,0,.6);
+      --radius:16px; --radius-sm:12px;
     }
+    @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
     html,body{height:100%}
     body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.55}
-    .topbar{background:#000;color:#fff;text-align:center;padding:14px 10px;font-weight:800;letter-spacing:.6px;border-bottom:4px solid var(--brand); position:sticky; top:0; z-index:5}
-    .wrapper{max-width:900px;margin:28px auto 44px;padding:0 16px}
+    .topbar{background:#000;color:#fff;text-align:center;padding:14px 10px;font-weight:700;letter-spacing:.6px;border-bottom:4px solid var(--brand);box-shadow:0 6px 16px rgba(0,0,0,.55)}
+    .wrapper{max-width:1100px;margin:28px auto 44px;padding:0 16px}
     .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow)}
-    .header{margin:10px;background:var(--brand);color:#fff;border-radius:18px;padding:18px 22px;text-align:center;box-shadow:0 10px 22px rgba(144,0,0,.35); display:flex; align-items:center; justify-content:center; gap:12px}
-    .header h1{margin:0;font-size:clamp(22px,3.2vw,30px)}
-    .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;margin:12px}
-    label{display:block;margin:8px 0 6px;font-weight:800}
-    input{
-      width:100%;padding:12px 14px;border:1px solid #32363d;border-radius:10px;background:#101215;color:#e8edf3;font-size:16px;box-sizing:border-box;text-transform:uppercase;
-    }
-    .btn{width:100%;margin-top:12px;appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;color:#fff;background:#0c0c0e;border:2px solid var(--brand);box-shadow:0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(144,0,0,.25);transition:background .2s,transform .12s,box-shadow .2s}
-    .btn:hover{background:var(--brand);box-shadow:0 4px 10px rgba(144,0,0,.35)}
+    .header{margin:10px;background:var(--brand);color:#fff;border-radius:var(--radius);padding:20px 24px;text-align:center;box-shadow:0 10px 22px rgba(144,0,0,.35)}
+    .header h1{margin:0;font-size:clamp(20px,3.2vw,28px);letter-spacing:.5px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding:12px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{position:relative;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;display:flex;gap:16px;align-items:flex-start;transition:box-shadow .2s,transform .2s,border-color .2s,background .2s}
+    .card::before{content:"";position:absolute;inset:0 auto 0 0;width:8px;border-radius:var(--radius) 0 0 var(--radius);background:var(--brand)}
+    .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);border-color:#32363d;background:#191c20}
+    .icon{flex:0 0 44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#0c0c0e;border:2px solid var(--brand);color:#fff;font-size:22px;margin-left:6px;box-shadow:inset 0 0 12px rgba(144,0,0,.35)}
+    .content{flex:1 1 auto;min-width:0}
+    .title{margin:0 0 6px;font-size:clamp(16px,2.2vw,18px);font-weight:800;letter-spacing:.2px;color:#f5f7fa}
+    .desc{margin:0;color:var(--muted);font-size:14.5px}
+    .actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+    .btn{appearance:none;border:0;border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer;transition:transform .12s,box-shadow .2s,background .2s,color .2s,border-color .2s;box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(144,0,0,.25);text-decoration:none;display:inline-block}
+    .btn-primary{background:#0c0c0e;color:#fff;border:2px solid var(--brand)}
+    .btn-primary:hover{background:var(--brand)}
     .btn:active{transform:translateY(1px)}
-    .block{background:#0f1114;border:1px solid #2b2f35;border-radius:14px;padding:16px;margin:12px}
-    .patente-actual{font-size:36px;font-weight:900;color:#3ddc97;text-align:center;letter-spacing:.8px}
-    .modelo-actual{text-align:center;margin:6px 0 16px;color:#cfd6de}
-    .subtitulo{text-align:center;color:#b9c0c7;font-size:18px;margin-top:18px}
-    .proximo{font-size:20px;color:#fff;text-align:center;margin-top:8px}
-    .back{display:block;margin:18px auto 0 auto;width:fit-content;padding:12px 18px;text-decoration:none;border-radius:12px;border:2px solid var(--brand);background:#15171b;color:#fff;font-weight:800}
+    .back{display:inline-block;margin:10px 10px 0;padding:10px 14px;border:2px solid var(--brand);border-radius:12px;background:#0c0c0e;color:#fff;text-decoration:none;font-weight:800;transition:background .2s,transform .12s;box-shadow:0 2px 0 rgba(0,0,0,.6)}
     .back:hover{background:var(--brand)}
-    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:12px 0 0}
-    #proximos { max-height: 50vh; overflow:auto; }
+    .back:active{transform:translateY(1px)}
+    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:24px 0 40px}
+    .footer strong{color:#cfd6de}
 
-    /* Toast */
-    .toast{
-      position:fixed; left:50%; bottom:20px; transform:translateX(-50%);
-      background:#14161a; color:#fff; padding:14px 16px; border:2px solid var(--warn);
-      border-radius:12px; box-shadow:var(--shadow); z-index:10; display:none; max-width:92%;
-      font-weight:700; text-align:center;
-    }
-    .badge-warn{
-      display:inline-block; padding:6px 10px; border-radius:999px; background:var(--warn); color:#000; font-weight:900; margin-left:8px;
-    }
-    .eta{ text-align:center; color:#cfd6de; margin-top:6px; font-size:14px }
+    /* Modal acceso */
+    #auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(2px)}
+    #auth-card{background:#111;border:2px solid var(--brand);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.6);width:min(92vw,420px);color:#fff}
+    #auth-head{padding:16px 18px;background:linear-gradient(0deg,var(--brand-900),var(--brand));border-bottom:2px solid #000;border-radius:12px 12px 0 0}
+    #auth-head h3{margin:0;font-size:18px;letter-spacing:.4px}
+    #auth-body{padding:16px 18px}
+    .auth-row{display:flex;gap:10px;align-items:center;margin:10px 0}
+    .auth-input{flex:1;padding:12px;border-radius:10px;border:1px solid #444;background:#0c0c0e;color:#fff;font-size:15px}
+    .auth-btn{padding:12px 14px;border-radius:10px;border:2px solid var(--brand);background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer}
+    .auth-btn:hover{background:var(--brand)}
+    .auth-hint{color:#b9c0c7;font-size:13px;margin-top:6px}
+    .auth-actions{display:flex;gap:10px;margin-top:12px}
+    .auth-secondary{background:#15171a;border-color:#3a3e45}
+    .shake{animation:shake .3s linear}
+    @keyframes shake{25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-2px)}100%{transform:translateX(0)}}
   </style>
 </head>
 <body>
+  <!-- Topbar -->
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
-  <div class="wrapper">
-    <div class="frame">
-      <div class="header">
-        <h1>Recepción y Turnos</h1>
+  <!-- Modal de autenticación (usuario + contraseña) -->
+  <div id="auth-overlay" role="dialog" aria-modal="true">
+    <div id="auth-card">
+      <div id="auth-head"><h3>🔐 Acceso protegido</h3></div>
+      <div id="auth-body">
+        <form id="auth-form" autocomplete="on">
+          <label for="auth-user">Usuario</label>
+          <div class="auth-row">
+            <input id="auth-user" name="username" type="text"
+                   class="auth-input"
+                   placeholder="tu@correo.com (o usuario)"
+                   inputmode="email" autocapitalize="none" autocorrect="off"
+                   autocomplete="username" />
+          </div>
+
+          <label for="auth-pass">Contraseña</label>
+          <div class="auth-row">
+            <input id="auth-pass" name="password" type="password"
+                   class="auth-input"
+                   placeholder="••••••••"
+                   autocomplete="current-password" />
+            <button id="auth-ok" class="auth-btn" type="submit">Entrar</button>
+          </div>
+        </form>
+
+        <div class="auth-actions">
+          <button id="auth-show" class="auth-btn auth-secondary" type="button" title="Mostrar/ocultar">👁️</button>
+          <!-- Dejo estos por si luego activas WebAuthn real -->
+          <button id="auth-bio" class="auth-btn auth-secondary" type="button" title="Usar Face ID / Huella">🔒 Face ID / Huella</button>
+          <button id="auth-remember" class="auth-btn auth-secondary" type="button" title="Recordar este dispositivo">📱 Recordar</button>
+        </div>
+
+        <div id="auth-msg" class="auth-hint">
+          Consejo: guarda la contraseña en el gestor (iCloud/Google). La próxima vez el teléfono usará Face ID/huella para autocompletar.
+        </div>
       </div>
-
-      <div class="card">
-        <label for="patente">Patente</label>
-        <input id="patente" placeholder="ABCD12">
-        <label for="modelo">Modelo</label>
-        <input id="modelo" placeholder="TOYOTA YARIS">
-        <button class="btn" onclick="agregarCliente()">➕ Añadir Cliente</button>
-        <div id="confirmacion" style="text-align:center;font-weight:800;color:#3ddc97;margin-top:10px"></div>
-      </div>
-
-      <div class="block" id="turnoActual">
-        <div style="text-align:center">🔧 En Atención</div>
-        <div class="patente-actual" id="patenteActual">---</div>
-        <div class="modelo-actual" id="modeloActual">---</div>
-        <button class="btn" onclick="marcarComoListo()">✅ Marcar como Listo</button>
-      </div>
-
-      <div class="subtitulo" id="contadorTotal">🚘 Autos en espera: 0</div>
-      <div class="eta" id="etaTexto">⏱️ Espera estimada: ~0 min</div>
-
-      <div class="subtitulo">🔜 Próximos</div>
-      <div id="proximos"></div>
-
-      <a href="../index.html" class="back">← Volver al Panel Principal</a>
-
-      <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
     </div>
   </div>
 
-  <!-- Toast para avisos in-app -->
-  <div id="toast" class="toast"></div>
+  <!-- Contenido principal (SIN cambios de funciones) -->
+  <div class="wrapper">
+    <div class="frame">
+      <div class="header"><h1>GESTOR DE VEHÍCULOS</h1></div>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzxjqH9ZoNwj9mho0rUWVQff7b0s7Jgmrm_T8MzvETaVgnlgVcw422AMdtNVURGOp0j3A/exec";
+      <div class="grid" role="list">
+        <!-- Añadir vehículo -->
+        <article class="card" role="listitem">
+          <div class="icon">➕</div>
+          <div class="content">
+            <h2 class="title">Añadir Vehículo</h2>
+            <p class="desc">Registrar un nuevo vehículo con los datos del cliente y dejarlo en la fila del taller.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="agregar.html">Abrir</a>
+          </div>
+        </article>
 
-    // === Parámetros de cola/avisos (puedes ajustarlos) ===
-    const MINUTOS_POR_AUTO = 15;           // 12 min por auto ≈ 5 autos -> 60 min
-    const UMBRAL_AVISO_ESPERA = 5;         // Avisar cuando haya 5 o más en espera (excluye el actual)
-    const MIN_MINUTOS_ENTRE_AVISOS = 20;   // Anti-spam: al menos 20 min entre avisos del mismo tipo
+        <!-- Buscar por patente -->
+        <article class="card" role="listitem">
+          <div class="icon">🔎</div>
+          <div class="content">
+            <h2 class="title">Buscar por Patente</h2>
+            <p class="desc">Encuentra rápidamente un auto usando su placa.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="buscar.html?tipo=patente">Abrir</a>
+          </div>
+        </article>
 
-    // Utilidades de avisos (sin API Notification)
-    function vibrar(ms=200){ if (navigator.vibrate) navigator.vibrate(ms); }
-    function beep(ms=120, freq=880){
-      try{
-        const ctx = new (window.AudioContext||window.webkitAudioContext)();
-        const o = ctx.createOscillator(); const g = ctx.createGain();
-        o.type='sine'; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
-        o.start(); setTimeout(()=>{o.stop(); ctx.close();}, ms);
-      }catch{}
-    }
-    function toast(msg, ms=4500){
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.style.display = 'block';
-      setTimeout(()=>{ el.style.display='none'; }, ms);
-    }
-    // Muestra SIEMPRE toast+vibración+beep para los avisos
-    function notificar(titulo, cuerpo){
-      toast(`${titulo} — ${cuerpo}`);
-      vibrar(200);
-      beep();
-    }
+        <!-- Buscar por nombre -->
+        <article class="card" role="listitem">
+          <div class="icon">🧑</div>
+          <div class="content">
+            <h2 class="title">Buscar por Nombre</h2>
+            <p class="desc">Localiza vehículos por el nombre del dueño.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="buscar.html?tipo=nombre">Abrir</a>
+          </div>
+        </article>
 
-    // Anti-spam: ¿puedo avisar ahora?
-    function puedeAvisar(clave, minPause = MIN_MINUTOS_ENTRE_AVISOS){
-      const now = Date.now();
-      const last = Number(localStorage.getItem(clave) || 0);
-      if (now - last > minPause*60*1000) {
-        localStorage.setItem(clave, String(now));
-        return true;
-      }
-      return false;
-    }
+        <!-- Buscar por teléfono -->
+        <article class="card" role="listitem">
+          <div class="icon">📞</div>
+          <div class="content">
+            <h2 class="title">Buscar por Teléfono</h2>
+            <p class="desc">Filtra por número de contacto del cliente.</p>
+          </div>
+          <div class="actions">
+            <!-- CORREGIDO: antes decía tipo=patente -->
+            <a class="btn btn-primary" href="buscar.html?tipo=telefono">Abrir</a>
+          </div>
+        </article>
 
-    function agregarCliente() {
-      const patente = document.getElementById("patente").value.trim().toUpperCase();
-      const modelo = document.getElementById("modelo").value.trim().toUpperCase();
-      if (!patente || !modelo) { alert("Por favor completa ambos campos."); return; }
+        <!-- Actualizar estado -->
+        <article class="card" role="listitem">
+          <div class="icon">🛠️</div>
+          <div class="content">
+            <h2 class="title">Actualizar Estado</h2>
+            <p class="desc">Cambia el estado del trabajo.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="estado.html">Abrir</a>
+          </div>
+        </article>
+      </div>
 
-      fetch(`${API_URL}?funcion=agregarCliente&patente=${encodeURIComponent(patente)}&modelo=${encodeURIComponent(modelo)}`)
-        .then(() => {
-          document.getElementById("confirmacion").textContent = "✅ Cliente registrado correctamente.";
-          setTimeout(() => document.getElementById("confirmacion").textContent = "", 3000);
-          document.getElementById("patente").value = "";
-          document.getElementById("modelo").value = "";
-          setTimeout(cargarTurnos, 800);
-        });
-    }
+      <div style="text-align:center;">
+        <a href="index.html" class="back">← Volver al Panel Principal</a>
+      </div>
+    </div>
 
-    function marcarComoListo() {
-      fetch(`${API_URL}?funcion=eliminarPrimero`).then(() => setTimeout(cargarTurnos, 800));
-    }
+    <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
+  </div>
 
-    function cargarTurnos() {
-      fetch(`${API_URL}?funcion=obtenerClientes`)
-        .then(res => res.json())
-        .then(data => {
-          if (!data || !data.length) {
-            document.getElementById("contadorTotal").innerHTML = `🚘 Autos en espera: 0`;
-            document.getElementById("etaTexto").textContent = `⏱️ Espera estimada: ~0 min`;
-            document.getElementById("patenteActual").textContent = "---";
-            document.getElementById("modeloActual").textContent = "---";
-            document.getElementById("proximos").innerHTML = "";
-            localStorage.setItem('ultimoConteoEspera', '0');
-            return;
-          }
-
-          const total = data.length;
-          const enEspera = Math.max(0, total - 1); // excluye el actual en atención
-          document.getElementById("contadorTotal").innerHTML =
-            `🚘 Autos en espera: ${enEspera}` + (enEspera >= UMBRAL_AVISO_ESPERA ? ` <span class="badge-warn">ALTO</span>` : '');
-
-          // ETA
-          const estimadoMin = enEspera * MINUTOS_POR_AUTO;
-          document.getElementById("etaTexto").textContent = `⏱️ Espera estimada: ~${estimadoMin} min`;
-
-          // Actual y siguientes (todos)
-          const actual = data[0];
-          const siguientes = data.slice(1);
-
-          document.getElementById("patenteActual").textContent = actual.Patente || "-";
-          document.getElementById("modeloActual").textContent = actual.Modelo || "-";
-
-          const div = document.getElementById("proximos");
-          div.innerHTML = "";
-          siguientes.forEach(c => {
-            const p = document.createElement("div");
-            p.className = "proximo";
-            p.innerHTML = `🚗 <strong>${c.Patente}</strong> - ${c.Modelo}`;
-            div.appendChild(p);
-          });
-
-          // === LÓGICA DE AVISO (umbral 5 en espera ≈ 1 hora) ===
-          const antes = Number(localStorage.getItem('ultimoConteoEspera') || 0);
-          localStorage.setItem('ultimoConteoEspera', String(enEspera));
-
-          // Avisar si recién cruzó el umbral (de abajo hacia arriba) o si ya está en umbral pero pasó la pausa mínima
-          const cruzoUmbral = (antes < UMBRAL_AVISO_ESPERA && enEspera >= UMBRAL_AVISO_ESPERA);
-          const claveAviso = 'tsAvisoColaLarga';
-
-          if ((cruzoUmbral || enEspera >= UMBRAL_AVISO_ESPERA) && puedeAvisar(claveAviso)) {
-            const hrs = Math.round((estimadoMin/60)*10)/10; // redondeo a 0.1h
-            notificar('⚠️ Cola alta en taller',
-              `Tienes ${enEspera} en espera (~${estimadoMin} min ≈ ${hrs} h). Considera avisar a los clientes.`);
-          }
-        })
-        .catch(() => {
-          // Error de red: opcionalmente podrías mostrar un aviso
-        });
-    }
-
-    setInterval(cargarTurnos, 3000);
-    cargarTurnos();
-  </script>
-
+  <!-- PWA: navegación interna en modo standalone (tu script original, intacto) -->
   <script>
   (function () {
-    // Actúa solo en la app instalada (PWA)
     const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
     if (!isStandalone) return;
 
@@ -236,6 +197,9 @@
       'https://www.patentechile.com/',
       'https://taller-todo.vercel.app/informes.html',
       'https://taller-todo.vercel.app/buscador_averias.html'
+
+      // 'informes.html',
+      // 'buscador_averias.html'
     ]);
 
     const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
@@ -243,23 +207,36 @@
     const fileName = (u) => u ? u.pathname.split('/').pop() : '';
     const go = (u) => location.assign(u.pathname + u.search + u.hash);
 
+    // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a[href]'); if (!a) return;
       if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
       const u = toURL(a.getAttribute('href')); if (!u) return;
 
-      const isExternalWhitelisted = EXTERN.has(u.href) || EXTERN.has(fileName(u));
-      if (sameOrigin(u) && !isExternalWhitelisted) { e.preventDefault(); go(u); }
-    }, true);
+      const isExternalWhitelisted =
+        EXTERN.has(u.href) || EXTERN.has(fileName(u));
 
+      if (sameOrigin(u) && !isExternalWhitelisted) {
+        e.preventDefault();
+        go(u);
+      }
+      // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
+    }, true); // captura
+
+    // 2) window.open internos -> misma ventana (salvo EXTERN)
     const _open = window.open;
     window.open = function (url, target, features) {
       const u = toURL(url);
-      const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-      if (sameOrigin(u) && !isExternalWhitelisted) { go(u); return null; }
+      const isExternalWhitelisted =
+        EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+      if (sameOrigin(u) && !isExternalWhitelisted) {
+        go(u);
+        return null;
+      }
       return _open.call(window, url, target, features);
     };
 
+    // 3) Formularios internos -> _self
     document.addEventListener('submit', (e) => {
       const f = e.target;
       if (!(f && f.tagName === 'FORM')) return;
@@ -267,14 +244,83 @@
       if (sameOrigin(u)) f.target = '_self';
     }, true);
 
+    // 4) Limpieza: si quedó algún _blank interno por error, quítalo
     document.querySelectorAll('a[target="_blank"]').forEach((a) => {
       const u = toURL(a.getAttribute('href'));
-      const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+      const isExternalWhitelisted =
+        EXTERN.has(u?.href) || EXTERN.has(fileName(u));
       if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
     });
   })();
   </script>
 
-  <script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_JCycDWmAuEREJmLvbVjph8GtPxvc" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
+  <!-- Login simple con gestor de contraseñas (Face ID / Huella via autocompletar) -->
+  <script>
+  (function () {
+    const CLAVE = "informes@";              // tu clave actual
+    const SESSION_HOURS = 12;               // recuerda acceso por 12h
+    const STORAGE_KEY = 'ga_auth_until';
+
+    const $ = (id) => document.getElementById(id);
+    const overlay = $('auth-overlay');
+    const form = $('auth-form');
+    const userInput = $('auth-user');
+    const passInput = $('auth-pass');
+    const btnShow = $('auth-show');
+    const msg = $('auth-msg');
+
+    const now = () => Date.now();
+    const ms = (h) => h*60*60*1000;
+    const isSessionValid = () => now() < Number(localStorage.getItem(STORAGE_KEY) || 0);
+    const rememberSession = () => localStorage.setItem(STORAGE_KEY, String(now() + ms(SESSION_HOURS)));
+    const openGate = () => { overlay.style.display='flex'; setTimeout(()=>userInput?.focus(), 50); };
+    const closeGate = () => { overlay.style.display='none'; };
+    const wrong = () => {
+      const card = $('auth-card'); if (!card) return;
+      card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+      msg.textContent = 'Contraseña incorrecta. Intenta nuevamente.';
+    };
+
+    // Mostrar/ocultar password
+    btnShow?.addEventListener('click', ()=>{
+      passInput.type = passInput.type === 'password' ? 'text' : 'password';
+    });
+
+    // Envío del formulario (login)
+    form?.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const username = (userInput.value || '').trim() || 'usuario';
+      const password = passInput.value || '';
+
+      // Validación local (igual que antes, pero sin prompt)
+      if (password === CLAVE) {
+        rememberSession();
+        closeGate();
+        msg.textContent = 'Acceso concedido.';
+
+        // OPCIONAL: intentar guardar con Credential Management API (Chrome/Android)
+        try {
+          if ('PasswordCredential' in window && 'credentials' in navigator) {
+            const cred = new window.PasswordCredential({
+              id: username,
+              name: username,
+              password
+            });
+            await navigator.credentials.store(cred);
+          }
+          // En iOS/Safari, iCloud Keychain muestra su propio diálogo al detectar el form.
+        } catch (err) {
+          console.debug('No se pudo guardar en Credential Management API:', err);
+        }
+
+      } else {
+        wrong();
+      }
+    });
+   // Abrir modal al cargar si no hay sesión
+    // Abrir modal al cargar si no hay sesión
+    if (!isSessionValid()) openGate();
+  })();
+  </script>
 </body>
 </html>
