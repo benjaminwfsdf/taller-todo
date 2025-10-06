@@ -1,5 +1,5 @@
 // app/service-worker.js
-const VERSION = "v1.3.50";
+const VERSION = "v1.4.55";
 
 
 const PRECACHE = `precache-${VERSION}`;
@@ -16,7 +16,7 @@ const PRECACHE_URLS = [
   "cliente.html",
   "clientes_turno.html",
   "computador.html",
-  "dpf_cosas.html",
+  "dpf_anadir.html",
   "dpf_off.html",
   "estado.html",
   "gestion_autos.html",
