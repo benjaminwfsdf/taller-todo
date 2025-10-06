@@ -34,7 +34,6 @@
     .btn.secondary{background:#0f0f12}
     .msg{margin-top:14px;font-weight:700}
     .ok{color:#39ff78}.err{color:#ffb3b3}
-    .hint{color:var(--muted);font-size:12px;margin-top:4px}
   </style>
 </head>
 <body>
@@ -43,17 +42,11 @@
     <div class="panel"><h1>DPF OFF · Añadir / Editar</h1></div>
 
     <div class="card">
-      <p class="note">Escribe los DTC separados por coma, espacio o línea. La API crea o fusiona automáticamente (sin duplicar). <b>Clave = Marca + ECU</b> (el modelo es opcional).</p>
+      <p class="note">Escribe los DTC separados por coma, espacio o línea. La API crea o fusiona automáticamente (sin duplicar). <b>Clave = Marca + ECU</b>.</p>
 
       <div class="grid">
         <div><label>Marca</label><input id="marca" placeholder="Peugeot" autocomplete="off"></div>
         <div><label>ECU</label><input id="ecu" placeholder="EDC17C60 / SID208 / MED17.4.4" autocomplete="off"></div>
-      </div>
-
-      <div style="margin-bottom:12px">
-        <label>Modelo (opcional)</label>
-        <input id="modelo" placeholder="308 1.6 HDi (opcional)">
-        <div class="hint">Si no lo indicas, se creará/actualizará por Marca+ECU igual.</div>
       </div>
 
       <div>
@@ -70,10 +63,10 @@
   </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxJjzzwTtP2ukuoKO06JX4CO3kbTEhVR_HNzbypyE7HxPUU2-IkbVH_9B9nBjVh51398g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwdJYX4UP3g-2OieFv_i1T7BKh-0ZEATdppMsYkPohpBUnxNIuc7Eex6TbhyfUtb3tfpQ/exec';
 const $ = id => document.getElementById(id);
 
-/* Preview de DTC */
+/* Preview DTC */
 function parseDTCs(raw){
   return (raw||'')
     .split(/[\s,;\n\r]+/g)
@@ -102,7 +95,7 @@ renderChips([]);
 /* Guardar */
 function showMsg(t, ok=true){ const m=$('msg'); m.className='msg '+(ok?'ok':'err'); m.textContent=t; }
 $('guardar').addEventListener('click', async ()=>{
-  const marca=$('marca').value.trim(), ecu=$('ecu').value.trim(), modelo=$('modelo').value.trim();
+  const marca=$('marca').value.trim(), ecu=$('ecu').value.trim();
   const dtcs=uniq(parseDTCs($('dtcs').value)).join(',');
   if(!marca||!ecu){ showMsg('Completa marca y ECU.', false); return; }
 
@@ -111,7 +104,6 @@ $('guardar').addEventListener('click', async ()=>{
     body.append('action','add_or_update');
     body.append('marca',marca);
     body.append('ecu',ecu);
-    if(modelo) body.append('modelo',modelo);
     body.append('dtcs',dtcs);
     const r = await fetch(API_URL,{method:'POST', body});
     const j = await r.json();
@@ -124,7 +116,7 @@ $('guardar').addEventListener('click', async ()=>{
 </script>
 
 <script>
-/* PWA: navegación interna en ventana */
+/* PWA: navegación interna misma ventana */
 (function () {
   const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   if (!isStandalone) return;
