@@ -2,18 +2,25 @@
 <html lang="es">
 <head>
   <base target="_self">
+
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Taller">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <meta name="theme-color" content="#000000">
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Taller · DPF OFF — Buscar</title>
   <meta name="theme-color" content="#c50000">
+
   <style>
-    :root{--bg:#0b0b0d;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;--accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f}
+    :root{
+      --bg:#0b0b0d;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;
+      --accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f
+    }
     body{margin:0;font-family:system-ui,Arial;color:var(--text);background:var(--bg)}
     .top{background:#000;border-bottom:3px solid var(--stroke);padding:10px 16px;text-align:center;font-weight:800;letter-spacing:.08em}
     .top a{color:#fff;text-decoration:none}
@@ -42,8 +49,14 @@
 
     <div class="card">
       <div class="grid">
-        <div><label>Marca</label><input id="marca" placeholder="Peugeot"></div>
-        <div><label>ECU</label><input id="ecu" placeholder="EDC17C60 / SID208"></div>
+        <div>
+          <label>Marca</label>
+          <input id="marca" placeholder="Peugeot" autocomplete="off">
+        </div>
+        <div>
+          <label>ECU</label>
+          <input id="ecu" placeholder="EDC17C60 / SID208 / MED17.4.4" autocomplete="off">
+        </div>
       </div>
 
       <div class="actions">
@@ -59,10 +72,11 @@
   </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxJjzzwTtP2ukuoKO06JX4CO3kbTEhVR_HNzbypyE7HxPUU2-IkbVH_9B9nBjVh51398g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwdJYX4UP3g-2OieFv_i1T7BKh-0ZEATdppMsYkPohpBUnxNIuc7Eex6TbhyfUtb3tfpQ/exec';
 const $ = id=>document.getElementById(id);
 let last = [];
 
+/* POST form-urlencoded (evita preflight CORS) */
 async function postForm(payload){
   const body = new URLSearchParams();
   Object.entries(payload).forEach(([k,v])=> body.append(k, String(v)));
@@ -72,30 +86,43 @@ async function postForm(payload){
 
 function draw(p){
   const box=$('result'); box.innerHTML='';
-  if(p.notFound){ box.innerHTML='<b>No encontrado</b><div class="muted">Revisa Marca y ECU.</div>'; last=[]; return; }
+  if(p.notFound){
+    box.innerHTML='<b>No encontrado</b><div class="muted">Revisa Marca y ECU.</div>';
+    last=[]; return;
+  }
   box.innerHTML = `<b>${p.marca}</b> · ECU: <code>${p.ecu}</code>`;
   if ((p.modelos||[]).length){
     const list = [...new Set(p.modelos)].join(', ');
     box.innerHTML += `<div class="models">Modelos encontrados: ${list}</div>`;
   }
   const grid=document.createElement('div'); grid.className='dtcgrid';
-  (p.dtcs||[]).forEach(d=>{ const s=document.createElement('span'); s.className='pill'; s.textContent=d; grid.appendChild(s); });
+  (p.dtcs||[]).forEach(d=>{
+    const s=document.createElement('span');
+    s.className='pill'; s.textContent=d;
+    grid.appendChild(s);
+  });
   box.appendChild(grid);
   last = p.dtcs||[];
-  if(!last.length){ const m=document.createElement('div'); m.className='muted'; m.textContent='No hay DTC definidos aún.'; box.appendChild(m); }
+  if(!last.length){
+    const m=document.createElement('div'); m.className='muted'; m.textContent='No hay DTC definidos aún.';
+    box.appendChild(m);
+  }
 }
 
 $('buscar').addEventListener('click', async ()=>{
   const marca=$('marca').value.trim(), ecu=$('ecu').value.trim();
-  if(!marca||!ecu){ alert('Completa marca y ECU.'); return; }
-  try{ const j=await postForm({action:'search',marca,ecu}); if(j.ok) draw(j); else alert('Error: '+(j.error||'desconocido')); }
-  catch(err){ alert('Error de red: '+err); }
+  if(!marca||!ecu){ alert('Completa Marca y ECU.'); return; }
+  try{
+    const j=await postForm({action:'search',marca,ecu});
+    if(j.ok) draw(j); else alert('Error: '+(j.error||'desconocido'));
+  }catch(err){ alert('Error de red: '+err); }
 });
 
 $('copiar').addEventListener('click', async ()=>{
   if(!last.length){ alert('No hay DTC para copiar.'); return; }
   const t=last.join(', ');
-  try{ await navigator.clipboard.writeText(t); alert('Copiado:\n'+t); }catch{ alert(t); }
+  try{ await navigator.clipboard.writeText(t); alert('Copiado:\n'+t); }
+  catch{ alert(t); }
 });
 
 $('csv').addEventListener('click', ()=>{
@@ -107,15 +134,17 @@ $('csv').addEventListener('click', ()=>{
 </script>
 
 <script>
-/* PWA: navegación interna en ventana (misma lógica que antes) */
+/* PWA: navegación interna a misma ventana */
 (function () {
   const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   if (!isStandalone) return;
+
   const EXTERN = new Set([
     'https://www.patentechile.com/',
     'https://taller-todo.vercel.app/informes.html',
     'https://taller-todo.vercel.app/buscador_averias.html'
   ]);
+
   const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
   const sameOrigin = (u) => u && u.origin === location.origin;
   const fileName = (u) => u ? u.pathname.split('/').pop() : '';
@@ -125,6 +154,7 @@ $('csv').addEventListener('click', ()=>{
     const a = e.target.closest('a[href]'); if (!a) return;
     if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
     const u = toURL(a.getAttribute('href')); if (!u) return;
+
     const isExternalWhitelisted = EXTERN.has(u.href) || EXTERN.has(fileName(u));
     if (sameOrigin(u) && !isExternalWhitelisted) { e.preventDefault(); go(u); }
   }, true);
