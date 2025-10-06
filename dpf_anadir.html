@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_self">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Taller">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#000000">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Taller · DPF OFF — Añadir</title>
+  <meta name="theme-color" content="#c50000">
+  <style>
+    :root{--bg:#0b0b0d;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;--accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f}
+    body{margin:0;font-family:system-ui,Arial;color:var(--text);background:var(--bg)}
+    .top{background:#000;border-bottom:3px solid var(--stroke);padding:10px 16px;text-align:center;font-weight:800;letter-spacing:.08em}
+    .top a{color:#fff;text-decoration:none}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .panel{background:linear-gradient(180deg,#920000,#540000);border:3px solid #000;border-radius:18px;box-shadow:0 10px 30px #0008,inset 0 0 0 3px var(--stroke);padding:16px;text-align:center;margin-bottom:24px}
+    .panel h1{margin:0;color:#fff;text-shadow:0 2px 0 #000;font-size:28px}
+    .card{background:var(--card);border:2px solid #000;border-radius:16px;box-shadow:10px 12px 0 #000,0 0 0 3px var(--stroke) inset;padding:22px}
+    .grid{display:grid;gap:20px;grid-template-columns:repeat(2,1fr);margin-bottom:20px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    label{font-weight:800;font-size:14px;display:block;margin-bottom:6px}
+    input,textarea,button,a.btn{width:100%;padding:12px;border-radius:12px;border:2px solid #000;color:#fff;background:#0f0f12;box-shadow:0 0 0 2px var(--stroke) inset;font-size:16px}
+    textarea{min-height:140px;resize:vertical;margin-top:6px}
+    .note{color:var(--muted);font-size:14px;margin:0 0 14px}
+    .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .chip{padding:6px 10px;border:2px dashed #000;border-radius:999px;background:#0f0f12;font-weight:900;box-shadow:0 0 0 2px var(--stroke) inset;cursor:pointer}
+    .chip:hover{transform:translateY(-1px)}
+    .btn{margin-top:20px;background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff;border:2px solid #000;border-radius:12px;padding:14px 16px;font-weight:900;font-size:18px;text-align:center;display:block;text-decoration:none;box-shadow:6px 8px 0 #000,0 0 0 2px var(--stroke) inset}
+    .btn.secondary{background:#0f0f12}
+    .msg{margin-top:14px;font-weight:700}
+    .ok{color:#39ff78}.err{color:#ffb3b3}
+    .hint{color:var(--muted);font-size:12px;margin-top:4px}
+  </style>
+</head>
+<body>
+  <div class="top"><a href="#">WWW.ELSENORDELOSCANER.CL</a></div>
+  <div class="wrap">
+    <div class="panel"><h1>DPF OFF · Añadir / Editar</h1></div>
+
+    <div class="card">
+      <p class="note">Escribe los DTC separados por coma, espacio o línea. La API crea o fusiona automáticamente (sin duplicar). <b>Clave = Marca + ECU</b> (el modelo es opcional).</p>
+
+      <div class="grid">
+        <div><label>Marca</label><input id="marca" placeholder="Peugeot" autocomplete="off"></div>
+        <div><label>ECU</label><input id="ecu" placeholder="EDC17C60 / SID208 / MED17.4.4" autocomplete="off"></div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label>Modelo (opcional)</label>
+        <input id="modelo" placeholder="308 1.6 HDi (opcional)">
+        <div class="hint">Si no lo indicas, se creará/actualizará por Marca+ECU igual.</div>
+      </div>
+
+      <div>
+        <label>Lista de DTC</label>
+        <textarea id="dtcs" placeholder="P2002, P2463, P244A&#10;U029D ..."></textarea>
+        <div id="chips" class="chips"></div>
+      </div>
+
+      <button id="guardar" class="btn">Guardar</button>
+      <div id="msg" class="msg"></div>
+
+      <a href="dpf_off.html" class="btn secondary">⬅️ Volver al Menú DPF OFF</a>
+    </div>
+  </div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxJjzzwTtP2ukuoKO06JX4CO3kbTEhVR_HNzbypyE7HxPUU2-IkbVH_9B9nBjVh51398g/exec';
+const $ = id => document.getElementById(id);
+
+/* Preview de DTC */
+function parseDTCs(raw){
+  return (raw||'')
+    .split(/[\s,;\n\r]+/g)
+    .map(s=>s.trim().toUpperCase())
+    .filter(Boolean)
+    .filter(s=>/^[A-Z]\d{4}$/.test(s) || /^[UPBC]\d{4}$/.test(s) || /^[A-Z0-9]{3,}$/.test(s));
+}
+const uniq = arr => [...new Set(arr)];
+function renderChips(list){
+  const box = $('chips'); box.innerHTML='';
+  uniq(list).forEach(code=>{
+    const el=document.createElement('span');
+    el.className='chip'; el.textContent=code; el.title='Quitar';
+    el.onclick=()=>{
+      const curr=uniq(parseDTCs($('dtcs').value));
+      const next=curr.filter(x=>x!==code);
+      $('dtcs').value=next.join(', ');
+      renderChips(next);
+    };
+    box.appendChild(el);
+  });
+}
+$('dtcs').addEventListener('input', e=>renderChips(parseDTCs(e.target.value)));
+renderChips([]);
+
+/* Guardar */
+function showMsg(t, ok=true){ const m=$('msg'); m.className='msg '+(ok?'ok':'err'); m.textContent=t; }
+$('guardar').addEventListener('click', async ()=>{
+  const marca=$('marca').value.trim(), ecu=$('ecu').value.trim(), modelo=$('modelo').value.trim();
+  const dtcs=uniq(parseDTCs($('dtcs').value)).join(',');
+  if(!marca||!ecu){ showMsg('Completa marca y ECU.', false); return; }
+
+  try{
+    const body = new URLSearchParams();
+    body.append('action','add_or_update');
+    body.append('marca',marca);
+    body.append('ecu',ecu);
+    if(modelo) body.append('modelo',modelo);
+    body.append('dtcs',dtcs);
+    const r = await fetch(API_URL,{method:'POST', body});
+    const j = await r.json();
+    if(j.ok){
+      $('dtcs').value=(j.dtcs||[]).join(', '); renderChips(j.dtcs||[]);
+      showMsg(j.created ? '✅ Registro creado' : '🟢 Registro actualizado');
+    }else showMsg('Error: '+(j.error||'desconocido'), false);
+  }catch(err){ showMsg('Error de red: '+err, false); }
+});
+</script>
+
+<script>
+/* PWA: navegación interna en ventana */
+(function () {
+  const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!isStandalone) return;
+  const EXTERN = new Set(['informes.html','buscador_averias.html']);
+  const toURL = h => { try { return new URL(h, location.href); } catch { return null; } };
+  const sameOrigin = u => u && u.origin === location.origin;
+  const fileName = u => u ? u.pathname.split('/').pop() : '';
+  const go = u => location.assign(u.pathname + u.search + u.hash);
+
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href]'); if (!a) return;
+    if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
+    const u = toURL(a.getAttribute('href')); if (!u) return;
+    const whitelisted = EXTERN.has(fileName(u)) || EXTERN.has(u.href);
+    if (sameOrigin(u) && !whitelisted) { e.preventDefault(); go(u); }
+  }, true);
+
+  const _open = window.open;
+  window.open = function (url, target, features) {
+    const u = toURL(url);
+    const interno = sameOrigin(u);
+    const whitelisted = EXTERN.has(fileName(u)) || EXTERN.has(u?.href);
+    if (interno && !whitelisted) { go(u); return null; }
+    return _open.call(window, url, target, features);
+  };
+
+  document.addEventListener('submit', e => {
+    const f = e.target; if (!(f && f.tagName === 'FORM')) return;
+    const u = toURL(f.getAttribute('action') || location.href);
+    if (sameOrigin(u)) f.target = '_self';
+  }, true);
+})();
+</script>
+</body>
+</html>
+<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_5Ezvn974EpE7kk6z5cRaaLYovtaa" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
