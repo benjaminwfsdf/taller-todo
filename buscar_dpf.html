@@ -2,43 +2,38 @@
 <html lang="es">
 <head>
   <base target="_self">
-
-    <link rel="manifest" href="/manifest.json">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taller">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-
-<meta name="theme-color" content="#000000">
-
-
-
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Taller · DPF OFF — Buscar</title>
-<meta name="theme-color" content="#c50000">
-<style>
-  :root{--bg:#0b0b0d;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;--accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f}
-  body{margin:0;font-family:system-ui,Arial;color:var(--text);background:var(--bg)}
-  .top{background:#000;border-bottom:3px solid var(--stroke);padding:10px 16px;text-align:center;font-weight:800;letter-spacing:.08em}
-  .top a{color:#fff;text-decoration:none}
-  .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-  .panel{background:linear-gradient(180deg,#920000,#540000);border:3px solid #000;border-radius:18px;box-shadow:0 10px 30px #0008,inset 0 0 0 3px var(--stroke);padding:16px;text-align:center;margin-bottom:24px}
-  .panel h1{margin:0;color:#fff;text-shadow:0 2px 0 #000;font-size:28px}
-  .card{background:var(--card);border:2px solid #000;border-radius:16px;box-shadow:10px 12px 0 #000,0 0 0 3px var(--stroke) inset;padding:22px}
-  .grid{display:grid;gap:20px;grid-template-columns:repeat(3,1fr);margin-bottom:12px}
-  @media (max-width:900px){.grid{grid-template-columns:1fr}}
-  label{font-weight:800;font-size:14px;display:block;margin-bottom:6px}
-  input,button,a.btn{width:100%;padding:12px;border-radius:12px;border:2px solid #000;color:#fff;background:#0f0f12;box-shadow:0 0 0 2px var(--stroke) inset;font-size:16px}
-  .actions{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
-  .btn{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff;border:2px solid #000;border-radius:12px;padding:12px 16px;font-weight:900;text-decoration:none;box-shadow:6px 8px 0 #000,0 0 0 2px var(--stroke) inset}
-  .btn.ghost{background:#0f0f12}
-  .result{margin-top:12px;padding:16px;border:2px dashed #000;border-radius:16px;background:#0d0e10}
-  .dtcgrid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-  .pill{padding:6px 10px;border:2px solid #000;border-radius:999px;background:#0f0f12;font-weight:900;box-shadow:0 0 0 2px var(--stroke) inset}
-  .muted{color:var(--muted)}
-</style>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Taller">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#000000">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Taller · DPF OFF — Buscar</title>
+  <meta name="theme-color" content="#c50000">
+  <style>
+    :root{--bg:#0b0b0d;--card:#16171b;--text:#f3f3f3;--muted:#b9b9c1;--accent:#e0001a;--accent2:#ff2f2f;--stroke:#ff1f1f}
+    body{margin:0;font-family:system-ui,Arial;color:var(--text);background:var(--bg)}
+    .top{background:#000;border-bottom:3px solid var(--stroke);padding:10px 16px;text-align:center;font-weight:800;letter-spacing:.08em}
+    .top a{color:#fff;text-decoration:none}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .panel{background:linear-gradient(180deg,#920000,#540000);border:3px solid #000;border-radius:18px;box-shadow:0 10px 30px #0008,inset 0 0 0 3px var(--stroke);padding:16px;text-align:center;margin-bottom:24px}
+    .panel h1{margin:0;color:#fff;text-shadow:0 2px 0 #000;font-size:28px}
+    .card{background:var(--card);border:2px solid #000;border-radius:16px;box-shadow:10px 12px 0 #000,0 0 0 3px var(--stroke) inset;padding:22px}
+    .grid{display:grid;gap:20px;grid-template-columns:repeat(2,1fr);margin-bottom:12px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    label{font-weight:800;font-size:14px;display:block;margin-bottom:6px}
+    input,button,a.btn{width:100%;padding:12px;border-radius:12px;border:2px solid #000;color:#fff;background:#0f0f12;box-shadow:0 0 0 2px var(--stroke) inset;font-size:16px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+    .btn{background:linear-gradient(180deg,var(--accent),var(--accent2));color:#fff;border:2px solid #000;border-radius:12px;padding:12px 16px;font-weight:900;text-decoration:none;box-shadow:6px 8px 0 #000,0 0 0 2px var(--stroke) inset}
+    .btn.ghost{background:#0f0f12}
+    .result{margin-top:12px;padding:16px;border:2px dashed #000;border-radius:16px;background:#0d0e10}
+    .dtcgrid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .pill{padding:6px 10px;border:2px solid #000;border-radius:999px;background:#0f0f12;font-weight:900;box-shadow:0 0 0 2px var(--stroke) inset}
+    .muted{color:var(--muted)}
+    .models{margin-top:6px;font-size:13px;color:var(--muted)}
+  </style>
 </head>
 <body>
   <div class="top"><a href="#">WWW.ELSENORDELOSCANER.CL</a></div>
@@ -48,8 +43,7 @@
     <div class="card">
       <div class="grid">
         <div><label>Marca</label><input id="marca" placeholder="Peugeot"></div>
-        <div><label>Modelo</label><input id="modelo" placeholder="308 1.6 HDi"></div>
-        <div><label>ECU</label><input id="ecu" placeholder="EDC17C60 / MED17.4.4"></div>
+        <div><label>ECU</label><input id="ecu" placeholder="EDC17C60 / SID208"></div>
       </div>
 
       <div class="actions">
@@ -65,7 +59,7 @@
   </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwdJYX4UP3g-2OieFv_i1T7BKh-0ZEATdppMsYkPohpBUnxNIuc7Eex6TbhyfUtb3tfpQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxJjzzwTtP2ukuoKO06JX4CO3kbTEhVR_HNzbypyE7HxPUU2-IkbVH_9B9nBjVh51398g/exec';
 const $ = id=>document.getElementById(id);
 let last = [];
 
@@ -78,8 +72,12 @@ async function postForm(payload){
 
 function draw(p){
   const box=$('result'); box.innerHTML='';
-  if(p.notFound){ box.innerHTML='<b>No encontrado</b><div class="muted">Revisa la combinación.</div>'; last=[]; return; }
-  box.innerHTML = `<b>${p.marca} · ${p.modelo}</b><br>ECU: <code>${p.ecu}</code>`;
+  if(p.notFound){ box.innerHTML='<b>No encontrado</b><div class="muted">Revisa Marca y ECU.</div>'; last=[]; return; }
+  box.innerHTML = `<b>${p.marca}</b> · ECU: <code>${p.ecu}</code>`;
+  if ((p.modelos||[]).length){
+    const list = [...new Set(p.modelos)].join(', ');
+    box.innerHTML += `<div class="models">Modelos encontrados: ${list}</div>`;
+  }
   const grid=document.createElement('div'); grid.className='dtcgrid';
   (p.dtcs||[]).forEach(d=>{ const s=document.createElement('span'); s.className='pill'; s.textContent=d; grid.appendChild(s); });
   box.appendChild(grid);
@@ -88,9 +86,9 @@ function draw(p){
 }
 
 $('buscar').addEventListener('click', async ()=>{
-  const marca=$('marca').value.trim(), modelo=$('modelo').value.trim(), ecu=$('ecu').value.trim();
-  if(!marca||!modelo||!ecu){ alert('Completa marca, modelo y ECU.'); return; }
-  try{ const j=await postForm({action:'search',marca,modelo,ecu}); if(j.ok) draw(j); else alert('Error: '+(j.error||'desconocido')); }
+  const marca=$('marca').value.trim(), ecu=$('ecu').value.trim();
+  if(!marca||!ecu){ alert('Completa marca y ECU.'); return; }
+  try{ const j=await postForm({action:'search',marca,ecu}); if(j.ok) draw(j); else alert('Error: '+(j.error||'desconocido')); }
   catch(err){ alert('Error de red: '+err); }
 });
 
@@ -109,59 +107,36 @@ $('csv').addEventListener('click', ()=>{
 </script>
 
 <script>
+/* PWA: navegación interna en ventana (misma lógica que antes) */
 (function () {
-  // Actúa solo en la app instalada (PWA)
   const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   if (!isStandalone) return;
-
-  // ✅ Edita esta lista:
-  // - deja SOLO externos reales (dominios de fuera)
-  // - si de verdad quieres que "informes.html" o "buscador_averias.html" salgan a Safari,
-  //   añádelos aquí también.
   const EXTERN = new Set([
     'https://www.patentechile.com/',
     'https://taller-todo.vercel.app/informes.html',
     'https://taller-todo.vercel.app/buscador_averias.html'
-
-    // 'informes.html',
-    // 'buscador_averias.html'
   ]);
-
   const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
   const sameOrigin = (u) => u && u.origin === location.origin;
   const fileName = (u) => u ? u.pathname.split('/').pop() : '';
   const go = (u) => location.assign(u.pathname + u.search + u.hash);
 
-  // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href]'); if (!a) return;
     if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
     const u = toURL(a.getAttribute('href')); if (!u) return;
+    const isExternalWhitelisted = EXTERN.has(u.href) || EXTERN.has(fileName(u));
+    if (sameOrigin(u) && !isExternalWhitelisted) { e.preventDefault(); go(u); }
+  }, true);
 
-    const isExternalWhitelisted =
-      EXTERN.has(u.href) || EXTERN.has(fileName(u));
-
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      e.preventDefault();
-      go(u);
-    }
-    // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
-  }, true); // captura para adelantarnos a handlers que modifiquen target
-
-  // 2) window.open internos -> misma ventana (salvo EXTERN)
   const _open = window.open;
   window.open = function (url, target, features) {
     const u = toURL(url);
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      go(u);
-      return null;
-    }
+    const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+    if (sameOrigin(u) && !isExternalWhitelisted) { go(u); return null; }
     return _open.call(window, url, target, features);
   };
 
-  // 3) Formularios internos -> _self
   document.addEventListener('submit', (e) => {
     const f = e.target;
     if (!(f && f.tagName === 'FORM')) return;
@@ -169,14 +144,13 @@ $('csv').addEventListener('click', ()=>{
     if (sameOrigin(u)) f.target = '_self';
   }, true);
 
-  // 4) Limpieza: si quedó algún _blank interno por error, quítalo
   document.querySelectorAll('a[target="_blank"]').forEach((a) => {
     const u = toURL(a.getAttribute('href'));
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+    const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
     if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
   });
 })();
 </script>
 </body>
 </html>
+<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_5Ezvn974EpE7kk6z5cRaaLYovtaa" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
