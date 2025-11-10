@@ -6,131 +6,99 @@
 <title>📦 Inventario · Aceites</title>
 <style>
 :root{
-  --brand:#900000;--ink:#e9ecef;--bg:#0b0b0c;--panel:#0f0f11;
+  --brand:#900000;
+  --ink:#e9ecef;
+  --bg:#0b0b0c;
+  --panel:#0f0f11;
 }
 body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink);}
-.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-size:clamp(16px,4vw,20px);}
 .wrap{max-width:1100px;margin:24px auto;padding:0 16px;}
 .card{background:var(--panel);border:3px solid var(--brand);border-radius:16px;padding:16px;margin-bottom:16px;
       box-shadow:0 10px 28px rgba(0,0,0,.45);}
-.btn{background:#0c0c0e;color:#fff;border:2px solid var(--brand);border-radius:12px;padding:10px 14px;
-     text-decoration:none;font-weight:800;cursor:pointer;transition:.2s;}
+.btn{background:#0c0c0e;color:#fff;border:2px solid var(--brand);border-radius:12px;padding:12px 14px;
+     text-decoration:none;font-weight:800;cursor:pointer;transition:.2s;width:100%;max-width:300px;margin:auto;display:block;}
 .btn:hover{background:var(--brand);}
 input{width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#101114;color:#fff;}
-table{width:100%;border-collapse:collapse;margin-top:12px;}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:clamp(12px,3vw,15px);}
 th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
 .badge{padding:4px 8px;border-radius:999px;font-size:12px;}
 .badge.ok{background:#163016;color:#a8f0a9;}
 .badge.off{background:#301616;color:#f0a8a8;}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
 </style>
 </head>
 <body>
-  <div class="topbar">📦 Inventario</div>
-  <div class="wrap">
-    <a href="aceite.html" class="btn">⬅ Volver al panel</a>
+<div class="topbar">📦 Inventario</div>
+<div class="wrap">
+  <a href="aceite.html" class="btn">⬅ Volver al panel</a>
 
-    <div class="card">
-      <h2>Agregar producto</h2>
-      <div class="grid">
-        <input id="sku" placeholder="SKU (opcional)">
-        <input id="nombre" placeholder="Nombre del producto">
-        <input id="categoria" placeholder="Categoría (ej: 5W30, ATF)">
-        <input id="costo" placeholder="Costo para ti ($)" type="number">
-        <input id="precio" placeholder="Precio de venta ($)" type="number">
-        <input id="stock" placeholder="Stock inicial" type="number">
-      </div>
-      <button class="btn" onclick="agregar()">Guardar</button>
+  <div class="card">
+    <h2>Agregar producto</h2>
+    <div class="grid">
+      <input id="sku" placeholder="SKU (opcional)">
+      <input id="nombre" placeholder="Nombre del producto">
+      <input id="categoria" placeholder="Categoría (ej: 5W30, ATF)">
+      <input id="costo" placeholder="Costo ($)" type="number">
+      <input id="precio" placeholder="Precio venta ($)" type="number">
+      <input id="stock" placeholder="Stock" type="number">
     </div>
-
-    <div class="card">
-      <h2>Listado</h2>
-      <input id="buscar" placeholder="Buscar por nombre o SKU..." oninput="filtrar()" 
-             style="width:300px;margin-bottom:8px">
-      <button class="btn" onclick="cargar()">Recargar</button>
-
-      <table id="tbl">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>SKU</th>
-            <th>Nombre</th>
-            <th>Categoría</th>
-            <th>💲 Precio Venta</th>
-            <th>🧾 Costo</th>
-            <th>Stock</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <button class="btn" onclick="agregar()">Guardar</button>
   </div>
 
+  <div class="card">
+    <h2>Listado</h2>
+    <input id="buscar" placeholder="Buscar..." oninput="filtrar()" style="width:100%;margin-bottom:10px">
+    <button class="btn" onclick="cargar()">Recargar</button>
+
+    <table id="tbl">
+      <thead>
+        <tr><th>ID</th><th>SKU</th><th>Nombre</th><th>Categoría</th><th>💲 Venta</th><th>🧾 Costo</th><th>Stock</th><th>Estado</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbzEKC5BluVZv-AfT1BPkp3bs3m3-fEUAFBNl0fsSe2TVT1izS0a3Iui_a8dOys-rNf1Og/exec"; // 👈 reemplaza con tu URL
+const BASE_URL = "https://script.google.com/macros/s/AKfycbzEKC5BluVZv-AfT1BPkp3bs3m3-fEUAFBNl0fsSe2TVT1izS0a3Iui_a8dOys-rNf1Og/exec";
 const api = async (action,payload={})=>{
   try{
-    const r = await fetch(BASE_URL,{
-      method:"POST",
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action,payload})
-    });
+    const r=await fetch(BASE_URL,{method:"POST",headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,payload})});
     return r.json();
   }catch(err){return {ok:false,error:err.message};}
 };
-
-let productos=[];
-const $=id=>document.getElementById(id);
-
+let productos=[];const $=id=>document.getElementById(id);
 async function cargar(){
-  const r = await api('listInventory');
-  if(!r.ok){alert('Error al cargar inventario: '+r.error);return;}
-  productos = r.data || [];
-  render(productos);
+  const r=await api('listInventory');
+  if(!r.ok)return alert('Error: '+r.error);
+  productos=r.data||[];render(productos);
 }
-
 function render(list){
-  const tb = document.querySelector('#tbl tbody');
+  const tb=document.querySelector('#tbl tbody');
   tb.innerHTML='';
   list.forEach(p=>{
     tb.innerHTML+=`
     <tr>
-      <td>${p.id}</td>
-      <td>${p.sku||'-'}</td>
-      <td>${p.nombre}</td>
-      <td>${p.categoria||'-'}</td>
-      <td>${p.precio_unit.toLocaleString('es-CL')}</td>
-      <td>${p.costo_unit.toLocaleString('es-CL')}</td>
-      <td>${p.stock}</td>
+      <td>${p.id}</td><td>${p.sku||'-'}</td><td>${p.nombre}</td>
+      <td>${p.categoria||'-'}</td><td>${p.precio_unit.toLocaleString('es-CL')}</td>
+      <td>${p.costo_unit.toLocaleString('es-CL')}</td><td>${p.stock}</td>
       <td>${p.activo?'<span class="badge ok">Activo</span>':'<span class="badge off">Inactivo</span>'}</td>
     </tr>`;
   });
 }
-
 function filtrar(){
   const q=$('buscar').value.toLowerCase();
-  render(productos.filter(p=>
-    p.nombre.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q)
-  ));
+  render(productos.filter(p=>p.nombre.toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)));
 }
-
 async function agregar(){
-  const item={
-    sku: sku.value.trim() || 'SKU-'+Date.now(),
-    nombre: nombre.value.trim(),
-    categoria: categoria.value.trim(),
-    costo_unit: Number(costo.value||0),
-    precio_unit: Number(precio.value||0),
-    stock: Number(stock.value||0)
-  };
-  if(!item.nombre) return alert('Debe ingresar un nombre');
+  const item={sku:sku.value.trim()||'SKU-'+Date.now(),nombre:nombre.value.trim(),categoria:categoria.value.trim(),
+              costo_unit:Number(costo.value||0),precio_unit:Number(precio.value||0),stock:Number(stock.value||0)};
+  if(!item.nombre)return alert('Debe ingresar un nombre');
   const r=await api('addInventory',{item});
-  if(!r.ok) return alert('Error: '+r.error);
-  document.querySelectorAll('input').forEach(i=>i.value='');
-  cargar();
+  if(!r.ok)return alert('Error: '+r.error);
+  document.querySelectorAll('input').forEach(i=>i.value='');cargar();
 }
-
 cargar();
 </script>
 </body>
