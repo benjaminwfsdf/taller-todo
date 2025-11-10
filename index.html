@@ -38,26 +38,20 @@
       --radius:16px;
     }
 
-    @media (prefers-reduced-motion: reduce){
-      *{animation:none!important;transition:none!important}
-    }
-
     html,body{height:100%}
     body{
       margin:0;
       font-family: system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
       background: var(--bg);
       color: var(--ink);
-      -webkit-font-smoothing: antialiased;
       line-height: 1.55;
     }
 
-    /* === SPLASH (ahora visible por defecto; se apaga por JS temprano) === */
     #splash{
       position: fixed;
       inset: 0;
       background: #000;
-      display: flex;              /* 👈 visible por defecto */
+      display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -71,52 +65,14 @@
       width:160px;
       height:auto;
       margin-bottom:14px;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: crisp-edges;
       filter: drop-shadow(0 8px 22px rgba(144,0,0,.35));
       animation: glow 1.2s ease-in-out infinite alternate;
-    }
-    #splash .brand{
-      color:#fff;
-      font-size: clamp(18px, 4vw, 26px);
-      font-weight: 900;
-      letter-spacing:.6px;
-      line-height:1.15;
-      margin: 2px 0 6px;
-    }
-    #splash .tagline{
-      color:#c9ced6;
-      font-size:14px;
-      letter-spacing:.3px;
-      opacity:.9;
-    }
-    #splash .bar{
-      width: 180px; height: 4px;
-      margin-top: 16px;
-      background: #1d1d1f;
-      border-radius: 999px;
-      overflow: hidden;
-      position: relative;
-    }
-    #splash .bar::after{
-      content:"";
-      position:absolute; inset:0;
-      width:40%;
-      background: linear-gradient(90deg, var(--brand-900), var(--brand));
-      border-radius:999px;
-      animation: slide 1.0s ease-in-out infinite;
     }
     @keyframes glow{
       from{ filter: drop-shadow(0 6px 16px rgba(144,0,0,.25)); }
       to  { filter: drop-shadow(0 12px 28px rgba(144,0,0,.45)); }
     }
-    @keyframes slide{
-      0%{transform: translateX(-60%);}
-      50%{transform: translateX(40%);}
-      100%{transform: translateX(160%);}
-    }
 
-    /* Barra superior */
     .topbar{
       background:#000;
       color:#fff;
@@ -128,153 +84,45 @@
       box-shadow: 0 6px 16px rgba(0,0,0,.55);
     }
 
-    .wrapper{
-      max-width: 1100px;
-      margin: 28px auto 44px;
-      padding: 0 16px;
-      opacity: 0;                 /* 👈 oculto por defecto; lo muestra JS */
-      transition: opacity .4s ease;
-    }
-    .frame{
-      border: 3px solid var(--brand);
-      border-radius: var(--radius);
-      padding: 20px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-    }
-
-    .header{
-      margin: 10px;
-      background: var(--brand);
-      color:#fff;
-      border-radius: 18px;
-      padding: 20px 24px;
-      text-align:center;
-      box-shadow: 0 10px 22px rgba(179,0,0,.35);
-    }
-    .header h1{
-      margin:0;
-      font-size: clamp(20px, 3.2vw, 28px);
-      letter-spacing:.5px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: 20px;
-      padding: 12px;
-    }
-    @media (max-width: 900px){
-      .grid{grid-template-columns: 1fr;}
-    }
-
-    .card{
-      position: relative;
-      background: var(--card);
-      border:1px solid var(--card-border);
-      border-radius: 14px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.35);
-      padding: 18px 18px 16px 18px;
-      display:flex;
-      gap:16px;
-      align-items:flex-start;
-      isolation:isolate;
-      transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease, background .2s ease;
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      inset:0 auto 0 0;
-      width:8px;
-      border-radius: 14px 0 0 14px;
-      background: var(--brand);
-    }
-    .card:hover{
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
-      border-color:#32363d;
-      background:#191c20;
-    }
-
-    .icon{
-      flex:0 0 44px;
-      height:44px;
-      border-radius: 12px;
-      display:grid;
-      place-items:center;
-      background: #0c0c0e;
-      border:2px solid var(--brand);
-      color:#fff;
-      font-size:22px;
-      margin-left: 6px;
-      box-shadow: inset 0 0 12px rgba(179,0,0,.35);
-    }
-
-    .content{ flex:1 1 auto; min-width:0; }
-    .title{
-      margin:0 0 6px;
-      font-size: clamp(16px, 2.2vw, 18px);
-      font-weight:800;
-      letter-spacing:.2px;
-      color:#f5f7fa;
-    }
-    .desc{ margin:0; color: var(--muted); font-size:14.5px; }
-
-    .actions{ display:flex; align-items:center; gap:10px; margin-left:auto; }
-    .btn{
-      appearance:none;
-      border:0;
-      border-radius: 12px;
-      padding:10px 16px;
-      font-weight:800;
-      cursor:pointer;
-      transition: transform .12s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
-      text-decoration:none;
-      display:inline-block;
-      color:#fff;
-      background:#0c0c0e;
-      border:2px solid var(--brand);
-      box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(179,0,0,.25);
-    }
-    .btn:hover{
-      background: var(--brand);
-      color:#fff;
-      box-shadow: 0 4px 10px rgba(179,0,0,.35);
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btn:focus-visible{
-      outline: 3px solid #fff2;
-      outline-offset: 2px;
-    }
-
-    .footer{
-      text-align:center;
-      color:#8c96a3;
-      font-size:12px;
-      margin: 20px 0 32px;
-    }
-    .footer strong{ color:#cfd6de; }
+    .wrapper{max-width:1100px;margin:28px auto 44px;padding:0 16px;opacity:0;transition:opacity .4s ease;}
+    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow);}
+    .header{margin:10px;background:var(--brand);color:#fff;border-radius:18px;padding:20px 24px;text-align:center;box-shadow:0 10px 22px rgba(179,0,0,.35);}
+    .header h1{margin:0;font-size:clamp(20px,3.2vw,28px);letter-spacing:.5px;}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding:12px;}
+    @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+    .card{position:relative;background:var(--card);border:1px solid var(--card-border);border-radius:14px;
+          box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;display:flex;gap:16px;align-items:flex-start;
+          transition:.2s;isolation:isolate;}
+    .card::before{content:"";position:absolute;inset:0 auto 0 0;width:8px;border-radius:14px 0 0 14px;background:var(--brand);}
+    .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);border-color:#32363d;background:#191c20;}
+    .icon{flex:0 0 44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#0c0c0e;
+          border:2px solid var(--brand);color:#fff;font-size:22px;margin-left:6px;box-shadow:inset 0 0 12px rgba(179,0,0,.35);}
+    .content{flex:1 1 auto;min-width:0;}
+    .title{margin:0 0 6px;font-size:clamp(16px,2.2vw,18px);font-weight:800;color:#f5f7fa;}
+    .desc{margin:0;color:var(--muted);font-size:14.5px;}
+    .actions{display:flex;align-items:center;gap:10px;margin-left:auto;}
+    .btn{border:2px solid var(--brand);border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer;
+         text-decoration:none;color:#fff;background:#0c0c0e;box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(179,0,0,.25);}
+    .btn:hover{background:var(--brand);}
+    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:20px 0 32px;}
+    .footer strong{color:#cfd6de;}
   </style>
 
-  <!-- Decisión temprana: ¿mostrar splash o no? (evita parpadeo) -->
   <script>
     (function(){
       const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
       const isFirstNav = nav ? nav.type === 'navigate' : true;
       const alreadyShown = sessionStorage.getItem('splashShownV2') === '1';
       window.__SHOW_SPLASH__ = isFirstNav && !alreadyShown;
-
-      // Si no se va a mostrar, forzamos estilos antes del primer pintado.
       if(!window.__SHOW_SPLASH__){
-        const s = document.createElement('style');
-        s.innerHTML = '#splash{display:none!important;opacity:0!important} .wrapper{opacity:1!important}';
+        const s=document.createElement('style');
+        s.innerHTML='#splash{display:none!important;opacity:0!important}.wrapper{opacity:1!important}';
         document.head.appendChild(s);
       }
     })();
   </script>
 </head>
 <body>
-  <!-- SPLASH -->
   <div id="splash" aria-live="polite">
     <img src="icons/icon-192.png" alt="Logo Taller">
     <div class="brand">El Señor de los Scanner</div>
@@ -286,105 +134,97 @@
 
   <div class="wrapper">
     <div class="frame">
-      <div class="header">
-        <h1>Panel Principal</h1>
-      </div>
+      <div class="header"><h1>Panel Principal</h1></div>
 
       <div class="grid" role="list">
-        <!-- Gestión de Vehículos -->
+        <!-- 🚗 Gestión de Vehículos -->
         <article class="card" role="listitem">
           <div class="icon">🚗</div>
           <div class="content">
             <h2 class="title">Gestión de Vehículos</h2>
             <p class="desc">Añadir, buscar y actualizar el estado de los autos del taller.</p>
           </div>
-          <div class="actions">
-            <a class="btn" href="gestion_autos.html">Abrir</a>
-          </div>
+          <div class="actions"><a class="btn" href="gestion_autos.html">Abrir</a></div>
         </article>
 
-        <!-- Computadoras -->
+        <!-- 💻 Computadoras -->
         <article class="card" role="listitem">
           <div class="icon">💻</div>
           <div class="content">
             <h2 class="title">Computadoras</h2>
-            <p class="desc">Gestión de DPF OFF y registro/consulta de ECUs/BCMs.</p>
+            <p class="desc">Gestión de DPF OFF y registro/consulta de ECUs y BCMs.</p>
           </div>
-          <div class="actions">
-            <a class="btn" href="dpf_off.html">Abrir</a>
-          </div>
+          <div class="actions"><a class="btn" href="dpf_off.html">Abrir</a></div>
         </article>
 
-        <!-- Informes -->
+        <!-- 🛢️ Aceites -->
+        <article class="card" role="listitem">
+          <div class="icon">🛢️</div>
+          <div class="content">
+            <h2 class="title">Gestión de Aceites</h2>
+            <p class="desc">Control de inventario, ventas y reportes de lubricantes.</p>
+          </div>
+          <div class="actions"><a class="btn" href="aceite.html">Abrir</a></div>
+        </article>
+
+        <!-- 📄 Informes -->
         <article class="card" role="listitem">
           <div class="icon">📄</div>
           <div class="content">
             <h2 class="title">Informes de Diagnóstico</h2>
             <p class="desc">Crear informes. Se abre en una pestaña nueva.</p>
           </div>
-          <div class="actions">
-            <a class="btn" href="https://taller-todo.vercel.app/informes.html" target="_blank">Abrir</a>
-          </div>
+          <div class="actions"><a class="btn" href="https://taller-todo.vercel.app/informes.html" target="_blank">Abrir</a></div>
         </article>
 
-        <!-- Orden de llegada -->
+        <!-- 🕰️ Orden de llegada -->
         <article class="card" role="listitem">
           <div class="icon">🕰️</div>
           <div class="content">
             <h2 class="title">Orden de llegada</h2>
             <p class="desc">Gestión de turnos de clientes por orden de ingreso.</p>
           </div>
-          <div class="actions">
-            <a class="btn" href="clientes_turno.html">Abrir</a>
-          </div>
+          <div class="actions"><a class="btn" href="clientes_turno.html">Abrir</a></div>
         </article>
 
-        <!-- Panel clientes -->
+        <!-- 🧾 Panel clientes -->
         <article class="card" role="listitem">
           <div class="icon">🧾</div>
           <div class="content">
             <h2 class="title">Panel clientes (Orden)</h2>
             <p class="desc">Vista pública para que el cliente vea su turno.</p>
           </div>
-          <div class="actions">
-            <a class="btn" href="panel_clientes.html">Abrir</a>
-          </div>
+          <div class="actions"><a class="btn" href="panel_clientes.html">Abrir</a></div>
         </article>
 
-        <!-- Tarjeta virtual -->
+        <!-- 🤳 Tarjeta virtual -->
         <article class="card" role="listitem">
           <div class="icon">🤳</div>
           <div class="content">
-            <h2 class="title">tarjeta virtual</h2>
-            <p class="desc">Mostrar qr o compartir link.</p>
+            <h2 class="title">Tarjeta Virtual</h2>
+            <p class="desc">Mostrar código QR o compartir link de contacto.</p>
           </div>
-          <div class="actions">
-            <a class="btn" href="tarjeta-virtual.html">Abrir</a>
-          </div>
+          <div class="actions"><a class="btn" href="tarjeta-virtual.html">Abrir</a></div>
         </article>
 
-        <!-- Buscador -->
+        <!-- 🏎️ Buscador -->
         <article class="card" role="listitem">
           <div class="icon">🏎️</div>
           <div class="content">
             <h2 class="title">Buscador de códigos</h2>
-            <p class="desc">Consulta rápida de DTC y descripciones.</p>
+            <p class="desc">Consulta rápida de DTC y descripciones de averías.</p>
           </div>
-          <div class="actions">
-            <a class="btn" href="buscador_averias.html" target="_blank">Abrir</a>
-          </div>
+          <div class="actions"><a class="btn" href="buscador_averias.html" target="_blank">Abrir</a></div>
         </article>
 
-        <!-- Patentes Chile -->
+        <!-- 🔢 Patentes Chile -->
         <article class="card" role="listitem">
           <div class="icon">🔢</div>
           <div class="content">
             <h2 class="title">Patentes Chile</h2>
             <p class="desc">Consulta externa de información por patente.</p>
           </div>
-          <div class="actions">
-            <a class="btn" href="https://www.patentechile.com/" target="_blank" rel="noopener">Abrir</a>
-          </div>
+          <div class="actions"><a class="btn" href="https://www.patentechile.com/" target="_blank" rel="noopener">Abrir</a></div>
         </article>
       </div>
     </div>
@@ -392,39 +232,30 @@
   </div>
 
   <script>
-    // ⏱️ Tiempo mínimo del splash (más corto)
-    const MIN_SPLASH_MS = 900; // 0.9s
-
-    // Mostrar u ocultar según decisión temprana
+    const MIN_SPLASH_MS = 900;
     (async function(){
-      const splash  = document.getElementById('splash');
-      const wrapper = document.querySelector('.wrapper');
-
-      // Si no debe mostrarse (segunda visita en la pestaña, etc.)
+      const splash=document.getElementById('splash');
+      const wrapper=document.querySelector('.wrapper');
       if(!window.__SHOW_SPLASH__){
-        wrapper.style.opacity = '1';
-        splash.style.display = 'none';
+        wrapper.style.opacity='1';
+        splash.style.display='none';
         return;
       }
-
-      // Esperar al logo para evitar parpadeos
-      const waitForLogo = () => new Promise(res => {
-        const img = splash.querySelector('img');
-        if (!img || img.complete) return res();
-        img.addEventListener('load', res, { once:true });
-        img.addEventListener('error', res, { once:true });
+      const waitForLogo=()=>new Promise(res=>{
+        const img=splash.querySelector('img');
+        if(!img||img.complete)return res();
+        img.addEventListener('load',res,{once:true});
+        img.addEventListener('error',res,{once:true});
       });
-
-      const start = performance.now();
+      const start=performance.now();
       await waitForLogo();
-      const elapsed = performance.now() - start;
-
-      setTimeout(() => {
-        splash.style.opacity = '0';
-        wrapper.style.opacity = '1';
-        setTimeout(() => splash.remove(), 400); // coincide con transition .4s
-        sessionStorage.setItem('splashShownV2', '1');
-      }, Math.max(0, MIN_SPLASH_MS - elapsed));
+      const elapsed=performance.now()-start;
+      setTimeout(()=>{
+        splash.style.opacity='0';
+        wrapper.style.opacity='1';
+        setTimeout(()=>splash.remove(),400);
+        sessionStorage.setItem('splashShownV2','1');
+      },Math.max(0,MIN_SPLASH_MS-elapsed));
     })();
   </script>
 </body>
