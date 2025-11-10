@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>👷 Trabajadores · Aceite</title>
+  <style>
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#0b0b0c;color:#e9ecef;}
+    .topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid #900000;}
+    .wrap{max-width:900px;margin:24px auto;padding:0 16px;}
+    .card{background:#0f0f11;border:3px solid #900000;border-radius:16px;padding:18px;margin-bottom:16px;
+          box-shadow:0 10px 28px rgba(0,0,0,.45);}
+    input{width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#101114;color:#fff;margin-bottom:10px;}
+    .btn{background:#0c0c0e;color:#fff;border:2px solid #900000;border-radius:12px;padding:10px 14px;
+         text-decoration:none;font-weight:800;cursor:pointer;transition:.2s;}
+    .btn:hover{background:#900000;}
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    th,td{border:1px solid #900000;padding:8px;text-align:center;}
+    th{background:#900000;color:#fff;}
+  </style>
+</head>
+<body>
+  <div class="topbar">👷 Trabajadores</div>
+  <div class="wrap">
+    <a href="aceite.html" class="btn">⬅ Volver al panel</a>
+
+    <div class="card">
+      <h2>Agregar trabajador</h2>
+      <input id="nombre" placeholder="Nombre del trabajador">
+      <button id="guardar" class="btn">Guardar</button>
+    </div>
+
+    <div class="card">
+      <h2>Listado</h2>
+      <input id="buscar" placeholder="Buscar trabajador...">
+      <div id="tabla"></div>
+    </div>
+  </div>
+
+<script type="module">
+const BASE_URL = "https://script.google.com/macros/s/AKfycbzidXZ0j8yePDr4gASEdHRS1kFl_FcgKaVLkg8M20vp4Cd7j7ql7fKPu-Jx0zKQa4hx2A/exec"; // 👈 cambia por tu URL
+const api = async (action,payload={})=>{
+  const r=await fetch(BASE_URL,{
+    method:"POST",
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action,payload})
+  });
+  return r.json();
+};
+
+const $=id=>document.getElementById(id);
+
+async function renderTabla(data){
+  if(!data.length){$('tabla').innerHTML="<p>No hay resultados.</p>";return;}
+  let html="<table><thead><tr><th>ID</th><th>Nombre</th><th>Activo</th><th>Bono Total</th><th>Acciones</th></tr></thead><tbody>";
+  data.forEach(t=>{
+    html+=`<tr>
+      <td>${t.id}</td>
+      <td>${t.nombre}</td>
+      <td>${t.activo?'✅':'❌'}</td>
+      <td>${(t.bono_total||0).toLocaleString('es-CL')}</td>
+      <td><button class="btn" onclick="toggle('${t.id}')">${t.activo?'Desactivar':'Activar'}</button></td>
+    </tr>`;
+  });
+  html+="</tbody></table>";
+  $('tabla').innerHTML=html;
+}
+
+window.toggle=async(id)=>{
+  const r=await api("toggleWorker",{id});
+  if(r.ok) buscar();
+  else alert(r.error);
+};
+
+async function buscar(){
+  const q=$('buscar').value.trim();
+  if(!q){$('tabla').innerHTML="";return;}
+  const r=await api('searchWorker',{query:q});
+  if(r.ok) renderTabla(r.data); else alert(r.error);
+}
+
+$('buscar').addEventListener('input',()=>buscar());
+
+$('guardar').addEventListener('click',async()=>{
+  const nombre=$('nombre').value.trim();
+  if(!nombre) return alert("Escribe un nombre");
+  const r=await api('addWorker',{nombre});
+  if(r.ok){alert("Trabajador agregado");$('nombre').value='';buscar();}
+  else alert(r.error);
+});
+</script>
+</body>
+</html>
