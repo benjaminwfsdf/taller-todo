@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aceite - Panel Principal</title>
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{
+  --brand:#900000;
+  --brand-900:#700000;
+  --ink:#e9ecef;
+  --bg:#0b0b0c;
+  --panel:#0f0f11;
+}
+body{
+  margin:0;
+  font-family:system-ui,Segoe UI,Roboto,Inter,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+.topbar{
+  background:#000;
+  color:#fff;
+  text-align:center;
+  padding:14px 10px;
+  font-weight:700;
+  border-bottom:4px solid var(--brand);
+  box-shadow:0 6px 16px rgba(0,0,0,.55);
+}
+.wrap{max-width:900px;margin:28px auto;padding:0 16px}
+.card{
+  background:var(--panel);
+  border:3px solid var(--brand);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+}
+h2{margin:0 0 14px;font-size:22px}
+.btn{
+  display:block;text-align:center;margin:8px 0;
+  background:#0c0c0e;border:2px solid var(--brand);
+  color:#fff;padding:10px 16px;font-weight:800;border-radius:12px;
+  text-decoration:none;transition:.2s;box-shadow:inset 0 0 12px rgba(179,0,0,.25);
+}
+.btn:hover{background:var(--brand)}
+</style>
+</head>
+<body>
+<div class="topbar">EL SEÑOR DE LOS SCANNER - SISTEMA DE ACEITES</div>
+<div class="wrap">
+  <div class="card">
+    <h2>Panel Principal</h2>
+    <a href="inventario.html" class="btn">📦 Inventario</a>
+    <a href="trabajadores.html" class="btn">👷 Trabajadores</a>
+    <a href="ventas.html" class="btn">💰 Registrar Venta</a>
+    <a href="reportes.html" class="btn">📊 Reportes</a>
+    <a href="calculadora.html" class="btn">🧮Calculadora</a>
+    <a href="index.html" class="btn">⬅ Volver al inicio</a>
+  </div>
+</div>
+</body>
+</html>
