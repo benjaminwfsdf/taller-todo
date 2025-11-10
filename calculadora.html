@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Ganancia · Lubricentro</title>
+<style>
+:root{
+  --brand:#900000;
+  --brand-dark:#700000;
+  --bg:#0b0b0c;
+  --card:#16181b;
+  --ink:#e9ecef;
+  --muted:#b9c0c7;
+}
+
+body{
+  margin:0;
+  font-family:system-ui,Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+
+h1{
+  background:var(--brand);
+  padding:16px 24px;
+  border-radius:12px;
+  box-shadow:0 6px 16px rgba(0,0,0,.5);
+  color:#fff;
+  letter-spacing:.3px;
+  margin-top:10px;
+}
+
+.card{
+  background:var(--card);
+  padding:24px;
+  border-radius:16px;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+  margin-top:25px;
+  width:100%;
+  max-width:400px;
+  border:1px solid #292d33;
+}
+
+label{
+  display:block;
+  margin-bottom:6px;
+  text-align:left;
+  color:var(--muted);
+  font-size:15px;
+  font-weight:600;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #333;
+  background:#0f0f11;
+  color:#fff;
+  font-size:16px;
+  margin-bottom:15px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:var(--brand);
+  color:#fff;
+  font-weight:bold;
+  font-size:16px;
+  cursor:pointer;
+  transition:.25s;
+}
+
+button:hover{background:var(--brand-dark);}
+.btn-home{
+  margin-top:10px;
+  background:#2b2d31;
+}
+.btn-home:hover{background:#3c3f45;}
+
+.resultado{
+  margin-top:20px;
+  font-size:16px;
+  text-align:center;
+  background:#0f0f11;
+  border-radius:10px;
+  padding:14px;
+  line-height:1.6;
+  border:1px solid #2a2d31;
+}
+.resultado strong{color:#f58b1f;}
+.footer{
+  margin-top:auto;
+  text-align:center;
+  color:#999;
+  font-size:13px;
+  padding:20px 0 10px;
+}
+</style>
+</head>
+<body>
+
+<h1>💰 Calculadora de Ganancia</h1>
+
+<div class="card">
+  <label>Precio de compra ($):</label>
+  <input type="number" id="costo" placeholder="Ej: 25000">
+
+  <label>Porcentaje de ganancia deseada (%):</label>
+  <input type="number" id="ganancia" placeholder="Ej: 60">
+
+  <button onclick="calcular()">Calcular Precio de Venta</button>
+  <button class="btn-home" onclick="window.location.href='aceite.html'">🏠 Volver al panel</button>
+
+  <div class="resultado" id="resultado">Ingresa los valores para calcular.</div>
+</div>
+
+<div class="footer">© 2025 <strong>Lubricentro</strong>. Todos los derechos reservados.</div>
+
+<script>
+function calcular(){
+  const costo=parseFloat(document.getElementById("costo").value);
+  const gan=parseFloat(document.getElementById("ganancia").value);
+  const res=document.getElementById("resultado");
+
+  if(isNaN(costo)||isNaN(gan)){
+    res.innerHTML="⚠️ Ingresa ambos valores correctamente.";
+    res.style.color="#ff4444";
+    return;
+  }
+
+  const venta=costo*(1+gan/100);
+  const utilidad=venta-costo;
+  const margen=(utilidad/venta)*100;
+
+  res.style.color="#fff";
+  res.innerHTML=`
+    💵 <strong>Precio de venta sugerido:</strong> $${venta.toLocaleString("es-CL")}<br>
+    📈 <strong>Utilidad bruta:</strong> $${utilidad.toLocaleString("es-CL")}<br>
+    🧮 <strong>Margen real sobre venta:</strong> ${margen.toFixed(1)}%
+  `;
+}
+</script>
+
+</body>
+</html>
