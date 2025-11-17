@@ -32,6 +32,8 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
 <div class="topbar">📦 Inventario</div>
 <div class="wrap">
   <a href="aceite.html" class="btn">⬅ Volver al panel</a>
+  <br>
+  <a href="editar_inventario.html" class="btn">✏️ Editar / gestionar inventario</a>
 
   <div class="card">
     <h2>Agregar producto</h2>
@@ -61,7 +63,7 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbzEKC5BluVZv-AfT1BPkp3bs3m3-fEUAFBNl0fsSe2TVT1izS0a3Iui_a8dOys-rNf1Og/exec";
+const BASE_URL = "https://script.google.com/macros/s/AKfycbwJeMM7KN8AMCaFF__rDwuxtO7-k2LrxjOpI3x-5aPNZ0EDrocgPaiGjbAEX03mpmAZ_w/exec";
 const api = async (action,payload={})=>{
   try{
     const r=await fetch(BASE_URL,{method:"POST",headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,payload})});
@@ -89,15 +91,26 @@ function render(list){
 }
 function filtrar(){
   const q=$('buscar').value.toLowerCase();
-  render(productos.filter(p=>p.nombre.toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)));
+  render(productos.filter(p=>
+    (p.nombre||'').toLowerCase().includes(q) ||
+    (p.sku||'').toLowerCase().includes(q) ||
+    (p.categoria||'').toLowerCase().includes(q)
+  ));
 }
 async function agregar(){
-  const item={sku:sku.value.trim()||'SKU-'+Date.now(),nombre:nombre.value.trim(),categoria:categoria.value.trim(),
-              costo_unit:Number(costo.value||0),precio_unit:Number(precio.value||0),stock:Number(stock.value||0)};
+  const item={
+    sku: sku.value.trim()||'',
+    nombre:nombre.value.trim(),
+    categoria:categoria.value.trim(),
+    costo_unit:Number(costo.value||0),
+    precio_unit:Number(precio.value||0),
+    stock:Number(stock.value||0)
+  };
   if(!item.nombre)return alert('Debe ingresar un nombre');
   const r=await api('addInventory',{item});
   if(!r.ok)return alert('Error: '+r.error);
-  document.querySelectorAll('input').forEach(i=>i.value='');cargar();
+  document.querySelectorAll('.card input').forEach(i=>i.value='');
+  cargar();
 }
 cargar();
 </script>
