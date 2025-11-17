@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✏️ Editar Inventario · Aceites</title>
+<style>
+:root{
+  --brand:#900000;
+  --ink:#e9ecef;
+  --bg:#0b0b0c;
+  --panel:#0f0f11;
+}
+body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink);}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-size:clamp(16px,4vw,20px);}
+.wrap{max-width:900px;margin:24px auto;padding:0 16px;}
+.card{background:var(--panel);border:3px solid var(--brand);border-radius:16px;padding:16px;margin-bottom:16px;
+      box-shadow:0 10px 28px rgba(0,0,0,.45);}
+.btn{background:#0c0c0e;color:#fff;border:2px solid var(--brand);border-radius:12px;padding:12px 14px;
+     text-decoration:none;font-weight:800;cursor:pointer;transition:.2s;width:100%;max-width:300px;margin:auto;display:block;}
+.btn:hover{background:var(--brand);}
+input{width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#101114;color:#fff;margin-bottom:10px;}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:clamp(12px,3vw,15px);}
+th,td{border-bottom:1px solid #2a2d33;padding:8px;text-align:center;}
+tr.clickable:hover{background:#15171b;cursor:pointer;}
+.badge{padding:4px 8px;border-radius:999px;font-size:12px;}
+.badge.ok{background:#163016;color:#a8f0a9;}
+.badge.off{background:#301616;color:#f0a8a8;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+</style>
+</head>
+<body>
+<div class="topbar">✏️ Editar Inventario</div>
+<div class="wrap">
+  <a href="inventario.html" class="btn">⬅ Volver al inventario</a>
+
+  <div class="card">
+    <h2>Buscar producto</h2>
+    <input id="buscar" placeholder="Buscar por nombre, SKU o categoría...">
+    <button class="btn" onclick="filtrar()">Buscar</button>
+    <div style="margin-top:10px;max-height:260px;overflow:auto;">
+      <table id="tbl">
+        <thead>
+          <tr><th>ID</th><th>SKU</th><th>Nombre</th><th>Categoría</th><th>Stock</th><th>Estado</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p style="font-size:13px;opacity:.8;margin-top:8px;">Pulsa sobre una fila para cargarla en el formulario de edición.</p>
+  </div>
+
+  <div class="card" id="formCard" style="display:none;">
+    <h2>Datos del producto</h2>
+    <div class="grid">
+      <input id="id" placeholder="ID" readonly>
+      <input id="sku" placeholder="SKU" readonly>
+      <input id="nombre" placeholder="Nombre del producto">
+      <input id="categoria" placeholder="Categoría">
+      <input id="costo_unit" type="number" placeholder="Costo unitario ($)">
+      <input id="precio_unit" type="number" placeholder="Precio venta ($)">
+      <input id="stock" type="number" placeholder="Stock">
+    </div>
+    <button class="btn" onclick="guardar()">💾 Guardar cambios</button>
+  </div>
+</div>
+
+<script>
+const BASE_URL = "https://script.google.com/macros/s/AKfycbwJeMM7KN8AMCaFF__rDwuxtO7-k2LrxjOpI3x-5aPNZ0EDrocgPaiGjbAEX03mpmAZ_w/exec";
+
+const api = async (action,payload={})=>{
+  try{
+    const r = await fetch(BASE_URL,{
+      method:"POST",
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action,payload})
+    });
+    return r.json();
+  }catch(err){
+    return {ok:false,error:err.message};
+  }
+};
+
+let productos = [];
+const $ = id => document.getElementById(id);
+
+async function cargar(){
+  const r = await api('listInventory');
+  if(!r.ok){ alert('Error al cargar inventario: '+r.error); return; }
+  productos = r.data || [];
+  renderTabla(productos);
+}
+
+function renderTabla(list){
+  const tb = document.querySelector('#tbl tbody');
+  tb.innerHTML = '';
+  list.forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.className = 'clickable';
+    tr.innerHTML = `
+      <td>${p.id}</td>
+      <td>${p.sku || '-'}</td>
+      <td>${p.nombre}</td>
+      <td>${p.categoria || '-'}</td>
+      <td>${p.stock}</td>
+      <td>${p.activo?'<span class="badge ok">Activo</span>':'<span class="badge off">Inactivo</span>'}</td>
+    `;
+    tr.addEventListener('click',()=>cargarEnFormulario(p));
+    tb.appendChild(tr);
+  });
+}
+
+function filtrar(){
+  const q = $('buscar').value.toLowerCase();
+  const filtrados = productos.filter(p=>
+    (p.nombre||'').toLowerCase().includes(q) ||
+    (p.sku||'').toLowerCase().includes(q) ||
+    (p.categoria||'').toLowerCase().includes(q)
+  );
+  renderTabla(filtrados);
+}
+
+function cargarEnFormulario(p){
+  $('formCard').style.display = 'block';
+  $('id').value = p.id || '';
+  $('sku').value = p.sku || '';
+  $('nombre').value = p.nombre || '';
+  $('categoria').value = p.categoria || '';
+  $('costo_unit').value = p.costo_unit || 0;
+  $('precio_unit').value = p.precio_unit || 0;
+  $('stock').value = p.stock || 0;
+}
+
+async function guardar(){
+  const id = $('id').value.trim();
+  if(!id){ alert('No hay producto cargado.'); return; }
+
+  const payload = {
+    id: id,
+    sku: $('sku').value.trim(),
+    nombre: $('nombre').value.trim(),
+    categoria: $('categoria').value.trim(),
+    costo_unit: Number($('costo_unit').value || 0),
+    precio_unit: Number($('precio_unit').value || 0),
+    stock: Number($('stock').value || 0)
+  };
+
+  const r = await api('editInventory', payload);
+  if(!r.ok){ alert('Error al guardar: '+r.error); return; }
+
+  alert('Producto actualizado correctamente.');
+  cargar();
+}
+cargar();
+</script>
+</body>
+</html>
