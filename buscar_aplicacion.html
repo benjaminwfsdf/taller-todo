@@ -11,28 +11,93 @@
   --bg:#0b0b0c;
   --panel:#0f0f11;
 }
-body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink);}
-.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-size:clamp(16px,4vw,20px);}
-.wrap{max-width:900px;margin:24px auto;padding:0 16px;}
-.card{background:var(--panel);border:3px solid var(--brand);border-radius:16px;padding:16px;margin-bottom:16px;
-      box-shadow:0 10px 28px rgba(0,0,0,.45);}
-.btn{background:#0c0c0e;color:#fff;border:2px solid var(--brand);border-radius:12px;padding:12px 14px;
-     text-decoration:none;font-weight:800;cursor:pointer;transition:.2s;width:100%;max-width:300px;margin:auto;display:block;}
+body{
+  margin:0;
+  font-family:system-ui,Segoe UI,Roboto,Arial;
+  background:var(--bg);
+  color:var(--ink);
+}
+.topbar{
+  background:#000;
+  color:#fff;
+  text-align:center;
+  padding:14px;
+  border-bottom:4px solid var(--brand);
+  font-size:clamp(16px,4vw,20px);
+}
+.wrap{
+  max-width:900px;
+  margin:24px auto;
+  padding:0 16px;
+}
+.card{
+  background:var(--panel);
+  border:3px solid var(--brand);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+}
+.btn{
+  background:#0c0c0e;
+  color:#fff;
+  border:2px solid var(--brand);
+  border-radius:12px;
+  padding:12px 14px;
+  text-decoration:none;
+  font-weight:800;
+  cursor:pointer;
+  transition:.2s;
+  width:100%;
+  max-width:300px;
+  margin:auto;
+  display:block;
+}
 .btn:hover{background:var(--brand);}
-input,select{width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#101114;color:#fff;margin-bottom:10px;}
-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:clamp(12px,3vw,15px);}
-th,td{border-bottom:1px solid #2a2d33;padding:8px;text-align:left;}
-.badge{padding:4px 8px;border-radius:999px;font-size:12px;background:#222;}
+input,select{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #333;
+  background:#101114;
+  color:#fff;
+  margin-bottom:10px;
+}
+.result{
+  background:#141416;
+  border:2px solid #900000;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:0 6px 16px rgba(0,0,0,.4);
+}
+.result h3{
+  margin:0 0 8px;
+  color:#fff;
+  font-size:18px;
+}
+.result small{
+  opacity:0.7;
+}
+.tag{
+  display:inline-block;
+  padding:4px 8px;
+  background:#222;
+  border-radius:8px;
+  font-size:12px;
+  margin-right:6px;
+}
 </style>
 </head>
 <body>
 <div class="topbar">🔎 Buscar aceites por auto</div>
+
 <div class="wrap">
   <a href="aceite.html" class="btn">⬅ Volver al panel</a>
 
   <div class="card">
     <h2>Filtros</h2>
-    <input id="qMarca" placeholder="Marca / modelo / descripción del auto">
+    <input id="qMarca" placeholder="Marca / modelo / descripción del auto...">
     <select id="qCategoria">
       <option value="">Todas las categorías</option>
     </select>
@@ -41,23 +106,15 @@ th,td{border-bottom:1px solid #2a2d33;padding:8px;text-align:left;}
 
   <div class="card">
     <h2>Resultados</h2>
-    <table id="tbl">
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Categoría</th>
-          <th>Aplicación (autos)</th>
-          <th>Stock</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+
+    <div id="contenedor"></div>
+
     <p id="msg" style="font-size:13px;opacity:.8;margin-top:8px;"></p>
   </div>
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbwl6jiMsZq76KSQfa8k38KhIOrCx7qGOXr9jojFpluP084UC12xpj33C9vIpDKUCRiSTg/exec"; // misma API
+const BASE_URL = "https://script.google.com/macros/s/AKfycbwl6jiMsZq76KSQfa8k38KhIOrCx7qGOXr9jojFpluP084UC12xpj33C9vIpDKUCRiSTg/exec";
 
 const api = async (action,payload={})=>{
   const r = await fetch(BASE_URL,{
@@ -76,48 +133,56 @@ async function cargar(){
   if(!r.ok){ alert('Error al cargar inventario: '+r.error); return; }
   productos = (r.data || []).filter(p=>p.activo);
 
-  // llenar categorías únicas
-  const cats = Array.from(new Set(productos.map(p=>p.categoria).filter(x=>x)));
-  const sel = $('qCategoria');
-  sel.innerHTML = '<option value="">Todas las categorías</option>' +
+  // Llenar categorías
+  const cats = Array.from(new Set(productos.map(p=>p.categoria).filter(Boolean)));
+  $('qCategoria').innerHTML = `<option value="">Todas las categorías</option>` +
     cats.map(c=>`<option value="${c}">${c}</option>`).join('');
 
   render(productos);
 }
 
 function render(list){
-  const tb = document.querySelector('#tbl tbody');
-  tb.innerHTML = '';
+  const cont = $('contenedor');
+  cont.innerHTML = '';
+
   if(!list.length){
-    $('msg').textContent = 'No se encontraron productos con esos filtros.';
+    $('msg').textContent = 'No se encontraron productos.';
     return;
   }
+
   $('msg').textContent = `Mostrando ${list.length} producto(s).`;
 
   list.forEach(p=>{
-    tb.innerHTML += `
-      <tr>
-        <td><b>${p.nombre}</b></td>
-        <td>${p.categoria||'-'}</td>
-        <td>${p.aplicacion||'<span class="badge">Sin información</span>'}</td>
-        <td>${p.stock}</td>
-      </tr>
+    cont.innerHTML += `
+      <div class="result">
+        <h3>${p.nombre}</h3>
+
+        <small>Categoría:</small><br>
+        <span class="tag">${p.categoria || '-'}</span>
+        <br><br>
+
+        <small>Autos compatibles:</small>
+        <p>${p.aplicacion || '<i style="opacity:.6">Sin información</i>'}</p>
+
+        <small>Stock disponible:</small>
+        <p>${p.stock}</p>
+      </div>
     `;
   });
 }
 
 function filtrar(){
-  const qMarca = $('qMarca').value.toLowerCase();
-  const cat = $('qCategoria').value;
+  const q = $('qMarca').value.toLowerCase();
+  const categoria = $('qCategoria').value;
 
-  const list = productos.filter(p=>{
-    const matchCat = !cat || p.categoria === cat;
-    const texto = (p.aplicacion||'') + ' ' + (p.nombre||'') + ' ' + (p.categoria||'');
-    const matchMarca = !qMarca || texto.toLowerCase().includes(qMarca);
+  const filtrados = productos.filter(p=>{
+    const matchCat = !categoria || p.categoria === categoria;
+    const texto = `${p.aplicacion||''} ${p.nombre||''} ${p.categoria||''}`.toLowerCase();
+    const matchMarca = !q || texto.includes(q);
     return matchCat && matchMarca;
   });
 
-  render(list);
+  render(filtrados);
 }
 
 cargar();
