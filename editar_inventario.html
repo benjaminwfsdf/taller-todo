@@ -105,7 +105,7 @@ tr.clickable:hover{
   <div class="card">
     <h2>Buscar producto</h2>
 
-    <input id="buscar" placeholder="Buscar por nombre, SKU, categoría o aplicación...">
+    <input id="buscar" placeholder="Buscar por nombre, SKU, categoría o aplicación..." oninput="this.value=this.value.toUpperCase()">
     <button class="btn" onclick="filtrar()">Buscar</button>
 
     <div style="margin-top:10px;max-height:260px;overflow:auto;">
@@ -138,9 +138,9 @@ tr.clickable:hover{
       <input id="id" placeholder="ID" readonly>
       <input id="sku" placeholder="SKU" readonly>
 
-      <input id="nombre" placeholder="Nombre del producto">
-      <input id="categoria" placeholder="Categoría">
-      <input id="aplicacion" placeholder="Aplicación / Autos compatibles">
+      <input id="nombre" placeholder="Nombre del producto" oninput="this.value=this.value.toUpperCase()">
+      <input id="categoria" placeholder="Categoría" oninput="this.value=this.value.toUpperCase()">
+      <input id="aplicacion" placeholder="Aplicación / Autos compatibles" oninput="this.value=this.value.toUpperCase()">
 
       <input id="costo_unit" type="number" placeholder="Costo unitario ($)">
       <input id="precio_unit" type="number" placeholder="Precio venta ($)">
