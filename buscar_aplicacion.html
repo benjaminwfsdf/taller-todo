@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🔎 Buscar por auto · Aceites</title>
+
 <style>
 :root{
   --brand:#900000;
@@ -88,20 +89,23 @@ input,select{
   margin-right:6px;
 }
 ul.autos-list{
-  padding-left:18px;
-  margin:5px 0;
+  padding-left:20px;
+  margin:6px 0;
 }
 ul.autos-list li{
-  margin-bottom:4px;
+  margin-bottom:3px;
 }
 </style>
 </head>
+
 <body>
 <div class="topbar">🔎 Buscar aceites por auto</div>
 
 <div class="wrap">
+
   <a href="aceite.html" class="btn">⬅ Volver al panel</a>
 
+  <!-- FILTROS -->
   <div class="card">
     <h2>Filtros</h2>
     <input id="qMarca" placeholder="Marca / modelo / descripción del auto...">
@@ -111,6 +115,7 @@ ul.autos-list li{
     <button class="btn" onclick="filtrar()">Buscar</button>
   </div>
 
+  <!-- RESULTADOS -->
   <div class="card">
     <h2>Resultados</h2>
 
@@ -118,10 +123,11 @@ ul.autos-list li{
 
     <p id="msg" style="font-size:13px;opacity:.8;margin-top:8px;"></p>
   </div>
+
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbwl6jiMsZq76KSQfa8k38KhIOrCx7qGOXr9jojFpluP084UC12xpj33C9vIpDKUCRiSTg/exec";
+const BASE_URL = "https://script.google.com/macros/s/AKfycbwCQdiDoUdNuWR-hggszLB95zW6VqStNgjOn9-oSBErXV9zMSiFyg6VXtdEuXWQA4hm3g/exec";
 
 const api = async (action,payload={})=>{
   const r = await fetch(BASE_URL,{
@@ -136,32 +142,37 @@ let productos = [];
 const $ = id => document.getElementById(id);
 
 async function cargar(){
-  const r = await api('listInventory');
-  if(!r.ok){ alert('Error al cargar inventario: '+r.error); return; }
+  const r = await api("listInventory");
+  if(!r.ok){
+    alert("Error al cargar inventario: " + r.error);
+    return;
+  }
+
   productos = (r.data || []).filter(p=>p.activo);
 
-  // Llenar categorías
+  // Categorías únicas
   const cats = Array.from(new Set(productos.map(p=>p.categoria).filter(Boolean)));
-  $('qCategoria').innerHTML = `<option value="">Todas las categorías</option>` +
-    cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  $("qCategoria").innerHTML =
+    `<option value="">Todas las categorías</option>` +
+    cats.map(c=>`<option value="${c}">${c}</option>`).join("");
 
   render(productos);
 }
 
 function render(list){
-  const cont = $('contenedor');
-  cont.innerHTML = '';
+  const cont = $("contenedor");
+  cont.innerHTML = "";
 
   if(!list.length){
-    $('msg').textContent = 'No se encontraron productos.';
+    $("msg").textContent = "No se encontraron productos.";
     return;
   }
 
-  $('msg').textContent = `Mostrando ${list.length} producto(s).`;
+  $("msg").textContent = `Mostrando ${list.length} producto(s).`;
 
   list.forEach(p=>{
 
-    // Procesar aplicaciones como lista de líneas
+    // Convertir APLICACION en lista de líneas
     let autos = p.aplicacion || "";
     let lineas = autos
       .split(/[,;\n]/g)
@@ -169,7 +180,7 @@ function render(list){
       .filter(x => x.length);
 
     let autosHTML = lineas.length
-      ? `<ul class="autos-list">` + lineas.map(a=>`<li>${a}</li>`).join('') + `</ul>`
+      ? `<ul class="autos-list">` + lineas.map(a=>`<li>${a}</li>`).join("") + `</ul>`
       : `<i style="opacity:.6">Sin información</i>`;
 
     cont.innerHTML += `
@@ -177,7 +188,7 @@ function render(list){
         <h3>${p.nombre}</h3>
 
         <small>Categoría:</small><br>
-        <span class="tag">${p.categoria || '-'}</span>
+        <span class="tag">${p.categoria || "-"}</span>
         <br><br>
 
         <small>Autos compatibles:</small>
@@ -191,13 +202,15 @@ function render(list){
 }
 
 function filtrar(){
-  const q = $('qMarca').value.toLowerCase();
-  const categoria = $('qCategoria').value;
+  const q = $("qMarca").value.toUpperCase();
+  const categoria = $("qCategoria").value;
 
   const filtrados = productos.filter(p=>{
     const matchCat = !categoria || p.categoria === categoria;
-    const texto = `${p.aplicacion||''} ${p.nombre||''} ${p.categoria||''}`.toLowerCase();
+
+    const texto = `${p.aplicacion||""} ${p.nombre||""} ${p.categoria||""}`.toUpperCase();
     const matchMarca = !q || texto.includes(q);
+
     return matchCat && matchMarca;
   });
 
