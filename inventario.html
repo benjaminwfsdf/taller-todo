@@ -113,13 +113,15 @@ th,td{
       <input id="aplicacion" placeholder="Aplicación / Autos (opcional)"
         oninput="this.value=this.value.toUpperCase()">
 
-      <input id="costo" placeholder="Costo ($)"
+      <!-- CAMBIO: type="text" para permitir puntos y comas en PC y celular -->
+      <input id="costo" type="text" placeholder="Costo ($)"
         oninput="formatearAuto(this)">
 
-      <input id="precio" placeholder="Precio venta ($)"
+      <input id="precio" type="text" placeholder="Precio venta ($)"
         oninput="formatearAuto(this)">
 
-      <input id="stock" placeholder="Stock" type="number">
+      <input id="stock" type="text" placeholder="Stock"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
 
     <button class="btn" onclick="agregar()">Guardar</button>
@@ -167,10 +169,11 @@ const api = async (action,payload={})=>{
 let productos=[];
 const $=id=>document.getElementById(id);
 
-/* ⭐ FORMATEO AUTOMÁTICO EN VIVO */
+/* ⭐ FORMATEO AUTOMÁTICO EN VIVO (PC + CELULAR) */
 function formatearAuto(input){
   let val = input.value.replace(/\./g,"").replace(",",".");
   if(val === "") return;
+
   let num = Number(val);
   if(isNaN(num)) return;
 
@@ -192,6 +195,7 @@ async function cargar(){
 function render(list){
   const tb=document.querySelector('#tbl tbody');
   tb.innerHTML='';
+
   list.forEach(p=>{
     tb.innerHTML+=`
     <tr>
@@ -210,6 +214,7 @@ function render(list){
 /* 🔍 BUSCAR */
 function filtrar(){
   const q=$('buscar').value.toUpperCase();
+
   render(productos.filter(p=>
     p.nombre.toUpperCase().includes(q) ||
     p.sku.toUpperCase().includes(q) ||
@@ -223,6 +228,7 @@ async function agregar(){
   // limpiar puntos antes de enviar
   const costoNum = Number(costo.value.replace(/\./g,"").replace(",","."));
   const precioNum = Number(precio.value.replace(/\./g,"").replace(",","."));
+  const stockNum  = Number(stock.value || "0");
 
   const item={
     sku: sku.value.trim() || 'SKU-'+Date.now(),
@@ -231,7 +237,7 @@ async function agregar(){
     aplicacion: aplicacion.value.trim().toUpperCase(),
     costo_unit: costoNum,
     precio_unit: precioNum,
-    stock: Number(stock.value || 0)
+    stock: stockNum
   };
 
   if(!item.nombre) return alert('Debe ingresar un nombre');
