@@ -130,7 +130,7 @@ tr.clickable:hover{
     </p>
   </div>
 
-  <!-- FORMULARIO -->
+  <!-- FORM EDITAR -->
   <div class="card" id="formCard" style="display:none;">
     <h2>Datos del producto</h2>
 
@@ -142,8 +142,8 @@ tr.clickable:hover{
       <input id="categoria" placeholder="Categoría" oninput="this.value=this.value.toUpperCase()">
       <input id="aplicacion" placeholder="Aplicación / Autos compatibles" oninput="this.value=this.value.toUpperCase()">
 
-      <input id="costo_unit" type="number" placeholder="Costo unitario ($)">
-      <input id="precio_unit" type="number" placeholder="Precio venta ($)">
+      <input id="costo_unit" placeholder="Costo unitario ($)" oninput="formatearMoneda(this)">
+      <input id="precio_unit" placeholder="Precio venta ($)" oninput="formatearMoneda(this)">
       <input id="stock" type="number" placeholder="Stock">
     </div>
 
@@ -171,6 +171,20 @@ const api = async (action,payload={})=>{
 let productos = [];
 const $ = id => document.getElementById(id);
 
+/* ======================
+   FORMATEAR MONEDA
+====================== */
+function formatearMoneda(input){
+  let v = input.value.replace(/\./g,"").replace(",",".");
+  if(v === "") return;
+  let n = Number(v);
+  if(isNaN(n)) return;
+  input.value = n.toLocaleString("es-CL",{minimumFractionDigits:0, maximumFractionDigits:2});
+}
+
+/* ======================
+       CARGAR LISTA
+====================== */
 async function cargar(){
   const r = await api("listInventory");
   if(!r.ok){
@@ -181,6 +195,9 @@ async function cargar(){
   renderTabla(productos);
 }
 
+/* ======================
+      RENDER TABLA
+====================== */
 function renderTabla(list){
   const tb = document.querySelector("#tbl tbody");
   tb.innerHTML = "";
@@ -204,8 +221,11 @@ function renderTabla(list){
   });
 }
 
+/* ======================
+         FILTRAR
+====================== */
 function filtrar(){
-  const q = $('buscar').value.toUpperCase();
+  const q = $("buscar").value.toUpperCase();
 
   const filtrados = productos.filter(p=>
     p.nombre.toUpperCase().includes(q) ||
@@ -217,6 +237,9 @@ function filtrar(){
   renderTabla(filtrados);
 }
 
+/* ======================
+  CARGAR EN FORMULARIO
+====================== */
 function cargarEnFormulario(p){
   $("formCard").style.display = "block";
 
@@ -227,12 +250,21 @@ function cargarEnFormulario(p){
   $("categoria").value = p.categoria;
   $("aplicacion").value = p.aplicacion || "";
 
-  $("costo_unit").value = p.costo_unit;
-  $("precio_unit").value = p.precio_unit;
+  $("costo_unit").value = p.costo_unit.toLocaleString("es-CL");
+  $("precio_unit").value = p.precio_unit.toLocaleString("es-CL");
   $("stock").value = p.stock;
 }
 
+/* ======================
+         GUARDAR
+====================== */
 async function guardar(){
+
+  const clean = (val)=>{
+    if(!val) return 0;
+    return Number(val.replace(/\./g,"").replace(",","."));
+  };
+
   const id = $("id").value.trim();
   if(!id){
     alert("No hay producto cargado.");
@@ -244,8 +276,8 @@ async function guardar(){
     nombre: $("nombre").value.trim().toUpperCase(),
     categoria: $("categoria").value.trim().toUpperCase(),
     aplicacion: $("aplicacion").value.trim().toUpperCase(),
-    costo_unit: Number($("costo_unit").value || 0),
-    precio_unit: Number($("precio_unit").value || 0),
+    costo_unit: clean($("costo_unit").value),
+    precio_unit: clean($("precio_unit").value),
     stock: Number($("stock").value || 0)
   };
 
