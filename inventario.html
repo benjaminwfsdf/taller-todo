@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📦 Inventario · Aceites</title>
+
 <style>
 :root{
   --brand:#900000;
@@ -11,30 +12,90 @@
   --bg:#0b0b0c;
   --panel:#0f0f11;
 }
-body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink);}
-.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-size:clamp(16px,4vw,20px);}
+body{
+  margin:0;
+  font-family:system-ui,Segoe UI,Roboto,Arial;
+  background:var(--bg);
+  color:var(--ink);
+}
+.topbar{
+  background:#000;
+  color:#fff;
+  text-align:center;
+  padding:14px;
+  border-bottom:4px solid var(--brand);
+  font-size:clamp(16px,4vw,20px);
+}
 .wrap{max-width:1100px;margin:24px auto;padding:0 16px;}
-.card{background:var(--panel);border:3px solid var(--brand);border-radius:16px;padding:16px;margin-bottom:16px;
-      box-shadow:0 10px 28px rgba(0,0,0,.45);}
-.btn{background:#0c0c0e;color:#fff;border:2px solid var(--brand);border-radius:12px;padding:12px 14px;
-     text-decoration:none;font-weight:800;cursor:pointer;transition:.2s;width:100%;max-width:300px;margin:auto;display:block;}
+.card{
+  background:var(--panel);
+  border:3px solid var(--brand);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+}
+.btn{
+  background:#0c0c0e;
+  color:#fff;
+  border:2px solid var(--brand);
+  border-radius:12px;
+  padding:12px 14px;
+  text-decoration:none;
+  font-weight:800;
+  cursor:pointer;
+  transition:.2s;
+  width:100%;
+  max-width:300px;
+  margin:auto;
+  display:block;
+}
 .btn:hover{background:var(--brand);}
-input{width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#101114;color:#fff;}
-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:clamp(12px,3vw,15px);}
-th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
-.badge{padding:4px 8px;border-radius:999px;font-size:12px;}
+input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #333;
+  background:#101114;
+  color:#fff;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+  font-size:clamp(12px,3vw,15px);
+}
+th,td{
+  border-bottom:1px solid #2a2d33;
+  padding:10px;
+  text-align:center;
+}
+.badge{
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:12px;
+}
 .badge.ok{background:#163016;color:#a8f0a9;}
 .badge.off{background:#301616;color:#f0a8a8;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px;
+}
 </style>
 </head>
+
 <body>
 <div class="topbar">📦 Inventario</div>
+
 <div class="wrap">
+
   <a href="aceite.html" class="btn">⬅ Volver al panel</a>
 
+  <!-- AGREGAR PRODUCTO -->
   <div class="card">
     <h2>Agregar producto</h2>
+
     <div class="grid">
       <input id="sku" placeholder="SKU (opcional)">
       <input id="nombre" placeholder="Nombre del producto">
@@ -44,95 +105,124 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
       <input id="precio" placeholder="Precio venta ($)" type="number">
       <input id="stock" placeholder="Stock" type="number">
     </div>
+
     <button class="btn" onclick="agregar()">Guardar</button>
   </div>
 
+  <!-- LISTADO -->
   <div class="card">
     <h2>Listado</h2>
+
     <input id="buscar" placeholder="Buscar..." oninput="filtrar()" style="width:100%;margin-bottom:10px">
     <button class="btn" onclick="cargar()">Recargar</button>
 
     <table id="tbl">
       <thead>
         <tr>
-          <th>ID</th><th>SKU</th><th>Nombre</th><th>Categoría</th>
-          <!-- SE OCULTA APLICACIÓN -->
-          <th>💲 Venta</th><th>🧾 Costo</th><th>Stock</th><th>Estado</th>
+          <th>ID</th>
+          <th>SKU</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <!-- NO SE MUESTRA APLICACIÓN -->
+          <th>💲 Venta</th>
+          <th>🧾 Costo</th>
+          <th>Stock</th>
+          <th>Estado</th>
         </tr>
       </thead>
+
       <tbody></tbody>
     </table>
   </div>
+
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbwl6jiMsZq76KSQfa8k38KhIOrCx7qGOXr9jojFpluP084UC12xpj33C9vIpDKUCRiSTg/exec";
+const BASE_URL = "https://script.google.com/macros/s/AKfycbwCQdiDoUdNuWR-hggszLB95zW6VqStNgjOn9-oSBErXV9zMSiFyg6VXtdEuXWQA4hm3g/exec";
 
 const api = async (action,payload={})=>{
   try{
-    const r=await fetch(BASE_URL,{
+    const r = await fetch(BASE_URL,{
       method:"POST",
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify({action,payload})
     });
     return r.json();
-  }catch(err){return {ok:false,error:err.message};}
+  }catch(err){
+    return {ok:false,error:err.message};
+  }
 };
 
-let productos=[];const $=id=>document.getElementById(id);
+let productos=[];
+const $=id=>document.getElementById(id);
 
 async function cargar(){
   const r=await api('listInventory');
   if(!r.ok)return alert('Error: '+r.error);
-  productos=r.data||[];render(productos);
+  productos=r.data||[];
+  render(productos);
 }
 
 function render(list){
   const tb=document.querySelector('#tbl tbody');
   tb.innerHTML='';
+
   list.forEach(p=>{
-    tb.innerHTML+=`
-    <tr>
-      <td>${p.id}</td>
-      <td>${p.sku||'-'}</td>
-      <td>${p.nombre}</td>
-      <td>${p.categoria||'-'}</td>
-      <!-- Aplicación NO se muestra -->
-      <td>${p.precio_unit.toLocaleString('es-CL')}</td>
-      <td>${p.costo_unit.toLocaleString('es-CL')}</td>
-      <td>${p.stock}</td>
-      <td>${p.activo?'<span class="badge ok">Activo</span>':'<span class="badge off">Inactivo</span>'}</td>
-    </tr>`;
+    tb.innerHTML += `
+      <tr>
+        <td>${p.id}</td>
+        <td>${p.sku || '-'}</td>
+        <td>${p.nombre}</td>
+        <td>${p.categoria || '-'}</td>
+        <td>${p.precio_unit.toLocaleString('es-CL')}</td>
+        <td>${p.costo_unit.toLocaleString('es-CL')}</td>
+        <td>${p.stock}</td>
+        <td>${p.activo ? '<span class="badge ok">Activo</span>' : '<span class="badge off">Inactivo</span>'}</td>
+      </tr>
+    `;
   });
 }
 
 function filtrar(){
-  const q=$('buscar').value.toLowerCase();
+  const q = $('buscar').value.toUpperCase();
+
   render(productos.filter(p=>
-    String(p.nombre||'').toLowerCase().includes(q) ||
-    String(p.sku||'').toLowerCase().includes(q) ||
-    String(p.categoria||'').toLowerCase().includes(q)
-    // Aplicación no se muestra pero sí se busca
+    p.nombre.toUpperCase().includes(q) ||
+    p.sku.toUpperCase().includes(q) ||
+    p.categoria.toUpperCase().includes(q) ||
+    (p.aplicacion || "").toUpperCase().includes(q)
   ));
 }
 
 async function agregar(){
-  const item={
-    sku:sku.value.trim()||'SKU-'+Date.now(),
-    nombre:nombre.value.trim(),
-    categoria:categoria.value.trim(),
-    aplicacion:aplicacion.value.trim(),
-    costo_unit:Number(costo.value||0),
-    precio_unit:Number(precio.value||0),
-    stock:Number(stock.value||0)
+
+  const item = {
+    sku: sku.value.trim().toUpperCase() || "SKU-" + Date.now(),
+    nombre: nombre.value.trim().toUpperCase(),
+    categoria: categoria.value.trim().toUpperCase(),
+    aplicacion: aplicacion.value.trim().toUpperCase(),
+    costo_unit: Number(costo.value||0),
+    precio_unit: Number(precio.value||0),
+    stock: Number(stock.value||0)
   };
-  if(!item.nombre)return alert('Debe ingresar un nombre');
-  const r=await api('addInventory',{item});
-  if(!r.ok)return alert('Error: '+r.error);
-  document.querySelectorAll('input').forEach(i=>i.value='');
+
+  if(!item.nombre){
+    alert("Debe ingresar un nombre");
+    return;
+  }
+
+  const r = await api("addInventory",{item});
+  if(!r.ok){
+    alert("Error: " + r.error);
+    return;
+  }
+
+  document.querySelectorAll("input").forEach(i=>i.value="");
   cargar();
 }
+
 cargar();
 </script>
+
 </body>
 </html>
