@@ -32,8 +32,6 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
 <div class="topbar">📦 Inventario</div>
 <div class="wrap">
   <a href="aceite.html" class="btn">⬅ Volver al panel</a>
-  <br>
-  <a href="editar_inventario.html" class="btn">✏️ Editar / gestionar inventario</a>
 
   <div class="card">
     <h2>Agregar producto</h2>
@@ -41,6 +39,7 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
       <input id="sku" placeholder="SKU (opcional)">
       <input id="nombre" placeholder="Nombre del producto">
       <input id="categoria" placeholder="Categoría (ej: 5W30, ATF)">
+      <input id="aplicacion" placeholder="Aplicación / Autos (opcional)">
       <input id="costo" placeholder="Costo ($)" type="number">
       <input id="precio" placeholder="Precio venta ($)" type="number">
       <input id="stock" placeholder="Stock" type="number">
@@ -55,7 +54,10 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
 
     <table id="tbl">
       <thead>
-        <tr><th>ID</th><th>SKU</th><th>Nombre</th><th>Categoría</th><th>💲 Venta</th><th>🧾 Costo</th><th>Stock</th><th>Estado</th></tr>
+        <tr>
+          <th>ID</th><th>SKU</th><th>Nombre</th><th>Categoría</th>
+          <th>Aplicación</th><th>💲 Venta</th><th>🧾 Costo</th><th>Stock</th><th>Estado</th>
+        </tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -63,45 +65,62 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycby9fiV1V2OYclgMbyd_9DFir3uwyoRMUoatd6CATQIU33MhWyJBJcE-7oIA9K_uWhOgMg/exec";
+const BASE_URL = "https://script.google.com/macros/s/AKfycbwl6jiMsZq76KSQfa8k38KhIOrCx7qGOXr9jojFpluP084UC12xpj33C9vIpDKUCRiSTg/exec"; // <-- pon aquí la URL del Apps Script
+
 const api = async (action,payload={})=>{
   try{
-    const r=await fetch(BASE_URL,{method:"POST",headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,payload})});
+    const r=await fetch(BASE_URL,{
+      method:"POST",
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action,payload})
+    });
     return r.json();
   }catch(err){return {ok:false,error:err.message};}
 };
+
 let productos=[];const $=id=>document.getElementById(id);
+
 async function cargar(){
   const r=await api('listInventory');
   if(!r.ok)return alert('Error: '+r.error);
   productos=r.data||[];render(productos);
 }
+
 function render(list){
   const tb=document.querySelector('#tbl tbody');
   tb.innerHTML='';
   list.forEach(p=>{
     tb.innerHTML+=`
     <tr>
-      <td>${p.id}</td><td>${p.sku||'-'}</td><td>${p.nombre}</td>
-      <td>${p.categoria||'-'}</td><td>${p.precio_unit.toLocaleString('es-CL')}</td>
-      <td>${p.costo_unit.toLocaleString('es-CL')}</td><td>${p.stock}</td>
+      <td>${p.id}</td>
+      <td>${p.sku||'-'}</td>
+      <td>${p.nombre}</td>
+      <td>${p.categoria||'-'}</td>
+      <td>${p.aplicacion||'-'}</td>
+      <td>${p.precio_unit.toLocaleString('es-CL')}</td>
+      <td>${p.costo_unit.toLocaleString('es-CL')}</td>
+      <td>${p.stock}</td>
       <td>${p.activo?'<span class="badge ok">Activo</span>':'<span class="badge off">Inactivo</span>'}</td>
     </tr>`;
   });
 }
+
 function filtrar(){
   const q=$('buscar').value.toLowerCase();
   render(productos.filter(p=>
-    (p.nombre||'').toLowerCase().includes(q) ||
-    (p.sku||'').toLowerCase().includes(q) ||
-    (p.categoria||'').toLowerCase().includes(q)
+    String(p.nombre||'').toLowerCase().includes(q) ||
+    String(p.sku||'').toLowerCase().includes(q) ||
+    String(p.categoria||'').toLowerCase().includes(q) ||
+    String(p.aplicacion||'').toLowerCase().includes(q)
   ));
 }
+
 async function agregar(){
   const item={
-    sku: sku.value.trim()||'',
+    sku:sku.value.trim()||'SKU-'+Date.now(),
     nombre:nombre.value.trim(),
     categoria:categoria.value.trim(),
+    aplicacion:aplicacion.value.trim(),
     costo_unit:Number(costo.value||0),
     precio_unit:Number(precio.value||0),
     stock:Number(stock.value||0)
@@ -109,7 +128,7 @@ async function agregar(){
   if(!item.nombre)return alert('Debe ingresar un nombre');
   const r=await api('addInventory',{item});
   if(!r.ok)return alert('Error: '+r.error);
-  document.querySelectorAll('.card input').forEach(i=>i.value='');
+  document.querySelectorAll('input').forEach(i=>i.value='');
   cargar();
 }
 cargar();
