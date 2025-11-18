@@ -54,9 +54,7 @@ body{
   margin:auto;
   display:block;
 }
-.btn:hover{
-  background:var(--brand);
-}
+.btn:hover{background:var(--brand);}
 input{
   width:100%;
   padding:10px;
@@ -103,13 +101,24 @@ th,td{
     <h2>Agregar producto</h2>
 
     <div class="grid">
-      <input id="sku" placeholder="SKU (opcional)">
-      <input id="nombre" placeholder="Nombre del producto" oninput="this.value=this.value.toUpperCase()">
-      <input id="categoria" placeholder="Categoría (ej: 5W30, ATF)" oninput="this.value=this.value.toUpperCase()">
-      <input id="aplicacion" placeholder="Aplicación / Autos (opcional)" oninput="this.value=this.value.toUpperCase()">
 
-      <input id="costo" placeholder="Costo ($)" oninput="formatearMoneda(this)">
-      <input id="precio" placeholder="Precio venta ($)" oninput="formatearMoneda(this)">
+      <input id="sku" placeholder="SKU (opcional)">
+
+      <input id="nombre" placeholder="Nombre del producto"
+        oninput="this.value=this.value.toUpperCase()">
+
+      <input id="categoria" placeholder="Categoría (ej: 5W30, ATF)"
+        oninput="this.value=this.value.toUpperCase()">
+
+      <input id="aplicacion" placeholder="Aplicación / Autos (opcional)"
+        oninput="this.value=this.value.toUpperCase()">
+
+      <input id="costo" placeholder="Costo ($)"
+        oninput="formatearAuto(this)">
+
+      <input id="precio" placeholder="Precio venta ($)"
+        oninput="formatearAuto(this)">
+
       <input id="stock" placeholder="Stock" type="number">
     </div>
 
@@ -119,7 +128,6 @@ th,td{
   <!-- LISTADO -->
   <div class="card">
     <h2>Listado</h2>
-
     <input id="buscar" placeholder="Buscar..." oninput="filtrar()" style="width:100%;margin-bottom:10px">
     <button class="btn" onclick="cargar()">Recargar</button>
 
@@ -138,7 +146,6 @@ th,td{
       </thead>
       <tbody></tbody>
     </table>
-
   </div>
 
 </div>
@@ -148,36 +155,32 @@ const BASE_URL = "https://script.google.com/macros/s/AKfycbwCQdiDoUdNuWR-hggszLB
 
 const api = async (action,payload={})=>{
   try{
-    const r = await fetch(BASE_URL,{
+    const r=await fetch(BASE_URL,{
       method:"POST",
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify({action,payload})
     });
     return r.json();
-  }catch(err){
-    return {ok:false,error:err.message};
-  }
+  }catch(err){return {ok:false,error:err.message};}
 };
 
 let productos=[];
 const $=id=>document.getElementById(id);
 
-/* =======================
-   FORMATEAR MONEDA
-======================= */
-function formatearMoneda(input){
-  let v = input.value.replace(/\./g,"").replace(",","."); // limpia miles
-  if(v === "") return;
-
-  let num = Number(v);
+/* ⭐ FORMATEO AUTOMÁTICO EN VIVO */
+function formatearAuto(input){
+  let val = input.value.replace(/\./g,"").replace(",",".");
+  if(val === "") return;
+  let num = Number(val);
   if(isNaN(num)) return;
 
-  input.value = num.toLocaleString("es-CL",{minimumFractionDigits:0, maximumFractionDigits:2});
+  input.value = num.toLocaleString("es-CL",{
+    minimumFractionDigits:0,
+    maximumFractionDigits:2
+  });
 }
 
-/* =======================
-        CARGAR LISTA
-======================= */
+/* 🔄 CARGAR LISTADO */
 async function cargar(){
   const r=await api('listInventory');
   if(!r.ok) return alert('Error: '+r.error);
@@ -185,66 +188,58 @@ async function cargar(){
   render(productos);
 }
 
-/* =======================
-        RENDER TABLA
-======================= */
+/* 🖥️ RENDER TABLA */
 function render(list){
-  const tb=document.querySelector("#tbl tbody");
-  tb.innerHTML="";
-
+  const tb=document.querySelector('#tbl tbody');
+  tb.innerHTML='';
   list.forEach(p=>{
-    tb.innerHTML += `
-      <tr>
-        <td>${p.id}</td>
-        <td>${p.sku||"-"}</td>
-        <td>${p.nombre}</td>
-        <td>${p.categoria||"-"}</td>
-        <td>${p.precio_unit.toLocaleString('es-CL')}</td>
-        <td>${p.costo_unit.toLocaleString('es-CL')}</td>
-        <td>${p.stock}</td>
-        <td>${p.activo?'<span class="badge ok">Activo</span>':'<span class="badge off">Inactivo</span>'}</td>
-      </tr>`;
+    tb.innerHTML+=`
+    <tr>
+      <td>${p.id}</td>
+      <td>${p.sku||'-'}</td>
+      <td>${p.nombre}</td>
+      <td>${p.categoria||'-'}</td>
+      <td>${p.precio_unit.toLocaleString('es-CL')}</td>
+      <td>${p.costo_unit.toLocaleString('es-CL')}</td>
+      <td>${p.stock}</td>
+      <td>${p.activo ? '<span class="badge ok">Activo</span>' : '<span class="badge off">Inactivo</span>'}</td>
+    </tr>`;
   });
 }
 
-/* =======================
-          FILTRAR
-======================= */
+/* 🔍 BUSCAR */
 function filtrar(){
-  const q = $("buscar").value.toLowerCase();
+  const q=$('buscar').value.toUpperCase();
   render(productos.filter(p=>
-    p.nombre.toLowerCase().includes(q) ||
-    p.sku.toLowerCase().includes(q) ||
-    p.categoria.toLowerCase().includes(q)
+    p.nombre.toUpperCase().includes(q) ||
+    p.sku.toUpperCase().includes(q) ||
+    p.categoria.toUpperCase().includes(q)
   ));
 }
 
-/* =======================
-         AGREGAR
-======================= */
+/* ➕ AGREGAR PRODUCTO */
 async function agregar(){
 
-  const clean = (val)=>{
-    if(!val) return 0;
-    return Number(val.replace(/\./g,"").replace(",","."));
-  };
+  // limpiar puntos antes de enviar
+  const costoNum = Number(costo.value.replace(/\./g,"").replace(",","."));
+  const precioNum = Number(precio.value.replace(/\./g,"").replace(",","."));
 
   const item={
-    sku: sku.value.trim() || "SKU-"+Date.now(),
+    sku: sku.value.trim() || 'SKU-'+Date.now(),
     nombre: nombre.value.trim().toUpperCase(),
     categoria: categoria.value.trim().toUpperCase(),
     aplicacion: aplicacion.value.trim().toUpperCase(),
-    costo_unit: clean(costo.value),
-    precio_unit: clean(precio.value),
-    stock: Number(stock.value||0)
+    costo_unit: costoNum,
+    precio_unit: precioNum,
+    stock: Number(stock.value || 0)
   };
 
-  if(!item.nombre) return alert("Debe ingresar un nombre");
+  if(!item.nombre) return alert('Debe ingresar un nombre');
 
-  const r = await api("addInventory",{item});
-  if(!r.ok) return alert("Error: "+r.error);
+  const r = await api('addInventory',{item});
+  if(!r.ok) return alert('Error: '+r.error);
 
-  document.querySelectorAll("input").forEach(i=>i.value="");
+  document.querySelectorAll('input').forEach(i=>i.value='');
   cargar();
 }
 
