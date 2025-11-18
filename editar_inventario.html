@@ -149,13 +149,15 @@ tr.clickable:hover{
       <input id="aplicacion" placeholder="Aplicación / Autos compatibles"
              oninput="this.value=this.value.toUpperCase()">
 
-      <input id="costo_unit" placeholder="Costo unitario ($)"
+      <!-- CAMBIO: type="text" para funcionar en PC + CELULAR -->
+      <input id="costo_unit" type="text" placeholder="Costo unitario ($)"
              oninput="formatearAuto(this)">
 
-      <input id="precio_unit" placeholder="Precio venta ($)"
+      <input id="precio_unit" type="text" placeholder="Precio venta ($)"
              oninput="formatearAuto(this)">
 
-      <input id="stock" type="number" placeholder="Stock">
+      <input id="stock" type="text" placeholder="Stock"
+             oninput="this.value=this.value.replace(/[^0-9]/g,'')">
     </div>
 
     <button class="btn" onclick="guardar()">💾 Guardar cambios</button>
@@ -182,7 +184,7 @@ const api = async (action,payload={})=>{
 let productos = [];
 const $ = id => document.getElementById(id);
 
-/* ⭐ FORMATEO AUTOMÁTICO DE MILES */
+/* ⭐ FORMATEO AUTOMÁTICO DE MILES (PC + CELULAR) */
 function formatearAuto(input){
   let val = input.value.replace(/\./g,"").replace(",",".");
   if(val === "") return;
@@ -262,7 +264,6 @@ async function guardar(){
     return;
   }
 
-  // limpiar puntos antes de enviar:
   const costoNum = Number(costo_unit.value.replace(/\./g,"").replace(",","."));
   const precioNum = Number(precio_unit.value.replace(/\./g,"").replace(",","."));
 
