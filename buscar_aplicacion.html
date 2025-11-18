@@ -87,6 +87,13 @@ input,select{
   font-size:12px;
   margin-right:6px;
 }
+ul.autos-list{
+  padding-left:18px;
+  margin:5px 0;
+}
+ul.autos-list li{
+  margin-bottom:4px;
+}
 </style>
 </head>
 <body>
@@ -153,6 +160,18 @@ function render(list){
   $('msg').textContent = `Mostrando ${list.length} producto(s).`;
 
   list.forEach(p=>{
+
+    // Procesar aplicaciones como lista de líneas
+    let autos = p.aplicacion || "";
+    let lineas = autos
+      .split(/[,;\n]/g)
+      .map(x => x.trim())
+      .filter(x => x.length);
+
+    let autosHTML = lineas.length
+      ? `<ul class="autos-list">` + lineas.map(a=>`<li>${a}</li>`).join('') + `</ul>`
+      : `<i style="opacity:.6">Sin información</i>`;
+
     cont.innerHTML += `
       <div class="result">
         <h3>${p.nombre}</h3>
@@ -162,7 +181,7 @@ function render(list){
         <br><br>
 
         <small>Autos compatibles:</small>
-        <p>${p.aplicacion || '<i style="opacity:.6">Sin información</i>'}</p>
+        ${autosHTML}
 
         <small>Stock disponible:</small>
         <p>${p.stock}</p>
