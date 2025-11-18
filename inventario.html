@@ -63,7 +63,7 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbyk7k8MikQnYFOxEUx4pv-8mmaSaImQIsG_HjjDlAGM_p68NipNAPP6TWqnhAa2bvIMeQ/exec";
+const BASE_URL = "https://script.google.com/macros/s/AKfycby9fiV1V2OYclgMbyd_9DFir3uwyoRMUoatd6CATQIU33MhWyJBJcE-7oIA9K_uWhOgMg/exec";
 const api = async (action,payload={})=>{
   try{
     const r=await fetch(BASE_URL,{method:"POST",headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,payload})});
