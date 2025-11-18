@@ -105,7 +105,9 @@ tr.clickable:hover{
   <div class="card">
     <h2>Buscar producto</h2>
 
-    <input id="buscar" placeholder="Buscar por nombre, SKU, categoría o aplicación..." oninput="this.value=this.value.toUpperCase()">
+    <input id="buscar" placeholder="Buscar por nombre, SKU, categoría o aplicación..."
+           oninput="this.value=this.value.toUpperCase()">
+
     <button class="btn" onclick="filtrar()">Buscar</button>
 
     <div style="margin-top:10px;max-height:260px;overflow:auto;">
@@ -130,7 +132,7 @@ tr.clickable:hover{
     </p>
   </div>
 
-  <!-- FORM EDITAR -->
+  <!-- FORMULARIO -->
   <div class="card" id="formCard" style="display:none;">
     <h2>Datos del producto</h2>
 
@@ -138,12 +140,21 @@ tr.clickable:hover{
       <input id="id" placeholder="ID" readonly>
       <input id="sku" placeholder="SKU" readonly>
 
-      <input id="nombre" placeholder="Nombre del producto" oninput="this.value=this.value.toUpperCase()">
-      <input id="categoria" placeholder="Categoría" oninput="this.value=this.value.toUpperCase()">
-      <input id="aplicacion" placeholder="Aplicación / Autos compatibles" oninput="this.value=this.value.toUpperCase()">
+      <input id="nombre" placeholder="Nombre del producto"
+             oninput="this.value=this.value.toUpperCase()">
 
-      <input id="costo_unit" placeholder="Costo unitario ($)" oninput="formatearMoneda(this)">
-      <input id="precio_unit" placeholder="Precio venta ($)" oninput="formatearMoneda(this)">
+      <input id="categoria" placeholder="Categoría"
+             oninput="this.value=this.value.toUpperCase()">
+
+      <input id="aplicacion" placeholder="Aplicación / Autos compatibles"
+             oninput="this.value=this.value.toUpperCase()">
+
+      <input id="costo_unit" placeholder="Costo unitario ($)"
+             oninput="formatearAuto(this)">
+
+      <input id="precio_unit" placeholder="Precio venta ($)"
+             oninput="formatearAuto(this)">
+
       <input id="stock" type="number" placeholder="Stock">
     </div>
 
@@ -171,20 +182,18 @@ const api = async (action,payload={})=>{
 let productos = [];
 const $ = id => document.getElementById(id);
 
-/* ======================
-   FORMATEAR MONEDA
-====================== */
-function formatearMoneda(input){
-  let v = input.value.replace(/\./g,"").replace(",",".");
-  if(v === "") return;
-  let n = Number(v);
-  if(isNaN(n)) return;
-  input.value = n.toLocaleString("es-CL",{minimumFractionDigits:0, maximumFractionDigits:2});
+/* ⭐ FORMATEO AUTOMÁTICO DE MILES */
+function formatearAuto(input){
+  let val = input.value.replace(/\./g,"").replace(",",".");
+  if(val === "") return;
+  let num = Number(val);
+  if(isNaN(num)) return;
+  input.value = num.toLocaleString("es-CL",{
+    minimumFractionDigits:0,
+    maximumFractionDigits:2
+  });
 }
 
-/* ======================
-       CARGAR LISTA
-====================== */
 async function cargar(){
   const r = await api("listInventory");
   if(!r.ok){
@@ -195,9 +204,6 @@ async function cargar(){
   renderTabla(productos);
 }
 
-/* ======================
-      RENDER TABLA
-====================== */
 function renderTabla(list){
   const tb = document.querySelector("#tbl tbody");
   tb.innerHTML = "";
@@ -221,11 +227,8 @@ function renderTabla(list){
   });
 }
 
-/* ======================
-         FILTRAR
-====================== */
 function filtrar(){
-  const q = $("buscar").value.toUpperCase();
+  const q = $('buscar').value.toUpperCase();
 
   const filtrados = productos.filter(p=>
     p.nombre.toUpperCase().includes(q) ||
@@ -237,9 +240,6 @@ function filtrar(){
   renderTabla(filtrados);
 }
 
-/* ======================
-  CARGAR EN FORMULARIO
-====================== */
 function cargarEnFormulario(p){
   $("formCard").style.display = "block";
 
@@ -255,29 +255,24 @@ function cargarEnFormulario(p){
   $("stock").value = p.stock;
 }
 
-/* ======================
-         GUARDAR
-====================== */
 async function guardar(){
-
-  const clean = (val)=>{
-    if(!val) return 0;
-    return Number(val.replace(/\./g,"").replace(",","."));
-  };
-
   const id = $("id").value.trim();
   if(!id){
     alert("No hay producto cargado.");
     return;
   }
 
+  // limpiar puntos antes de enviar:
+  const costoNum = Number(costo_unit.value.replace(/\./g,"").replace(",","."));
+  const precioNum = Number(precio_unit.value.replace(/\./g,"").replace(",","."));
+
   const payload = {
     id: id,
     nombre: $("nombre").value.trim().toUpperCase(),
     categoria: $("categoria").value.trim().toUpperCase(),
     aplicacion: $("aplicacion").value.trim().toUpperCase(),
-    costo_unit: clean($("costo_unit").value),
-    precio_unit: clean($("precio_unit").value),
+    costo_unit: costoNum,
+    precio_unit: precioNum,
     stock: Number($("stock").value || 0)
   };
 
