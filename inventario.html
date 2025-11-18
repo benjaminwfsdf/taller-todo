@@ -56,7 +56,8 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
       <thead>
         <tr>
           <th>ID</th><th>SKU</th><th>Nombre</th><th>Categoría</th>
-          <th>Aplicación</th><th>💲 Venta</th><th>🧾 Costo</th><th>Stock</th><th>Estado</th>
+          <!-- SE OCULTA APLICACIÓN -->
+          <th>💲 Venta</th><th>🧾 Costo</th><th>Stock</th><th>Estado</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -65,7 +66,7 @@ th,td{border-bottom:1px solid #2a2d33;padding:10px;text-align:center;}
 </div>
 
 <script>
-const BASE_URL = "https://script.google.com/macros/s/AKfycbwl6jiMsZq76KSQfa8k38KhIOrCx7qGOXr9jojFpluP084UC12xpj33C9vIpDKUCRiSTg/exec"; // <-- pon aquí la URL del Apps Script
+const BASE_URL = "https://script.google.com/macros/s/AKfycbwl6jiMsZq76KSQfa8k38KhIOrCx7qGOXr9jojFpluP084UC12xpj33C9vIpDKUCRiSTg/exec";
 
 const api = async (action,payload={})=>{
   try{
@@ -96,7 +97,7 @@ function render(list){
       <td>${p.sku||'-'}</td>
       <td>${p.nombre}</td>
       <td>${p.categoria||'-'}</td>
-      <td>${p.aplicacion||'-'}</td>
+      <!-- Aplicación NO se muestra -->
       <td>${p.precio_unit.toLocaleString('es-CL')}</td>
       <td>${p.costo_unit.toLocaleString('es-CL')}</td>
       <td>${p.stock}</td>
@@ -110,8 +111,8 @@ function filtrar(){
   render(productos.filter(p=>
     String(p.nombre||'').toLowerCase().includes(q) ||
     String(p.sku||'').toLowerCase().includes(q) ||
-    String(p.categoria||'').toLowerCase().includes(q) ||
-    String(p.aplicacion||'').toLowerCase().includes(q)
+    String(p.categoria||'').toLowerCase().includes(q)
+    // Aplicación no se muestra pero sí se busca
   ));
 }
 
