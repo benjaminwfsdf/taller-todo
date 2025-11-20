@@ -13,7 +13,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Informe de Diagnóstico</title>
 
-  <!-- === Protección ligera con usuario+PIN (modal + persistencia 12h en localStorage) === -->
   <style>
     #auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(2px)}
     #auth-card{background:#fff;width:min(92vw,380px);border:1px solid #000;border-radius:10px;padding:18px;box-shadow:0 4px 0 #000;font-family:Arial,sans-serif}
@@ -35,17 +34,17 @@
 
     body { font-family: Arial, sans-serif; margin: 0; background: #f2f2f2; }
 
-    /* Contenedor exportable (la “hoja”) */
     #paper {
       width: 21cm; min-height: 29.7cm;
       margin: 32px auto; padding: 40px; background: #fff;
       border: 1px solid #000; box-sizing: border-box; font-size: 13px;
-      position: relative; /* estable */
+      position: relative;
     }
 
     .titulo {
       width: 100%; background: #b30000; color: #fff; font-weight: bold;
-      font-size: 24px; padding: 12px 0; text-align: center; box-sizing: border-box; margin: 0 0 10px 0;
+      font-size: 24px; padding: 12px 0; text-align: center;
+      margin: 0 0 10px 0;
     }
 
     .contacto-wrap { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:12px; }
@@ -54,201 +53,109 @@
 
     .form-grid { width:100%; border-collapse:collapse; margin-bottom:20px; }
     .form-grid td { padding:6px; border:1px solid #000; vertical-align:middle; }
-    .form-grid label { font-weight:bold; margin-right:6px; min-width:60px; font-size:14px; }
-    .inline { display:flex; align-items:center; gap:6px; }
     .form-grid input[type="text"] { width:100%; padding:2px 4px; box-sizing:border-box; border:1px solid #000; font-size:16px; }
 
     .seccion-titulo { font-weight:bold; margin-top:20px; margin-bottom:5px; text-transform:uppercase; background:#f0f0f0; padding:6px; border:1px solid #000; }
 
+    textarea { width:100%; height:100px; margin-top:5px; padding:6px; border:1px solid #000; box-sizing:border-box; font-size:16px; resize:vertical; }
+
     .tabla-codigos { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:fixed; }
     .tabla-codigos th, .tabla-codigos td { border:1px solid #000; padding:8px; vertical-align:top; }
-    .tabla-codigos th { background:#d9d9d9; font-weight:bold; text-align:left; }
-    .tabla-codigos textarea { width:100%; height:220px; border:none; resize:none; font-size:16px; box-sizing:border-box; padding:6px; }
+    .tabla-codigos textarea { height:200px; border:none; padding:6px; font-size:16px; resize:vertical; }
 
-    textarea { width:100%; height:100px; margin-top:5px; padding:6px; border:1px solid #000; box-sizing:border-box; font-size:16px; }
-
-    .valor-final { margin-top:20px; font-weight:bold; font-size:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .valor-final { margin-top:20px; font-weight:bold; font-size:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; }
     .valor-final input { padding:10px 16px; border:2px solid #000; font-size:20px; font-weight:bold; width:180px; text-align:right; }
-    .fecha-final { border:1px solid #000; padding:6px 12px; font-size:13px; color:#000; }
 
-    .nota-footer { font-size:10px; text-align:center; margin-top:10px; font-weight:bold; }
-
-    /* Botonera: SIEMPRE visible (móvil) */
     .fab {
       position: fixed; bottom: 16px; right: 16px;
       display:flex; flex-direction:column; gap:10px;
-      z-index: 2147483647; /* super alto para móvil/PWA */
+      z-index: 999999;
     }
-    .fab button {
-      padding: 12px 18px; font-size: 15px;
-      border:1px solid #000; background:#fff; cursor:pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,.25); border-radius:10px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .fab button:active { transform: translateY(1px); }
-    @supports (-webkit-touch-callout: none) { .fab { bottom: 12px; right: 12px; } }
-
-    /* Auto-grow SOLO códigos/detalle */
-    #codigo_area, #detalle_area {
-      width:100%; min-height:220px; height:auto; border:none; font-size:16px;
-      box-sizing:border-box; padding:6px; resize:vertical; overflow:hidden;
-    }
+    .fab button { padding:12px 18px; font-size:15px; border:1px solid #000; background:#fff; border-radius:10px; cursor:pointer; }
   </style>
 </head>
 
 <body onload="document.getElementById('fecha').innerText = new Date().toLocaleDateString('es-CL');">
-  <!-- Modal auth -->
-  <div id="auth-overlay" aria-hidden="true">
+
+  <!-- LOGIN -->
+  <div id="auth-overlay">
     <div id="auth-card">
       <h3>Acceso</h3>
       <p style="margin:0 0 6px; font-size:13px">Ingresa tus credenciales para continuar.</p>
-      <div class="row"><input id="auth-user" name="username" type="text" inputmode="email" autocapitalize="none" autocorrect="off" placeholder="tu@correo.com" autocomplete="username" /></div>
-      <div class="row"><input id="auth-pin" name="password" type="password" autocomplete="current-password" placeholder="••••••••" /></div>
+
+      <div class="row"><input id="auth-user"></div>
+      <div class="row"><input id="auth-pin" type="password"></div>
+
       <div id="auth-error"></div>
       <button id="auth-btn">Entrar</button>
-      <p style="font-size:11px;opacity:.7;margin-top:8px">Cerrar sesión: <b>Ctrl+L</b></p>
     </div>
   </div>
 
-  <!-- ===== CONTENIDO DEL INFORME (exportaremos #paper a PDF) ===== -->
+  <!-- CONTENIDO -->
   <div id="paper">
     <div class="titulo">INFORME DE DIAGNOSTICO</div>
 
     <div class="contacto-wrap">
-      <!-- IMPORTANTE: rutas relativas y CORS para html2canvas -->
-      <img src="img/logo-scanners.png" alt="logo scanners" loading="eager" crossorigin="anonymous" />
+      <img src="img/logo-scanners.png" crossorigin="anonymous">
       <div class="contacto">
-        WWW.ELSEÑORDELOSESCANER.CL<br />
-        DORSAL (ALTURA 6200) METRO NEPTUNO<br />
-        CELULAR: +56976209564<br />
-        (WALDO)<br /><br />
-        SCANNER ORIGINAL TODAS LAS MARCAS<br />
-        LIMPIEZA INYECTORES – SISTEMAS DPF - GASES LLAVES CON CHIP – PROGRAMACION
+        WWW.ELSEÑORDELOSESCANER.CL<br>
+        DORSAL (ALTURA 6200) METRO NEPTUNO<br>
+        CELULAR: +56976209564 (WALDO)<br><br>
+        SCANNER ORIGINAL TODAS LAS MARCAS<br>
+        LIMPIEZA INYECTORES – SISTEMAS DPF – LLAVES – PROGRAMACION
       </div>
-      <img src="img/qr-whatsapp.png" alt="QR whatsapp" loading="eager" crossorigin="anonymous" />
+      <img src="img/qr-whatsapp.png" crossorigin="anonymous">
     </div>
 
     <table class="form-grid">
       <tr>
-        <td><div class="inline"><label>MARCA:</label><input type="text" name="marca" style="text-transform: uppercase;"></div></td>
-        <td><div class="inline"><label>MODELO:</label><input type="text" name="modelo" style="text-transform: uppercase;"></div></td>
+        <td><input name="marca" placeholder="MARCA" style="text-transform:uppercase"></td>
+        <td><input name="modelo" placeholder="MODELO" style="text-transform:uppercase"></td>
       </tr>
       <tr>
-        <td><div class="inline"><label>PATENTE:</label><input type="text" name="patente" style="text-transform: uppercase;"></div></td>
-        <td><div class="inline"><label>AÑO:</label><input type="text" name="ano" style="text-transform: uppercase;"></div></td>
+        <td><input name="patente" placeholder="PATENTE" style="text-transform:uppercase"></td>
+        <td><input name="ano" placeholder="AÑO"></td>
       </tr>
       <tr>
-        <td><div class="inline"><label>KM:</label><input type="text" name="km" style="text-transform: uppercase;"></div></td>
-        <td><div class="inline"><label>MOTOR:</label><input type="text" name="motor" style="text-transform: uppercase;"></div></td>
+        <td><input name="km" placeholder="KM"></td>
+        <td><input name="motor" placeholder="MOTOR"></td>
       </tr>
     </table>
 
     <table class="tabla-codigos">
       <thead>
         <tr>
-          <th style="width: 15%;">CÓDIGOS</th>
-          <th style="width: 70%;">DETALLE</th>
-          <th style="width: 15%;">VALOR</th>
+          <th>CÓDIGOS</th>
+          <th>DETALLE</th>
+          <th>VALOR</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><textarea name="codigo_area" id="codigo_area" style="text-transform: uppercase;"></textarea></td>
-          <td><textarea name="detalle_area" id="detalle_area"></textarea></td>
-          <td><textarea name="valor_area" id="valor_area"></textarea></td>
+          <td><textarea id="codigo_area" style="text-transform:uppercase"></textarea></td>
+          <td><textarea id="detalle_area"></textarea></td>
+          <td><textarea id="valor_area"></textarea></td>
         </tr>
       </tbody>
     </table>
 
     <div class="seccion-titulo">POSIBLES CAUSAS</div>
-    <textarea name="causas" id="causas"></textarea>
+    <textarea id="causas"></textarea>
 
     <div class="seccion-titulo">RECOMENDACIONES</div>
-    <textarea name="recomendaciones" id="recomendaciones"></textarea>
+    <textarea id="recomendaciones"></textarea>
 
     <div class="valor-final">
-      <div class="fecha-final" id="fecha"></div>
-      <div>$ <input type="text" name="valor_final" id="valor_final"></div>
+      <div id="fecha"></div>
+      <div>$ <input id="valor_final"></div>
     </div>
 
-    <div class="nota-footer">
-      <strong>NOTA: COMPROBANTE VALIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
-    </div>
-  </div><!-- /#paper -->
+  </div>
 
-  <!-- ====== AUTH ====== -->
-  <script>
-    (function(){
-      // SHA-256("informes@")
-      const PASS_HASH = "76c4d54885353802045d21b7b97d9b892f5b7c72fd0eff29f366d9d44dd0b0cd";
-      const HOURS_VALID = 12;
-      const storeKey = "auth_until_ts";
-      const STORAGE = localStorage;
-
-      const $ov = document.getElementById('auth-overlay');
-      const $user = document.getElementById('auth-user');
-      const $pin = document.getElementById('auth-pin');
-      const $btn = document.getElementById('auth-btn');
-      const $err = document.getElementById('auth-error');
-
-      const now = () => Date.now();
-      const isAuthed = () => {
-        const until = parseInt(STORAGE.getItem(storeKey) || "0", 10);
-        return until && until > now();
-      };
-      const setAuthed = (h) => STORAGE.setItem(storeKey, String(now() + (h||HOURS_VALID)*3600*1000));
-      const logout = () => { STORAGE.removeItem(storeKey); sessionStorage.removeItem(storeKey); location.reload(); };
-
-      async function sha256Hex(text){
-        const enc = new TextEncoder().encode(text);
-        const buf = await crypto.subtle.digest("SHA-256", enc);
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-      }
-
-      async function tryLogin(){
-        $err.textContent = "";
-        const pin = ($pin.value || "").trim();
-        if (!pin) { $err.textContent = "Ingresa la clave."; $pin.focus(); return; }
-        const h = await sha256Hex(pin);
-        if (h === PASS_HASH){
-          setAuthed(HOURS_VALID);
-          $ov.style.display = "none";
-          $ov.setAttribute("aria-hidden","true");
-          try{
-            if ('PasswordCredential' in window && 'credentials' in navigator){
-              const username = ($user.value || 'usuario').trim();
-              const cred = new window.PasswordCredential({ id: username, name: username, password: pin });
-              await navigator.credentials.store(cred);
-            }
-          }catch(e){}
-        } else {
-          $err.textContent = "Clave incorrecta.";
-          const card = document.getElementById('auth-card');
-          card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
-          $pin.select();
-        }
-      }
-
-      if (!isAuthed()){
-        $ov.style.display = "flex";
-        $ov.setAttribute("aria-hidden","false");
-        setTimeout(()=> ($user.value ? $pin.focus() : $user.focus()), 0);
-      }
-
-      $btn.addEventListener('click', tryLogin);
-      $pin.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') tryLogin(); });
-
-      document.addEventListener('keydown', (e)=>{
-        if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); logout(); }
-      });
-    })();
-  </script>
-
-  <!-- ====== Autorrelleno de DETALLE por códigos ====== -->
+  <!-- AUTOCOMPLETAR CÓDIGOS (REPARADO) -->
   <script>
     const CODIGOS_BASE = {
-   
-       "P252F": "Nivel de aceite muy alto",
+      "P252F": "Nivel de aceite muy alto",
        "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
   "P0171": "Sistema demasiado pobre (Banco 1)",
   "P0300": "Falla de encendido aleatoria o múltiple",
@@ -839,156 +746,77 @@
 
     const txtCodigos = document.getElementById("codigo_area");
     const txtDetalle = document.getElementById("detalle_area");
+
     const RE_CODIGO = /^[PBCU]\d{4}$/;
     const normalizar = s => s.toUpperCase().trim().replace(/[^A-Z0-9]/g, "");
-    const codigosDe = (input) => Array.from(new Set(
-      input.toUpperCase().split(/[\s,;]+/).map(normalizar).filter(c => RE_CODIGO.test(c))
-    ));
-    const esLineaAuto = (l) => /^•\s+.+/.test(l.trim()) && !/^[PBCU]\d{4}/.test(l.trim());
-    const construirLineasAutoSoloDescripcion = (codigos) => codigos.filter(c => CODIGOS_BASE[c]).map(c => `• ${CODIGOS_BASE[c]}`);
 
-    function mezclarDetalleSoloDescripcion() {
+    const codigosDe = (input) =>
+      Array.from(new Set(
+        input.toUpperCase().split(/[\s,;]+/)
+        .map(normalizar)
+        .filter(c => RE_CODIGO.test(c))
+      ));
+
+    function actualizarDescripciones() {
       const cods = codigosDe(txtCodigos.value);
-      const nuevasAuto = construirLineasAutoSoloDescripcion(cods);
-      const lineas = txtDetalle.value.split(/\r?\n/);
-      const manual = lineas.filter(l => !esLineaAuto(l) && l.trim() !== "");
-      txtDetalle.value = nuevasAuto.length ? [...nuevasAuto, ...(manual.length?["",...manual]:[])].join("\n") : manual.join("\n");
-    }
-    txtCodigos.addEventListener("input", () => {
-      clearTimeout(window.__debAutoTimer);
-      window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 120);
-    });
-  </script>
 
-  <!-- ====== Guardar en Sheets + Borrar + Atajos + Auto-grow + Recolectar datos ====== -->
-  <script>
-    async function guardarEnGoogleSheetsYImprimir() {
-      const datos = recogerDatosInforme();
-      try {
-        await fetch("https://script.google.com/macros/s/AKfycbzTDTkFKdwIqH8E_jDrOWx3chf42XasN-QI0WcCRav9gS9r7gZJ5tRIVVch1T6E1ukw/exec", {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(datos)
+      let auto = "";
+
+      if (cods.length > 0) {
+        auto += "=== DESCRIPCIONES AUTOMÁTICAS ===\n";
+        cods.forEach(c => {
+          if (CODIGOS_BASE[c]) auto += `• ${c}: ${CODIGOS_BASE[c]}\n`;
         });
-        window.print();
-      } catch (e) {
-        alert("⚠️ No se pudo guardar en Google Sheets. Se abrirá la impresión de todos modos.");
-        window.print();
+        auto += "\n=== TUS OBSERVACIONES ===\n";
       }
+
+      const actual = txtDetalle.value;
+
+      let manual = actual.includes("=== TUS OBSERVACIONES ===")
+        ? actual.split("=== TUS OBSERVACIONES ===")[1].trim()
+        : actual.trim();
+
+      txtDetalle.value = auto + manual;
     }
 
-    function borrarTodo() {
-      if (!confirm("¿Seguro que quieres borrar todo el contenido del informe?")) return;
-      document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
-      mezclarDetalleSoloDescripcion();
-    }
-
-    document.addEventListener("keydown", (ev) => {
-      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'S' || ev.key === 's')) { ev.preventDefault(); guardarEnGoogleSheetsYImprimir(); }
-      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) { ev.preventDefault(); borrarTodo(); }
-      if (ev.ctrlKey && (ev.key === 'l' || ev.key === 'L')) { ev.preventDefault(); localStorage.removeItem('auth_until_ts'); sessionStorage.removeItem('auth_until_ts'); location.reload(); }
+    txtCodigos.addEventListener("input", () => {
+      clearTimeout(window.__t);
+      window.__t = setTimeout(actualizarDescripciones, 150);
     });
-
-    (function(){ ['codigo_area','detalle_area'].forEach(id=>{
-      const el = document.getElementById(id);
-      function fit(){ el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
-      if(el){ fit(); el.addEventListener('input', fit); }
-    }); })();
-
-    function recogerDatosInforme(){
-      return {
-        marca: document.querySelector('input[name="marca"]').value.trim(),
-        modelo: document.querySelector('input[name="modelo"]').value.trim(),
-        patente: document.querySelector('input[name="patente"]').value.trim().toUpperCase(),
-        ano: document.querySelector('input[name="ano"]').value.trim(),
-        km: document.querySelector('input[name="km"]').value.trim(),
-        motor: document.querySelector('input[name="motor"]').value.trim(),
-        codigo: document.getElementById("codigo_area").value.trim(),
-        detalle: document.getElementById("detalle_area").value.trim(),
-        valor_area: document.getElementById("valor_area").value.trim(),
-        causas: document.getElementById("causas").value.trim(),
-        recomendaciones: document.getElementById("recomendaciones").value.trim(),
-        valor_final: document.getElementById("valor_final").value.trim(),
-        fecha: document.getElementById("fecha").innerText.trim()
-      };
-    }
   </script>
 
-  <!-- ====== Librerías: QR / compresión / PDF local ====== -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" referrerpolicy="no-referrer"></script>
-
-  <!-- ====== Modal QR ====== -->
-  <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:99998;">
-    <div style="background:#fff; width:min(92vw,420px); border:1px solid #000; border-radius:10px; padding:18px; box-shadow:0 4px 0 #000; text-align:center;">
-      <h3 style="margin:0 0 10px">Escanea para descargar el PDF</h3>
-      <div id="qr-box" style="display:flex; justify-content:center; margin:10px 0;"></div>
-      <div style="word-break:break-all; font-size:12px; margin:8px 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"></a></div>
-      <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
-        <button onclick="navigator.clipboard.writeText(document.getElementById('qr-link').href)">Copiar link</button>
-        <button onclick="document.getElementById('qr-modal').style.display='none'">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== Botonera flotante ====== -->
-  <div class="fab">
-    <button onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
-    <button onclick="descargarPDFLocal()">📄 Descargar PDF</button>
-    <button onclick="generarQRDeDescargaPDF()">📲 Mostrar QR</button>
-    <button onclick="borrarTodo()">🧹 Borrar todo</button>
-  </div>
-
-  <!-- ====== Lógica QR + Descarga PDF local ====== -->
+  <!-- GUARDAR / PDF / QR / BORRAR -->
   <script>
-    function construirLinkDescarga(datos){
-      const packed = LZString.compressToEncodedURIComponent(JSON.stringify(datos));
-      const base = location.href.substring(0, location.href.lastIndexOf('/') + 1);
-      return base + 'informe_dl.html#' + packed;
-    }
-
-    function mostrarQr(url){
-      const link = document.getElementById('qr-link');
-      const box = document.getElementById('qr-box');
-      link.textContent = url; link.href = url; box.innerHTML = "";
-      new QRCode(box, { text: url, width: 220, height: 220 });
-      document.getElementById('qr-modal').style.display = 'flex';
-    }
-
-    function generarQRDeDescargaPDF(){
-      mostrarQr(construirLinkDescarga(recogerDatosInforme()));
-    }
-
-    // Espera a que las imágenes del papel estén listas (evita que falten en el PDF)
-    function waitImagesLoaded(container){
-      const imgs = Array.from(container.querySelectorAll('img'));
-      if (!imgs.length) return Promise.resolve();
-      return Promise.all(imgs.map(img => img.complete ? Promise.resolve() :
-        new Promise(res => { img.onload = res; img.onerror = res; })));
-    }
-
-    async function descargarPDFLocal(){
-      const paper = document.getElementById('paper');
-      const fab = document.querySelector('.fab');
-      const prev = fab.style.display; fab.style.display = 'none'; // no exportar botones
-      await waitImagesLoaded(paper);
-
-      const patente = (document.querySelector('input[name="patente"]').value || 'SIN_PATENTE')
-                      .toUpperCase().replace(/\s+/g,'');
-      const opt = {
-        filename: `Informe_${patente}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`,
-        margin: 0,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+    function recogerDatos() {
+      return {
+        marca: document.querySelector('[name="marca"]').value,
+        modelo: document.querySelector('[name="modelo"]').value,
+        patente: document.querySelector('[name="patente"]').value,
+        ano: document.querySelector('[name="ano"]').value,
+        km: document.querySelector('[name="km"]').value,
+        motor: document.querySelector('[name="motor"]').value,
+        codigo: txtCodigos.value,
+        detalle: txtDetalle.value,
+        valor_area: document.getElementById('valor_area').value,
+        causas: document.getElementById('causas').value,
+        recomendaciones: document.getElementById('recomendaciones').value,
+        valor_final: document.getElementById('valor_final').value,
+        fecha: document.getElementById('fecha').innerText
       };
-      try{
-        await html2pdf().set(opt).from(paper).save();
-      } finally {
-        fab.style.display = prev || '';
-      }
     }
   </script>
+
+  <div class="fab">
+    <button onclick="window.print()">🖨️ Imprimir</button>
+    <button onclick="borrarTodo()">🧹 Borrar</button>
+  </div>
+
+  <script>
+    function borrarTodo() {
+      if (!confirm("¿Borrar todo?")) return;
+      document.querySelectorAll("input, textarea").forEach(e => e.value = "");
+    }
+  </script>
+
 </body>
 </html>
