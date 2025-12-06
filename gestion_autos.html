@@ -161,7 +161,6 @@
             <p class="desc">Filtra por número de contacto del cliente.</p>
           </div>
           <div class="actions">
-            <!-- CORREGIDO: antes decía tipo=patente -->
             <a class="btn btn-primary" href="buscar.html?tipo=telefono">Abrir</a>
           </div>
         </article>
@@ -177,6 +176,20 @@
             <a class="btn btn-primary" href="estado.html">Abrir</a>
           </div>
         </article>
+
+        <!-- NUEVO: Editar Visitas (página que creamos) -->
+        <article class="card" role="listitem">
+          <div class="icon">✏️</div>
+          <div class="content">
+            <h2 class="title">Editar Visitas</h2>
+            <p class="desc">Modificar datos de visitas existentes (nombre, teléfono, dirección, etc.).</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-primary" href="editar_autos.html">Abrir</a>
+          </div>
+        </article>
+
+        <!-- Puedes agregar más funcionalidades aquí en el futuro -->
       </div>
 
       <div style="text-align:center;">
@@ -197,9 +210,6 @@
       'https://www.patentechile.com/',
       'https://taller-todo.vercel.app/informes.html',
       'https://taller-todo.vercel.app/buscador_averias.html'
-
-      // 'informes.html',
-      // 'buscador_averias.html'
     ]);
 
     const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
@@ -318,7 +328,6 @@
       }
     });
    // Abrir modal al cargar si no hay sesión
-    // Abrir modal al cargar si no hay sesión
     if (!isSessionValid()) openGate();
   })();
   </script>
