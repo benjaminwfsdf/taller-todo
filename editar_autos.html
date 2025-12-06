@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+  <base target="_self">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Taller">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#000000">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" type="image/png" href="img/scanner.png">
+  <title>✏️ Editar Visitas · Vehículos | Walter Uriol</title>
+  <style>
+    :root {
+      --brand: #900000;
+      --brand-900: #700000;
+      --ink: #e9ecef;
+      --muted: #b9c0c7;
+      --bg: #0b0b0c;
+      --panel: #0f0f11;
+      --card: #16181b;
+      --card-border: #272a2f;
+      --radius: 16px;
+      --shadow: 0 10px 28px rgba(0,0,0,.45);
+      --ok: #3ddc97;
+      --warn: #ffbc49;
+      --danger: #ff4d4f;
+    }
+    
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+    
+    .topbar {
+      background: #000;
+      color: #fff;
+      text-align: center;
+      padding: 14px 10px;
+      font-weight: 800;
+      letter-spacing: .6px;
+      border-bottom: 4px solid var(--brand);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    
+    .wrapper {
+      max-width: 1100px;
+      margin: 28px auto 44px;
+      padding: 0 16px;
+    }
+    
+    .frame {
+      border: 3px solid var(--brand);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+    
+    .header {
+      margin: 10px;
+      background: var(--brand);
+      color: #fff;
+      border-radius: 18px;
+      padding: 18px 22px;
+      text-align: center;
+      box-shadow: 0 10px 22px rgba(144,0,0,.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: clamp(22px, 3.2vw, 30px);
+    }
+    
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.35);
+      padding: 18px;
+      margin: 12px 0;
+    }
+    
+    label {
+      display: block;
+      margin: 8px 0 6px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+    
+    input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #32363d;
+      border-radius: 10px;
+      background: #101215;
+      color: #e8edf3;
+      font-size: 16px;
+      box-sizing: border-box;
+      text-transform: uppercase;
+      font-family: inherit;
+    }
+    
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    
+    input.editable:focus, textarea.editable:focus {
+      border-color: var(--brand);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(144,0,0,.25);
+    }
+    
+    input.readonly, textarea.readonly {
+      background: rgba(255,255,255,0.05);
+      color: #b9c0c7;
+      cursor: not-allowed;
+      border-color: #40444a;
+    }
+    
+    .btn {
+      width: 100%;
+      margin-top: 12px;
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #fff;
+      background: #0c0c0e;
+      border: 2px solid var(--brand);
+      box-shadow: 0 2px 0 rgba(0,0,0,.6), inset 0 0 12px rgba(144,0,0,.25);
+      transition: background .2s, transform .12s, box-shadow .2s;
+      font-family: inherit;
+      font-size: 16px;
+    }
+    
+    .btn:hover {
+      background: var(--brand);
+      box-shadow: 0 4px 10px rgba(144,0,0,.35);
+    }
+    
+    .btn:active {
+      transform: translateY(1px);
+    }
+    
+    .btn-secondary {
+      display: block;
+      width: fit-content;
+      margin: 18px auto 0;
+      padding: 12px 18px;
+      text-decoration: none;
+      border-radius: 12px;
+      border: 2px solid var(--brand);
+      background: #15171b;
+      color: #fff;
+      font-weight: 800;
+      text-align: center;
+      transition: background .2s;
+    }
+    
+    .btn-secondary:hover {
+      background: var(--brand);
+    }
+    
+    .footer {
+      text-align: center;
+      color: #8c96a3;
+      font-size: 12px;
+      margin: 12px 0 0;
+    }
+    
+    /* Tabla de historial */
+    .historial-container {
+      max-height: 260px;
+      overflow: auto;
+      margin-top: 12px;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: #101215;
+    }
+    
+    th {
+      background: rgba(0,0,0,0.3);
+      font-weight: 800;
+      color: var(--muted);
+      padding: 10px 8px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      border-bottom: 2px solid var(--brand);
+    }
+    
+    td {
+      padding: 8px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    tr.clickable:hover {
+      background: rgba(255,255,255,0.08);
+      cursor: pointer;
+    }
+    
+    tr.clickable:active {
+      background: rgba(144,0,0,0.15);
+    }
+    
+    .hint {
+      font-size: 13px;
+      opacity: .85;
+      text-align: center;
+      margin-top: 8px;
+      color: var(--muted);
+    }
+    
+    /* Badges para estados */
+    .badge-reparacion {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--warn);
+      color: #000;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    
+    .badge-listo {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--ok);
+      color: #000;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    
+    /* Toast para mensajes */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: #14161a;
+      color: #fff;
+      padding: 14px 16px;
+      border: 2px solid var(--ok);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      z-index: 10;
+      display: none;
+      max-width: 92%;
+      font-weight: 700;
+      text-align: center;
+    }
+    
+    .toast.error {
+      border-color: var(--danger);
+    }
+    
+    /* Campo oculto */
+    input[type="hidden"] {
+      display: none;
+    }
+    
+    /* Indicadores de campo */
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0 6px;
+    }
+    
+    .editable-indicator {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--brand);
+      border-radius: 4px;
+      color: white;
+    }
+    
+    .readonly-indicator {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: #40444a;
+      border-radius: 4px;
+      color: #b9c0c7;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="wrapper">
+    <div class="frame">
+      <div class="header">
+        <h1>✏️ Editar Visitas de Vehículos</h1>
+      </div>
+
+      <!-- Buscar historial -->
+      <div class="card">
+        <h2 style="margin: 0 0 12px; font-size: 1.3rem; color: var(--ink); text-align: center;">1. Buscar historial por patente</h2>
+        
+        <label for="patente_buscar">Patente</label>
+        <input id="patente_buscar" placeholder="INGRESA PATENTE (EJ: JJSJ31)" />
+        
+        <button class="btn" onclick="filtrarHistorial()">🔍 Buscar historial</button>
+        
+        <div class="historial-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Fila</th>
+                <th>Fecha</th>
+                <th>OT</th>
+                <th>Nombre</th>
+                <th>Patente</th>
+                <th>Estado</th>
+                <th>Detalle</th>
+                <th>KM</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyHistorial"></tbody>
+          </table>
+        </div>
+        
+        <p class="hint">Toca una fila para cargarla y editar (solo campos editables).</p>
+      </div>
+
+      <!-- Formulario de edición -->
+      <div class="card" id="cardEdicion" style="display:none;">
+        <h2 style="margin: 0 0 12px; font-size: 1.3rem; color: var(--ink); text-align: center;">2. Editar visita seleccionada</h2>
+        
+        <input id="fila" type="hidden">
+        
+        <!-- Campos NO editables -->
+        <div class="field-label">
+          <label for="fecha">Fecha</label>
+          <span class="readonly-indicator">SOLO LECTURA</span>
+        </div>
+        <input id="fecha" class="readonly" readonly>
+        
+        <div class="field-label">
+          <label for="ot">Orden de Trabajo</label>
+          <span class="readonly-indicator">SOLO LECTURA</span>
+        </div>
+        <input id="ot" class="readonly" readonly>
+        
+        <!-- Campos EDITABLES -->
+        <div class="field-label">
+          <label for="nombre">Nombre del dueño</label>
+          <span class="editable-indicator">EDITABLE</span>
+        </div>
+        <input id="nombre" class="editable" placeholder="NOMBRE DEL DUEÑO">
+        
+        <div class="field-label">
+          <label for="telefono">Teléfono</label>
+          <span class="editable-indicator">EDITABLE</span>
+        </div>
+        <input id="telefono" class="editable" placeholder="TELÉFONO">
+        
+        <div class="field-label">
+          <label for="direccion">Dirección</label>
+          <span class="editable-indicator">EDITABLE</span>
+        </div>
+        <input id="direccion" class="editable" placeholder="DIRECCIÓN">
+        
+        <div class="field-label">
+          <label for="marca">Marca</label>
+          <span class="editable-indicator">EDITABLE</span>
+        </div>
+        <input id="marca" class="editable" placeholder="MARCA">
+        
+        <div class="field-label">
+          <label for="modelo">Modelo</label>
+          <span class="editable-indicator">EDITABLE</span>
+        </div>
+        <input id="modelo" class="editable" placeholder="MODELO">
+        
+        <div class="field-label">
+          <label for="patente">Patente</label>
+          <span class="editable-indicator">EDITABLE</span>
+        </div>
+        <input id="patente" class="editable" placeholder="PATENTE">
+        
+        <!-- Campos NO editables -->
+        <div class="field-label">
+          <label for="estado">Estado</label>
+          <span class="readonly-indicator">SOLO LECTURA</span>
+        </div>
+        <input id="estado" class="readonly" readonly>
+        
+        <div class="field-label">
+          <label for="detalle_estado">Detalle Estado</label>
+          <span class="readonly-indicator">SOLO LECTURA</span>
+        </div>
+        <textarea id="detalle_estado" class="readonly" readonly></textarea>
+        
+        <div class="field-label">
+          <label for="kilometraje">Kilometraje</label>
+          <span class="editable-indicator">EDITABLE</span>
+        </div>
+        <input id="kilometraje" class="editable" placeholder="KILOMETRAJE">
+        
+        <button class="btn" onclick="guardarCambios()">💾 Guardar cambios</button>
+      </div>
+
+      <a href="gestion_autos.html" class="btn-secondary">← Volver al Menú Principal</a>
+
+      <div class="footer">© 2025 Benjamín González — Todos los derechos reservados.</div>
+    </div>
+  </div>
+
+  <!-- Toast para mensajes -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzSaY3CT2xdA2hWdbnp8ojsID42J9qOs-Z1cGs2zIU7cpjt1RsAF8y_Ms5aSfUvsk4XMQ/exec";
+    
+    let VISITAS = [];
+    let visitaSeleccionada = null;
+    
+    // Toast function
+    function toast(msg, isError = false, ms = 4500) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = isError ? 'toast error' : 'toast';
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, ms);
+    }
+    
+    // Formatear fecha
+    function formatearFecha(f) {
+      if (!f) return "-";
+      const d = new Date(f);
+      if (isNaN(d)) return f;
+      return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+    }
+    
+    // Cargar datos
+    async function cargarDatos() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        
+        VISITAS = data.map((v, i) => ({
+          ...v,
+          _fila: i + 2   // fila real en Sheets (empieza en 2)
+        }));
+        
+        console.log(`Datos cargados: ${VISITAS.length} registros`);
+      } catch (e) {
+        console.error("Error cargando datos:", e);
+        toast("Error cargando datos", true);
+      }
+    }
+    
+    // Cargar datos al iniciar
+    cargarDatos();
+    
+    // Filtrar historial
+    function filtrarHistorial() {
+      const pat = document.getElementById('patente_buscar').value.trim().toUpperCase();
+      const tbody = document.getElementById("tbodyHistorial");
+      tbody.innerHTML = "";
+      
+      if (!pat) {
+        toast("Ingresa una patente para buscar", true);
+        return;
+      }
+      
+      const lista = VISITAS.filter(v =>
+        String(v["Patente"] || "").toUpperCase().includes(pat)
+      );
+      
+      if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center;">No existen registros para esta patente.</td></tr>`;
+        document.getElementById("cardEdicion").style.display = "none";
+        return;
+      }
+      
+      lista.forEach(v => {
+        const tr = document.createElement("tr");
+        tr.className = "clickable";
+        
+        const estado = v["Estado"] || "";
+        const badge = estado.toUpperCase() === "LISTO" 
+          ? '<span class="badge-listo">LISTO</span>'
+          : estado.toUpperCase() === "REPARACIÓN" 
+            ? '<span class="badge-reparacion">REPARACIÓN</span>'
+            : estado;
+        
+        tr.innerHTML = `
+          <td>${v._fila}</td>
+          <td>${formatearFecha(v["Fecha"])}</td>
+          <td>${v["OrdenTrabajo"] || ""}</td>
+          <td>${v["Nombre"] || ""}</td>
+          <td><strong>${v["Patente"] || ""}</strong></td>
+          <td>${badge}</td>
+          <td>${v["Detalle Estado"] || ""}</td>
+          <td>${v["Kilometraje"] || ""}</td>
+        `;
+        
+        tr.addEventListener("click", () => cargarEnFormulario(v));
+        tbody.appendChild(tr);
+      });
+    }
+    
+    // Cargar en formulario
+    function cargarEnFormulario(v) {
+      visitaSeleccionada = v;
+      document.getElementById("cardEdicion").style.display = "block";
+      
+      // Scroll a la sección de edición
+      document.getElementById("cardEdicion").scrollIntoView({ behavior: 'smooth' });
+      
+      // Llenar campos
+      document.getElementById("fila").value = v._fila;
+      document.getElementById("fecha").value = formatearFecha(v["Fecha"]);
+      document.getElementById("ot").value = v["OrdenTrabajo"] || "";
+      document.getElementById("nombre").value = v["Nombre"] || "";
+      document.getElementById("telefono").value = v["Teléfono"] || v["Telefono"] || "";
+      document.getElementById("direccion").value = v["Dirección"] || "";
+      document.getElementById("marca").value = v["Marca"] || "";
+      document.getElementById("modelo").value = v["Modelo"] || "";
+      document.getElementById("patente").value = v["Patente"] || "";
+      document.getElementById("estado").value = v["Estado"] || "";
+      document.getElementById("detalle_estado").value = v["Detalle Estado"] || "";
+      document.getElementById("kilometraje").value = v["Kilometraje"] || "";
+      
+      toast("Visita cargada para edición");
+    }
+    
+    // Guardar cambios
+    async function guardarCambios() {
+      if (!visitaSeleccionada) {
+        toast("Primero selecciona una visita", true);
+        return;
+      }
+      
+      // Solo validamos campos editables
+      const nombre = document.getElementById("nombre").value.trim();
+      const patente = document.getElementById("patente").value.trim().toUpperCase();
+      
+      if (!nombre || !patente) {
+        toast("Nombre y Patente son campos obligatorios", true);
+        return;
+      }
+      
+      const filaInput = document.getElementById("fila");
+      if (!filaInput || !filaInput.value) {
+        toast("Error: No se pudo identificar la fila", true);
+        return;
+      }
+      
+      // Preparamos payload con SOLO los campos editables
+      const payload = {
+        funcion: "editarvisita",
+        fila: filaInput.value,
+        nombre: nombre.toUpperCase(),
+        telefono: document.getElementById("telefono").value.trim(),
+        direccion: document.getElementById("direccion").value.toUpperCase(),
+        marca: document.getElementById("marca").value.toUpperCase(),
+        modelo: document.getElementById("modelo").value.toUpperCase(),
+        patente: patente,
+        kilometraje: document.getElementById("kilometraje").value.trim()
+        // NO incluimos: fecha, ot, estado, detalle_estado
+      };
+      
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        
+        if (data.estado === "OK") {
+          toast("✔ Cambios guardados exitosamente");
+          // Recargar datos y filtrar nuevamente
+          await cargarDatos();
+          filtrarHistorial();
+        } else {
+          toast("Error: " + (data.mensaje || "No se pudo guardar"), true);
+        }
+        
+      } catch (e) {
+        console.error("Error guardando cambios:", e);
+        toast("Error de conexión al guardar", true);
+      }
+    }
+    
+    // Permitir buscar con Enter
+    document.getElementById('patente_buscar').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        filtrarHistorial();
+      }
+    });
+  </script>
+</body>
+</html>
