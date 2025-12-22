@@ -13,7 +13,21 @@
     .btn{background:#0c0c0e;color:#fff;border:2px solid #900000;border-radius:12px;padding:10px 14px;
          text-decoration:none;font-weight:800;cursor:pointer;transition:.2s;}
     .btn:hover{background:#900000;}
-    input,select{width:100%;padding:10px;border-radius:10px;border:1px solid #333;background:#101114;color:#fff;margin-bottom:10px;}
+    input,select{
+      width:100%;
+      padding:10px;
+      border-radius:10px;
+      border:1px solid #333;
+      background:#101114;
+      color:#fff;
+      margin-bottom:10px;
+    }
+    .hint{
+      font-size:12px;
+      color:#aaa;
+      margin-top:-6px;
+      margin-bottom:8px;
+    }
   </style>
 </head>
 <body>
@@ -23,8 +37,15 @@
 
     <div class="card">
       <h2>Datos de la venta</h2>
+
       <select id="trabajador"></select>
+
+      <!-- 🔍 BUSCADOR -->
+      <input id="buscarProducto" placeholder="🔍 Buscar producto (nombre, categoría o SKU)">
+      <div class="hint">Filtra mientras escribes</div>
+
       <select id="producto"></select>
+
       <input id="precio" type="number" placeholder="Precio unitario" readonly>
       <input id="qty" type="number" placeholder="Cantidad">
       <input id="cliente" placeholder="Cliente (opcional)">
@@ -35,7 +56,7 @@
   </div>
 
 <script type="module">
-const BASE_URL = "https://script.google.com/macros/s/AKfycbx2y_JLxDmrfAwyJMKH5mVVDN1rQPZpx95OBXLOexFrLYdz9-vxFKKktjO1-2r2IM2b-g/exec"; // 👈 reemplaza con tu URL
+const BASE_URL = "https://script.google.com/macros/s/AKfycbx2y_JLxDmrfAwyJMKH5mVVDN1rQPZpx95OBXLOexFrLYdz9-vxFKKktjO1-2r2IM2b-g/exec";
 const api = async (action, payload={})=>{
   const res = await fetch(BASE_URL,{
     method:"POST",
@@ -48,63 +69,116 @@ const api = async (action, payload={})=>{
 const $=id=>document.getElementById(id);
 let trabajadores=[], productos=[];
 
-async function cargar(){
-  const [rW,rP]=await Promise.all([api('listWorkers'),api('listInventory')]);
-  if(!rW.ok||!rP.ok) return alert("Error al cargar datos del servidor");
-
-  trabajadores=rW.data||[];
-  productos=rP.data||[];
-
-  $('trabajador').innerHTML='<option value="">Selecciona trabajador</option>'+
-    trabajadores.filter(x=>x.activo).map(x=>`<option value="${x.id}">${x.nombre}</option>`).join('');
-
-  $('producto').innerHTML='<option value="">Selecciona producto</option>'+
-    productos.filter(p=>p.activo).map(p=>`
-      <option value="${p.id}" 
-        data-sku="${p.sku}" 
-        data-precio="${p.precio_unit}" 
-        data-costo="${p.costo_unit}" 
+/* ============================
+   RENDER PRODUCTOS
+============================ */
+function renderProductos(lista){
+  $('producto').innerHTML =
+    '<option value="">Selecciona producto</option>' +
+    lista.filter(p=>p.activo).map(p=>`
+      <option value="${p.id}"
+        data-sku="${p.sku}"
+        data-precio="${p.precio_unit}"
+        data-costo="${p.costo_unit}"
         data-categoria="${p.categoria}">
         ${p.nombre} — ${p.categoria} (Stock: ${p.stock})
-      </option>`).join('');
+      </option>
+    `).join('');
 }
 
-$('producto').addEventListener('change',()=>{
-  const o=$('producto').selectedOptions[0];
-  $('precio').value=o?o.dataset.precio||'':'';
+/* ============================
+   CARGA INICIAL
+============================ */
+async function cargar(){
+  const [rW,rP]=await Promise.all([api('listWorkers'),api('listInventory')]);
+  if(!rW.ok||!rP.ok) return alert("Error al cargar datos");
+
+  trabajadores = rW.data || [];
+  productos = rP.data || [];
+
+  $('trabajador').innerHTML =
+    '<option value="">Selecciona trabajador</option>' +
+    trabajadores.filter(x=>x.activo)
+      .map(x=>`<option value="${x.id}">${x.nombre}</option>`).join('');
+
+  renderProductos(productos);
+}
+
+/* ============================
+   FILTRO SEGURO (FIX)
+============================ */
+$('buscarProducto').addEventListener('input',()=>{
+  const q = $('buscarProducto').value.toLowerCase().trim();
+
+  if(!q){
+    renderProductos(productos);
+    return;
+  }
+
+  const filtrados = productos.filter(p=>{
+    return (
+      String(p.nombre || '').toLowerCase().includes(q) ||
+      String(p.categoria || '').toLowerCase().includes(q) ||
+      String(p.sku || '').toLowerCase().includes(q)
+    );
+  });
+
+  renderProductos(filtrados);
 });
 
-$('btnGuardar').addEventListener('click',async()=>{
-  const p=$('producto').selectedOptions[0], pid=$('producto').value;
-  const t=$('trabajador').value;
-  if(!pid||!t) return alert('Selecciona trabajador y producto');
-  const qty=Number($('qty').value||0);
-  if(qty<=0) return alert('Cantidad inválida');
-  const cliente=$('cliente').value.trim();
+/* ============================
+   PRECIO AUTOMÁTICO
+============================ */
+$('producto').addEventListener('change',()=>{
+  const o = $('producto').selectedOptions[0];
+  $('precio').value = o ? o.dataset.precio || '' : '';
+});
 
-  const body={
-    trabajador_id:t,
-    trabajador_nombre:trabajadores.find(x=>x.id==t)?.nombre||'',
-    sku:p.dataset.sku,
-    nombre:p.textContent.trim().split('—')[0].trim(),
-    categoria:p.dataset.categoria,
+/* ============================
+   GUARDAR VENTA
+============================ */
+$('btnGuardar').addEventListener('click',async()=>{
+  const p = $('producto').selectedOptions[0];
+  const pid = $('producto').value;
+  const t = $('trabajador').value;
+
+  if(!pid || !t) return alert('Selecciona trabajador y producto');
+
+  const qty = Number($('qty').value || 0);
+  if(qty <= 0) return alert('Cantidad inválida');
+
+  const cliente = $('cliente').value.trim();
+
+  const body = {
+    trabajador_id: t,
+    trabajador_nombre: trabajadores.find(x=>x.id==t)?.nombre || '',
+    sku: p.dataset.sku,
+    nombre: p.textContent.trim().split('—')[0].trim(),
+    categoria: p.dataset.categoria,
     qty,
-    costo_unit:Number(p.dataset.costo||0),
-    precio_unit:Number(p.dataset.precio||0),
+    costo_unit: Number(p.dataset.costo || 0),
+    precio_unit: Number(p.dataset.precio || 0),
     cliente
   };
 
-  const r=await api('addSale',body);
-  if(!r.ok) return alert('Error: '+r.error);
+  const r = await api('addSale', body);
+  if(!r.ok) return alert('Error: ' + r.error);
 
-  const res=$('res'); res.style.display='block';
-  res.innerHTML=`<h3>✅ Venta registrada</h3>
-  <p><b>Subtotal:</b> ${r.subtotal.toLocaleString('es-CL')}</p>
-  <p><b>Utilidad:</b> ${r.utilidad.toLocaleString('es-CL')}</p>
-  <p><b>Bono trabajador:</b> ${r.bono_trabajador.toLocaleString('es-CL')}</p>`;
+  const res = $('res');
+  res.style.display = 'block';
+  res.innerHTML = `
+    <h3>✅ Venta registrada</h3>
+    <p><b>Subtotal:</b> ${r.subtotal.toLocaleString('es-CL')}</p>
+    <p><b>Utilidad:</b> ${r.utilidad.toLocaleString('es-CL')}</p>
+    <p><b>Bono trabajador:</b> ${r.bono_trabajador.toLocaleString('es-CL')}</p>
+  `;
 
-  $('qty').value=''; $('cliente').value='';
-  $('producto').selectedIndex=0; $('precio').value='';
+  $('qty').value='';
+  $('cliente').value='';
+  $('producto').selectedIndex=0;
+  $('precio').value='';
+  $('buscarProducto').value='';
+  renderProductos(productos);
 });
 
 cargar();
