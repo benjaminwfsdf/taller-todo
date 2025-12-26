@@ -1,5 +1,5 @@
 // app/service-worker.js
-const VERSION = "v1.21.55";
+const VERSION = "v1.21.99"; // ⬅️ subimos versión para forzar update
 
 
 const PRECACHE = `precache-${VERSION}`;
@@ -13,6 +13,7 @@ const PRECACHE_URLS = [
   "buscar_computadores.html",
   "buscar_dpf.html",
   "buscar.html",
+  "buscar_aplicacion.html", // ⬅️ IMPORTANTE
   "cliente.html",
   "clientes_turno.html",
   "computador.html",
@@ -32,6 +33,7 @@ const PRECACHE_URLS = [
   "manifest.json"
 ];
 
+/* ================= INSTALL ================= */
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(PRECACHE).then((cache) => cache.addAll(PRECACHE_URLS))
@@ -39,42 +41,52 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+/* ================= ACTIVATE ================= */
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys
-        .filter((key) => ![PRECACHE, RUNTIME].includes(key))
-        .map((key) => caches.delete(key))
+      Promise.all(
+        keys
+          .filter((key) => ![PRECACHE, RUNTIME].includes(key))
+          .map((key) => caches.delete(key))
       )
     )
   );
   self.clients.claim();
 });
 
+/* ================= FETCH ================= */
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
+  // Solo controlamos mismo origen
   if (url.origin !== location.origin) return;
 
-  // Navegación (HTML): cache-first
+  /* ================= NAVEGACIÓN HTML =================
+     🔑 CAMBIO CLAVE:
+     - NO usamos cache-first para navegación
+     - Evita que el navegador "recicle" la pestaña actual
+     - Permite múltiples ventanas PWA independientes
+  */
   if (req.mode === "navigate") {
     event.respondWith(
-      caches.match(req, { ignoreSearch: true }).then((cached) => {
-        if (cached) return cached;
-        return fetch(req)
-          .then((res) => {
-            const copy = res.clone();
-            caches.open(RUNTIME).then((cache) => cache.put(req, copy));
-            return res;
-          })
-          .catch(() => cached);
-      })
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(RUNTIME).then((cache) => cache.put(req, copy));
+          return res;
+        })
+        .catch(() =>
+          // fallback offline: intenta servir desde cache
+          caches.match(req, { ignoreSearch: true }) ||
+          caches.match("index.html")
+        )
     );
     return;
   }
 
-  // Estáticos (css/js/img)
+  /* ================= ARCHIVOS ESTÁTICOS ================= */
   if (/\.(css|js|png|jpg|jpeg|svg|webp|gif|ico|woff2?|ttf|otf)$/i.test(url.pathname)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -85,12 +97,15 @@ self.addEventListener("fetch", (event) => {
             return res;
           })
           .catch(() => cached);
+
         return cached || fetchPromise;
       })
     );
     return;
   }
 
-  // Otros
-  event.respondWith(fetch(req).catch(() => caches.match(req)));
+  /* ================= OTROS ================= */
+  event.respondWith(
+    fetch(req).catch(() => caches.match(req))
+  );
 });
