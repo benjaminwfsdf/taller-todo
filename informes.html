@@ -35,7 +35,7 @@
 
     body { font-family: Arial, sans-serif; margin: 0; background: #f2f2f2; }
 
-    /* Contenedor exportable (la “hoja”) */
+    /* Contenedor exportable (la "hoja") */
     #paper {
       width: 21cm; min-height: 29.7cm;
       margin: 32px auto; padding: 40px; background: #fff;
@@ -92,6 +92,44 @@
     #codigo_area, #detalle_area {
       width:100%; min-height:220px; height:auto; border:none; font-size:16px;
       box-sizing:border-box; padding:6px; resize:vertical; overflow:hidden;
+    }
+    
+    /* Estilos para botones específicos */
+    .boton-imprimir {
+      background: #28a745 !important;
+      color: white !important;
+      border-color: #28a745 !important;
+    }
+    
+    .boton-pdf {
+      background: #007bff !important;
+      color: white !important;
+      border-color: #007bff !important;
+    }
+    
+    .boton-qr {
+      background: #6f42c1 !important;
+      color: white !important;
+      border-color: #6f42c1 !important;
+    }
+    
+    .boton-borrar {
+      background: #dc3545 !important;
+      color: white !important;
+      border-color: #dc3545 !important;
+    }
+    
+    .boton-buscar-aplicacion {
+      background: #ff9900 !important;
+      color: #000 !important;
+      border-color: #ff9900 !important;
+    }
+    
+    /* Efecto hover para todos los botones */
+    .fab button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -244,6 +282,14 @@
     })();
   </script>
 
+  <!-- ====== Función para buscar aplicación (nueva pestaña) ====== -->
+  <script>
+    // Función para buscar aplicación (abre nueva pestaña)
+    function buscarAplicacion() {
+      window.open("buscar_aplicacion.html", "_blank");
+    }
+  </script>
+
   <!-- ====== Autorrelleno de DETALLE por códigos ====== -->
   <script>
     const CODIGOS_BASE = {
@@ -269,7 +315,7 @@
   "P0101": "Sensor MAF - rango/rendimiento",
   "P0141": "Sensor de oxígeno (Banco 1 Sensor 2) - calentador - mal funcionamiento del circuito",
   
-  "P0100": "Mal funcionamiento del circuito de sensor MAF o volumen de aire.",
+  "P0100": "Mal funcionamiento del circuito de sensor MAF o volumen de air.",
   "P0101": "Rango o rendimiento del sensor MAF fuera de especificación.",
   "P0102": "Sensor MAF – señal baja de entrada.",
   "P0106": "Sensor MAP/ABS – rango o rendimiento fuera de especificación.",
@@ -284,13 +330,13 @@
   "P0123": "Sensor de posición del acelerador A – señal alta.",
   "P0128": "La temperatura del refrigerante está por debajo del rango regulado por el termostato.",
   "P0130": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 1).",
-  "P0131": "Sensor de O₂ Banco 1, sensor 1 – bajo voltaje.",
-  "P0132": "Sensor de O₂ Banco 1, sensor 1 – alto voltaje.",
+  "P0131": "Sensor de O₂ Banco 1, sensor 1 – bajo voltage.",
+  "P0132": "Sensor de O₂ Banco 1, sensor 1 – alto voltage.",
   "P0134": "Sensor de O₂ Banco 1, sensor 1 – sin actividad.",
   "P0135": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 1).",
   "P0136": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 2).",
-  "P0137": "Sensor de O₂ Banco 1, sensor 2 – bajo voltaje.",
-  "P0138": "Sensor de O₂ Banco 1, sensor 2 – alto voltaje.",
+  "P0137": "Sensor de O₂ Banco 1, sensor 2 – bajo voltage.",
+  "P0138": "Sensor de O₂ Banco 1, sensor 2 – alto voltage.",
   "P0141": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 2).",
   "P0171": "Sistema demasiado pobre (Banco 1).",
   "P0172": "Sistema demasiado rico (Banco 1).",
@@ -307,8 +353,6 @@
   "P0306": "Fallo de encendido en el cilindro 6.",
   "P0307": "Fallo de encendido en el cilindro 7.",
   "P0308": "Fallo de encendido en el cilindro 8.",
-  "P0305": "Fallo de encendido en el cilindro 5.",
-  "P0306": "Fallo de encendido en el cilindro 6.",
   "P0321": "Sensor knock – rango/rendimiento fuera de especificación.",
   "P0325": "Sensor knock – mal funcionamiento del circuito (Banco 1).",
   "P0328": "Sensor knock – señal alta (Banco 1 o sensor único).",
@@ -360,7 +404,7 @@
   "P0238": "Sensor de presión turbo – rango/performance fuera especificación.",
   "P0315": "Valores del sistema de posición del cigüeñal no almacenados.",
   "P0320": "Mal funcionamiento en la señal de velocidad del distribuidor/encendido.",
-  "P0336": "Sensor knock – bajo voltaje (Banco 2).",
+  "P0336": "Sensor knock – bajo voltage (Banco 2).",
   "P0342": "Sensor CMP – señal baja o rango fuera especificación.",
   "P0351-P0354": "Bobina de encendido – mal funcionamiento del circuito (cilindros 1-4).",
   "P0380": "Circuito del calentador del sensor de posición del cigüeñal (CKP).",
@@ -684,31 +728,31 @@
   "U0302": "Fallo en la comunicación con el módulo de control general 3",
   "U0303": "Fallo en la comunicación con el módulo de control general 4",
   "U0304": "Fallo en la comunicación con el módulo de control general 5",
-  "U0305": "Fallo en la comunicación con el módulo de control general 6",
-  "U0306": "Fallo en la comunicación con el módulo de control general 7",
-  "U0307": "Fallo en la comunicación con el módulo de control general 8",
-  "U0308": "Fallo en la comunicación con el módulo de control general 9",
-  "U0309": "Fallo en la comunicación con el módulo de control general 10",
-  "U0310": "Fallo en la comunicación con el módulo de control general 11",
-  "U0311": "Fallo en la comunicación con el módulo de control general 12",
-  "U0312": "Fallo en la comunicación con el módulo de control general 13",
-  "U0313": "Fallo en la comunicación con el módulo de control general 14",
-  "U0314": "Fallo en la comunicación con el módulo de control general 15",
-  "U0315": "Fallo en la comunicación con el módulo de control general 16",
-  "U0316": "Fallo en la comunicación con el módulo de control general 17",
-  "U0317": "Fallo en la comunicación con el módulo de control general 18",
-  "U0318": "Fallo en la comunicación con el módulo de control general 19",
-  "U0319": "Fallo en la comunicación con el módulo de control general 20",
-  "U0320": "Fallo en la comunicación con el módulo de control general 21",
-  "U0321": "Fallo en la comunicación con el módulo de control general 22",
-  "U0322": "Fallo en la comunicación con el módulo de control general 23",
-  "U0323": "Fallo en la comunicación con el módulo de control general 24",
-  "U0324": "Fallo en la comunicación con el módulo de control general 25",
-  "U0325": "Fallo en la comunicación con el módulo de control general 26",
-  "U0326": "Fallo en la comunicación con el módulo de control general 27",
-  "U0327": "Fallo en la comunicación con el módulo de control general 28",
-  "U0328": "Fallo en la comunicación con el módulo de control general 29",
-  "U0329": "Fallo en la comunicación con el módulo de control general 30",
+  "U0306": "Fallo en la comunicación con el módulo de control general 6",
+  "U0307": "Fallo en la comunicación con el módulo de control general 7",
+  "U0308": "Fallo en la comunicación con el módulo de control general 8",
+  "U0309": "Fallo en la comunicación con el módulo de control general 9",
+  "U0310": "Fallo en la comunicación con el módulo de control general 10",
+  "U0311": "Fallo en la comunicación con el módulo de control general 11",
+  "U0312": "Fallo en la comunicación con el módulo de control general 12",
+  "U0313": "Fallo en la comunicación con el módulo de control general 13",
+  "U0314": "Fallo en la comunicación con el módulo de control general 14",
+  "U0315": "Fallo en la comunicación con el módulo de control general 15",
+  "U0316": "Fallo en la comunicación con el módulo de control general 16",
+  "U0317": "Fallo en la comunicación con el módulo de control general 17",
+  "U0318": "Fallo en la comunicación con el módulo de control general 18",
+  "U0319": "Fallo en la comunicación con el módulo de control general 19",
+  "U0320": "Fallo en la comunicación con el módulo de control general 20",
+  "U0321": "Fallo en la comunicación con el módulo de control general 21",
+  "U0322": "Fallo en la comunicación con el módulo de control general 22",
+  "U0323": "Fallo en la comunicación con el módulo de control general 23",
+  "U0324": "Fallo en la comunicación con el módulo de control general 24",
+  "U0325": "Fallo en la comunicación con el módulo de control general 25",
+  "U0326": "Fallo en la comunicación con el módulo de control general 26",
+  "U0327": "Fallo en la comunicación con el módulo de control general 27",
+  "U0328": "Fallo en la comunicación con el módulo de control general 28",
+  "U0329": "Fallo en la comunicación con el módulo de control general 29",
+  "U0330": "Fallo en la comunicación con el módulo de control general 30",
   "U0400": "Fallo de comunicación con el módulo de control de tracción 1",
   "U0401": "Fallo de comunicación con el módulo de control de tracción 2",
   "U0402": "Fallo de comunicación con el módulo de control de tracción 3",
@@ -726,20 +770,20 @@
   "U0414": "Fallo de comunicación con el módulo de control de tracción 15",
   "U0415": "Fallo de comunicación con el módulo de control de tracción 16",
   "U0416": "Fallo de comunicación con el módulo de control de tracción 17",
-  "U0417": "Fallo de comunicación con el módulo de control de tracción 18",
-  "U0418": "Fallo de comunicación con el módulo de control de tracción 19",
-  "U0419": "Fallo de comunicación con el módulo de control de tracción 20",
-  "U0420": "Fallo de comunicación con el módulo de control de tracción 21",
-  "U0421": "Fallo de comunicación con el módulo de control de tracción 22",
-  "U0422": "Fallo de comunicación con el módulo de control de tracción 23",
-  "U0423": "Fallo de comunicación con el módulo de control de tracción 24",
-  "U0424": "Fallo de comunicación con el módulo de control de tracción 25",
-  "U0425": "Fallo de comunicación con el módulo de control de tracción 26",
-  "U0426": "Fallo de comunicación con el módulo de control de tracción 27",
-  "U0427": "Fallo de comunicación con el módulo de control de tracción 28",
-  "U0428": "Fallo de comunicación con el módulo de control de tracción 29",
-  "U0429": "Fallo de comunicación con el módulo de control de tracción 30",
-  "U0430": "Fallo de comunicación con el módulo de control de tracción 31",
+  "U0418": "Fallo de comunicación con el módulo de control de tracción 18",
+  "U0419": "Fallo de comunicación con el módulo de control de tracción 19",
+  "U0420": "Fallo de comunicación con el módulo de control de tracción 20",
+  "U0421": "Fallo de comunicación con el módulo de control de tracción 21",
+  "U0422": "Fallo de comunicación con el módulo de control de tracción 22",
+  "U0423": "Fallo de comunicación con el módulo de control de tracción 23",
+  "U0424": "Fallo de comunicación con el módulo de control de tracción 24",
+  "U0425": "Fallo de comunicación con el módulo de control de tracción 25",
+  "U0426": "Fallo de comunicación con el módulo de control de tracción 26",
+  "U0427": "Fallo de comunicación con el módulo de control de tracción 27",
+  "U0428": "Fallo de comunicación con el módulo de control de tracción 28",
+  "U0429": "Fallo de comunicación con el módulo de control de tracción 29",
+  "U0430": "Fallo de comunicación con el módulo de control de tracción 30",
+  "U0431": "Fallo de comunicación con el módulo de control de tracción 31",
    "C0050": "Circuito del sensor de velocidad del vehículo",
   "C0110": "Circuito de tensión de la batería bajo",
   "C0131": "Circuito de freno de estacionamiento",
@@ -934,10 +978,11 @@
 
   <!-- ====== Botonera flotante ====== -->
   <div class="fab">
-    <button onclick="guardarEnGoogleSheetsYImprimir()">🖨️ Imprimir y Guardar</button>
-    <button onclick="descargarPDFLocal()">📄 Descargar PDF</button>
-    <button onclick="generarQRDeDescargaPDF()">📲 Mostrar QR</button>
-    <button onclick="borrarTodo()">🧹 Borrar todo</button>
+    <button onclick="guardarEnGoogleSheetsYImprimir()" class="boton-imprimir">🖨️ Imprimir y Guardar</button>
+    <button onclick="descargarPDFLocal()" class="boton-pdf">📄 Descargar PDF</button>
+    <button onclick="generarQRDeDescargaPDF()" class="boton-qr">📲 Mostrar QR</button>
+    <button onclick="buscarAplicacion()" class="boton-buscar-aplicacion">🔍 Buscar aplicación</button>
+    <button onclick="borrarTodo()" class="boton-borrar">🧹 Borrar todo</button>
   </div>
 
   <!-- ====== Lógica QR + Descarga PDF local ====== -->
@@ -992,3 +1037,4 @@
   </script>
 </body>
 </html>
+<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_7KqbQj2iQJtXf2hgSc9eTecFdV1R" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
