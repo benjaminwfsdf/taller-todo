@@ -282,12 +282,102 @@
     })();
   </script>
 
-  <!-- ====== Función para buscar aplicación (nueva pestaña) ====== -->
+  <!-- ====== Función para buscar aplicación ====== -->
   <script>
-    // Función para buscar aplicación (abre nueva pestaña)
+    // Función para buscar aplicación (modificada para PWA)
     function buscarAplicacion() {
-      window.open("buscar_aplicacion.html", "_blank");
+      // Guardar los datos del informe actual antes de salir
+      guardarInformeLocal();
+      
+      // Usar la misma ventana para mantener el contexto de la PWA
+      window.location.href = "buscar_aplicacion.html";
     }
+    
+    function guardarInformeLocal() {
+      // Guardar todos los datos del informe en localStorage
+      const datos = recogerDatosInforme();
+      localStorage.setItem('informe_autoguardado', JSON.stringify(datos));
+      localStorage.setItem('informe_autoguardado_timestamp', Date.now().toString());
+    }
+    
+    function cargarInformeLocal() {
+      // Cargar datos guardados al volver
+      const guardado = localStorage.getItem('informe_autoguardado');
+      if (guardado) {
+        try {
+          const datos = JSON.parse(guardado);
+          const timestamp = parseInt(localStorage.getItem('informe_autoguardado_timestamp') || '0');
+          const horasTranscurridas = (Date.now() - timestamp) / (1000 * 60 * 60);
+          
+          // Solo cargar si tiene menos de 2 horas
+          if (horasTranscurridas < 2) {
+            document.querySelector('input[name="marca"]').value = datos.marca || '';
+            document.querySelector('input[name="modelo"]').value = datos.modelo || '';
+            document.querySelector('input[name="patente"]').value = datos.patente || '';
+            document.querySelector('input[name="ano"]').value = datos.ano || '';
+            document.querySelector('input[name="km"]').value = datos.km || '';
+            document.querySelector('input[name="motor"]').value = datos.motor || '';
+            document.getElementById("codigo_area").value = datos.codigo || '';
+            document.getElementById("detalle_area").value = datos.detalle || '';
+            document.getElementById("valor_area").value = datos.valor_area || '';
+            document.getElementById("causas").value = datos.causas || '';
+            document.getElementById("recomendaciones").value = datos.recomendaciones || '';
+            document.getElementById("valor_final").value = datos.valor_final || '';
+          }
+        } catch (e) {
+          console.error("Error al cargar informe guardado:", e);
+        }
+      }
+    }
+    
+    // Función para agregar producto seleccionado al informe
+    function agregarProductoSeleccionado() {
+      const productoGuardado = localStorage.getItem('producto_seleccionado');
+      if (productoGuardado) {
+        try {
+          const producto = JSON.parse(productoGuardado);
+          
+          // Agregar al campo VALOR AREA
+          const valorArea = document.getElementById("valor_area");
+          const precio = producto.precio_unit ? parseFloat(producto.precio_unit) : 0;
+          const nuevoValor = `${producto.nombre || 'Producto'} - $${precio.toLocaleString('es-CL')}`;
+          
+          // Agregar en una nueva línea si ya hay contenido
+          if (valorArea.value.trim()) {
+            valorArea.value = valorArea.value + '\n' + nuevoValor;
+          } else {
+            valorArea.value = nuevoValor;
+          }
+          
+          // Limpiar el producto guardado
+          localStorage.removeItem('producto_seleccionado');
+          
+          // Ajustar altura del textarea
+          valorArea.style.height = 'auto';
+          valorArea.style.height = (valorArea.scrollHeight + 2) + 'px';
+          
+        } catch (e) {
+          console.error("Error al procesar producto seleccionado:", e);
+          localStorage.removeItem('producto_seleccionado');
+        }
+      }
+    }
+    
+    // Cargar datos al iniciar la página
+    window.addEventListener('load', function() {
+      // Verificar si venimos de la página de búsqueda
+      const vieneDeBusqueda = sessionStorage.getItem('viene_de_busqueda') === 'true';
+      
+      if (vieneDeBusqueda) {
+        sessionStorage.removeItem('viene_de_busqueda');
+        cargarInformeLocal();
+        // Pequeño delay para asegurar que los campos estén listos
+        setTimeout(agregarProductoSeleccionado, 300);
+      }
+      
+      // Auto-guardar cada 30 segundos
+      setInterval(guardarInformeLocal, 30000);
+    });
   </script>
 
   <!-- ====== Autorrelleno de DETALLE por códigos ====== -->
@@ -375,8 +465,8 @@
   "P0500": "Sensor de velocidad del vehículo – mal funcionamiento del circuito.",
   "P0501": "Rango/rendimiento del sensor de velocidad del vehículo fuera de especificación.",
   "P0504": "Mal funcionamiento del circuito del sensor de corte del ralentí.",
-  "P0505": "Relación ralentí – fuera de rango.",
-  "P0507": "Vacío excesivo en el ralentí detectado.",
+  "P0505": "Relación rantalí – fuera de rango.",
+  "P0507": "Vacío excesivo en el rantalí detectado.",
   "P0521": "Mal funcionamiento del circuito del sensor de presión de aceite.",
   "P0562": "Voltaje del sistema insuficiente (ECU principal).",
   "P0606": "Mal funcionamiento del microprocesador de ECM.",
@@ -411,7 +501,7 @@
   "P0410": "Sistema de aire secundario – mal funcionamiento.",
   "P0463": "Sensor de temperatura de combustible – señal fuera de rango.",
   "P0481": "Circuito de controlador del ventilador de refrigeración – intermitente.",
-  "P0506": "Control de ralentí – rango fuera especificación.",
+  "P0506": "Control de rantalí – rango fuera especificación.",
   "P0522": "Sensor de presión de aceite – rango/performance fuera especificación.",
   "P0603": "Mal funcionamiento en el circuito de memoria ECM.",
   "P0607": "Mal funcionamiento del circuito de ECT (temperatura de refrigerante).",
@@ -528,7 +618,6 @@
   "U0102": "Fallo de comunicación con el módulo de control de la transmisión 3",
   "U0103": "Fallo de comunicación con el módulo de control de la transmisión 4",
   "U0104": "Fallo de comunicación con el módulo de control de la transmisión 5",
-  "U0105": "Fallo de comunicación con el módulo de control de la transmisión 6",
   "U0106": "Fallo de comunicación con el módulo de control de la transmisión 7",
   "U0107": "Fallo de comunicación con el módulo de control de la transmisión 8",
   "U0108": "Fallo de comunicación con el módulo de control de la transmisión 9",
@@ -1037,4 +1126,3 @@
   </script>
 </body>
 </html>
-<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_7KqbQj2iQJtXf2hgSc9eTecFdV1R" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
