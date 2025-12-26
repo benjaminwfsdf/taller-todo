@@ -284,15 +284,30 @@
 
   <!-- ====== Función para buscar aplicación ====== -->
   <script>
-    // Función para buscar aplicación (modificada para PWA)
-    function buscarAplicacion() {
-      // Guardar los datos del informe actual antes de salir
-      guardarInformeLocal();
-      
-      // Usar la misma ventana para mantener el contexto de la PWA
-      window.open("buscar_aplicacion.html", "_blank");
+  function buscarAplicacion() {
+    // Guardar el informe antes de salir
+    guardarInformeLocal();
+
+    // Marcar que venimos desde el informe
+    sessionStorage.setItem('viene_de_busqueda', 'true');
+
+    // Abrir en NUEVA ventana incluso en PWA
+    const url = new URL('buscar_aplicacion.html', location.href);
+
+    const nuevaVentana = window.open(
+      url.toString(),
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    // Fallback si el SO/PWA bloquea popups
+    if (!nuevaVentana) {
+      alert('⚠️ Tu dispositivo bloqueó la nueva pestaña. Se abrirá en la actual.');
+      location.href = url.toString();
     }
-    
+  }
+
+
     function guardarInformeLocal() {
       // Guardar todos los datos del informe en localStorage
       const datos = recogerDatosInforme();
