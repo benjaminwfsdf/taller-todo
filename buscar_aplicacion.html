@@ -55,6 +55,16 @@ body{
   display:block;
 }
 .btn:hover{background:var(--brand);}
+.btn-seleccionar {
+  background:#28a745;
+  color:white;
+  border-color:#28a745;
+}
+.btn-volver {
+  background:#6c757d;
+  color:white;
+  border-color:#6c757d;
+}
 input,select{
   width:100%;
   padding:10px;
@@ -117,6 +127,14 @@ ul.autos-list li{
   border-radius:8px;
   border:1px solid #333;
 }
+.btn-container {
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+.btn-container button {
+  flex:1;
+}
 </style>
 </head>
 
@@ -125,7 +143,7 @@ ul.autos-list li{
 
 <div class="wrap">
 
-  <a href="aceite.html" class="btn">⬅ Volver al panel</a>
+  <button onclick="volverAlInforme()" class="btn btn-volver">⬅ Volver al informe</button>
 
   <!-- FILTROS -->
   <div class="card">
@@ -204,7 +222,7 @@ function render(list){
       ? `<ul class="autos-list">` + lineas.map(a=>`<li>${a}</li>`).join("") + `</ul>`
       : `<i style="opacity:.6">Sin información</i>`;
 
-    // Formatear precio - CAMBIADO: ahora usa precio_unit
+    // Formatear precio - usa precio_unit
     let precioHTML = "";
     if (p.precio_unit) {
       const precioNum = parseFloat(p.precio_unit);
@@ -236,6 +254,12 @@ function render(list){
 
         <small>Autos compatibles:</small>
         ${autosHTML}
+        
+        <div class="btn-container">
+          <button class="btn btn-seleccionar" onclick="seleccionarProducto(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+            ✅ Seleccionar
+          </button>
+        </div>
       </div>
     `;
   });
@@ -256,6 +280,29 @@ function filtrar(){
 
   render(filtrados);
 }
+
+// Función para seleccionar un producto y volver al informe
+function seleccionarProducto(producto) {
+  // Guardar el producto seleccionado
+  localStorage.setItem('producto_seleccionado', JSON.stringify(producto));
+  sessionStorage.setItem('viene_de_busqueda', 'true');
+  
+  // Volver al informe
+  window.history.back();
+}
+
+// Función para volver sin seleccionar nada
+function volverAlInforme() {
+  sessionStorage.setItem('viene_de_busqueda', 'true');
+  window.history.back();
+}
+
+// Agregar botón de volver con tecla Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    volverAlInforme();
+  }
+});
 
 cargar();
 </script>
