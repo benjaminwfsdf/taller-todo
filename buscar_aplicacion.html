@@ -88,12 +88,34 @@ input,select{
   font-size:12px;
   margin-right:6px;
 }
+.precio-tag {
+  display:inline-block;
+  padding:6px 12px;
+  background:#900000;
+  color:white;
+  border-radius:8px;
+  font-weight:bold;
+  font-size:16px;
+  margin-top:8px;
+}
 ul.autos-list{
   padding-left:20px;
   margin:6px 0;
 }
 ul.autos-list li{
   margin-bottom:3px;
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+.info-item {
+  background:#1a1a1d;
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #333;
 }
 </style>
 </head>
@@ -171,7 +193,6 @@ function render(list){
   $("msg").textContent = `Mostrando ${list.length} producto(s).`;
 
   list.forEach(p=>{
-
     // Convertir APLICACION en lista de líneas
     let autos = p.aplicacion || "";
     let lineas = autos
@@ -183,19 +204,38 @@ function render(list){
       ? `<ul class="autos-list">` + lineas.map(a=>`<li>${a}</li>`).join("") + `</ul>`
       : `<i style="opacity:.6">Sin información</i>`;
 
+    // Formatear precio - CAMBIADO: ahora usa precio_unit
+    let precioHTML = "";
+    if (p.precio_unit) {
+      const precioNum = parseFloat(p.precio_unit);
+      if (!isNaN(precioNum)) {
+        precioHTML = `<div class="precio-tag">$${precioNum.toLocaleString('es-CL')}</div>`;
+      }
+    }
+
     cont.innerHTML += `
       <div class="result">
         <h3>${p.nombre}</h3>
+        
+        <div class="info-grid">
+          <div class="info-item">
+            <small>Categoría:</small>
+            <div><span class="tag">${p.categoria || "-"}</span></div>
+          </div>
+          
+          <div class="info-item">
+            <small>Stock:</small>
+            <div style="font-weight:bold;color:#4CAF50;">${p.stock || 0} unidades</div>
+          </div>
+        </div>
 
-        <small>Categoría:</small><br>
-        <span class="tag">${p.categoria || "-"}</span>
-        <br><br>
+        <div style="margin:12px 0;">
+          <small>Precio unitario:</small><br>
+          ${precioHTML || '<span style="opacity:0.6">No especificado</span>'}
+        </div>
 
         <small>Autos compatibles:</small>
         ${autosHTML}
-
-        <small>Stock disponible:</small>
-        <p>${p.stock}</p>
       </div>
     `;
   });
