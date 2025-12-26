@@ -1,5 +1,5 @@
 // app/service-worker.js
-const VERSION = "v1.22.55"; // ⬅️ subimos versión para forzar update
+const VERSION = "v1.23.55"; // ⬅️ subimos versión para forzar update
 
 
 const PRECACHE = `precache-${VERSION}`;
