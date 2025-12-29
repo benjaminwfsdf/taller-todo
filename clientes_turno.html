@@ -227,7 +227,7 @@
       }
     }
 
-    // ========== FIREBASE NOTIFICATIONS - VERSIÓN CORREGIDA ==========
+    // ========== FIREBASE NOTIFICATIONS - VERSIÓN CORRECTA ==========
     async function initFirebaseNotifications() {
       try {
         console.log('🚀 Inicializando Firebase Notifications...');
@@ -253,10 +253,9 @@
           console.log('✅ Permiso concedido, obteniendo token...');
           
           // 5. Obtener token FCM - FORMA CORRECTA para Firebase v9
-          // La clave: pasar serviceWorkerRegistration como opción
           fcmToken = await messaging.getToken({
             vapidKey: "BFNfvN1aNySCUK0n8Q0eZATyfH0GorLNmcbHptmcxVMuvk8HGGukv0i-I2cs8oeYtCC_q3AxN_mLzuhn4NWaBvA",
-            serviceWorkerRegistration: registration  // ← ESTA ES LA LÍNEA CLAVE
+            serviceWorkerRegistration: registration
           });
           
           if (fcmToken) {
@@ -266,8 +265,10 @@
             localStorage.setItem('fcmToken', fcmToken);
             localStorage.setItem('fcmTokenTime', Date.now().toString());
             
-            // Guardar en servidor
-            await saveFCMTokenToServer(fcmToken);
+            // Guardar en servidor (pero no bloquear si falla)
+            saveFCMTokenToServer(fcmToken).catch(err => {
+              console.warn('⚠️ No se pudo guardar en servidor, pero Firebase funciona');
+            });
             
             updatePushStatus('granted', '✅ Notificaciones activas');
             toast('🔔 Notificaciones Firebase activadas');
@@ -303,22 +304,26 @@
 
     async function saveFCMTokenToServer(token) {
       try {
-        console.log('💾 Guardando token en servidor...');
-        const response = await fetch(`${API_URL}?funcion=guardarTokenFCM`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            token: token, 
-            fecha: new Date().toISOString(),
-            userAgent: navigator.userAgent
-          })
-        });
+        console.log('💾 Intentando guardar token en servidor...');
         
-        const result = await response.json();
-        console.log('✅ Token guardado en servidor:', result);
-        return true;
+        // Usar FormData para evitar problemas CORS
+        const formData = new FormData();
+        formData.append('token', token);
+        formData.append('fecha', new Date().toISOString());
+        formData.append('userAgent', navigator.userAgent);
+        
+        // Usar GET con parámetros para evitar problemas POST
+        const response = await fetch(`${API_URL}?funcion=guardarTokenFCM&token=${encodeURIComponent(token)}&fecha=${encodeURIComponent(new Date().toISOString())}&userAgent=${encodeURIComponent(navigator.userAgent)}`);
+        
+        if (response.ok) {
+          console.log('✅ Token enviado al servidor');
+          return true;
+        } else {
+          console.warn('⚠️ Respuesta no OK del servidor:', response.status);
+          return false;
+        }
       } catch (error) {
-        console.error('Error guardando token:', error);
+        console.warn('⚠️ No se pudo guardar token en servidor:', error.message);
         return false;
       }
     }
@@ -326,30 +331,65 @@
     async function enviarNotificacionFirebase(enEspera, estimadoMin, horas) {
       try {
         const titulo = `🚨 ${enEspera} autos en espera`;
-        const mensaje = `Tiempo estimada: ~${estimadoMin} min (${horas}h)`;
+        const mensaje = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
         
-        console.log('📤 Enviando notificación Firebase...');
+        console.log('📤 Enviando notificación push al servidor...');
         
-        // Enviar al servidor para que envíe notificación Firebase
-        const response = await fetch(`${API_URL}?funcion=enviarNotificacionFirebase`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            titulo: titulo,
-            mensaje: mensaje,
-            enEspera: enEspera,
-            estimadoMin: estimadoMin,
-            horas: horas,
-            timestamp: new Date().toISOString()
-          })
-        });
+        // Método 1: Intentar notificación in-app inmediata
+        notificar(titulo, mensaje);
         
-        const result = await response.json();
-        console.log('📤 Respuesta del servidor:', result);
+        // Método 2: Enviar al servidor para Web Push tradicional
+        try {
+          const response = await fetch(`${API_URL}?funcion=enviarNotificacionPush`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              titulo: titulo,
+              mensaje: mensaje,
+              enEspera: enEspera,
+              estimadoMin: estimadoMin,
+              horas: horas,
+              timestamp: new Date().toISOString()
+            })
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            console.log('📤 Respuesta del servidor:', result);
+            return result.success || false;
+          }
+        } catch (serverError) {
+          console.warn('⚠️ Error enviando al servidor, usando fallback:', serverError.message);
+        }
         
-        return result.success || false;
+        // Método 3: Usar Service Worker directamente si hay
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          try {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'SEND_PUSH_NOTIFICATION',
+              notification: {
+                title: titulo,
+                body: mensaje,
+                icon: '/icons/icon-192.png',
+                badge: '/icons/icon-72.png',
+                vibrate: [200, 100, 200],
+                data: {
+                  url: window.location.href,
+                  timestamp: Date.now()
+                }
+              }
+            });
+            console.log('✅ Notificación enviada a Service Worker');
+          } catch (swError) {
+            console.warn('⚠️ Error enviando a Service Worker:', swError.message);
+          }
+        }
+        
+        return true;
       } catch (error) {
-        console.error('Error enviando notificación Firebase:', error);
+        console.error('Error en enviarNotificacionFirebase:', error);
+        // Fallback garantizado
+        notificar(titulo, mensaje);
         return false;
       }
     }
@@ -410,12 +450,16 @@
           const claveAviso = 'tsAvisoColaLarga';
 
           if ((cruzoUmbral || enEspera >= UMBRAL_AVISO_ESPERA) && puedeAvisar(claveAviso)) {
-            // 1. Notificación in-app
+            console.log('🚨 ALTO: Notificando por', enEspera, 'autos en espera');
+            
+            // 1. Notificación in-app inmediata
             notificar('⚠️ Cola alta en taller', `Tienes ${enEspera} autos en espera (~${estimadoMin} min ≈ ${horas}h).`);
             
-            // 2. Notificación Firebase (funciona con app cerrada)
-            if (enEspera >= UMBRAL_AVISO_ESPERA && localStorage.getItem('fcmToken')) {
-              enviarNotificacionFirebase(enEspera, estimadoMin, horas);
+            // 2. Notificación Firebase/Web Push (funciona con app cerrada)
+            if (enEspera >= UMBRAL_AVISO_ESPERA) {
+              setTimeout(() => {
+                enviarNotificacionFirebase(enEspera, estimadoMin, horas);
+              }, 1000); // Pequeño delay para asegurar
             }
           }
         })
