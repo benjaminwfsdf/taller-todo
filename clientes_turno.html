@@ -45,7 +45,7 @@
     .modelo-actual{text-align:center;margin:6px 0 16px;color:#cfd6de}
     .subtitulo{text-align:center;color:#b9c0c7;font-size:18px;margin-top:18px}
     .proximo{font-size:20px;color:#fff;text-align:center;margin-top:8px}
-    .back{display:block;margin:18px auto 0 auto;width:fit-content;padding:12px 18px;text-decoration:none;border-radius:12px;border:2px solid var(--brand);background:#15171b;color:#fff;font-weight:800}
+    .back{display:block;margin:18px auto 0 auto;width=fit-content;padding:12px 18px;text-decoration:none;border-radius:12px;border:2px solid var(--brand);background:#15171b;color:#fff;font-weight:800}
     .back:hover{background:var(--brand)}
     .footer{text-align:center;color:#8c96a3;font-size:12px;margin:12px 0 0}
     #proximos { max-height: 50vh; overflow:auto; }
@@ -75,6 +75,8 @@
     }
     .push-status.granted { color: var(--ok); }
     .push-status.denied { color: var(--danger); }
+    .push-status.default { color: var(--muted); }
+    .push-status.error { color: var(--danger); }
     .btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -99,7 +101,7 @@
         <div id="confirmacion" style="text-align:center;font-weight:800;color:#3ddc97;margin-top:10px"></div>
       </div>
 
-      <!-- NUEVO: Card para notificaciones push -->
+      <!-- Card para notificaciones push -->
       <div class="card" style="margin-top: 16px;">
         <div style="text-align: center; margin-bottom: 12px;">
           <span style="color: var(--brand); font-weight: 800;">🔔 Notificaciones Push</span>
@@ -108,7 +110,7 @@
           Activar Notificaciones
         </button>
         <div id="pushStatus" class="push-status">
-          Estado: <span id="pushStatusText">No configurado</span>
+          Estado: <span id="pushStatusText">Verificando...</span>
         </div>
       </div>
 
@@ -135,94 +137,139 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxVHnkPbejxbvHvVYebtR-ZXpz9XrSmmd9TDrBwEnEzsQFjttiMDFyHOjkO6W2kepiRxQ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwRLjot4y-H_yL1n8UBhim9FlJWwLdnKWEBQ8N0flm6OpxfkDxOuyT5lQAZJ_7qYQ2h/exec";
 
     // === PARÁMETROS ===
     const MINUTOS_POR_AUTO = 15;
     const UMBRAL_AVISO_ESPERA = 5;
     const MIN_MINUTOS_ENTRE_AVISOS = 20;
 
-    // === CLAVE VAPID - GENERA LA TUYA ===
+    // === CLAVE VAPID - REEMPLAZA CON TU CLAVE PÚBLICA ===
     const VAPID_PUBLIC_KEY = "BFqF1lXetHPUifE0jwzYKs6OqhNUJrs_NQnULRgzsukgGJU3JgPfwbQvq5794qxJ6K1P2VVqiTA5RifhnWDJiC0";
 
-    // === FUNCIONES PUSH ===
-    function initPushNotifications() {
+    // === FUNCIONES PUSH MEJORADAS (PERSISTENTES) ===
+    async function initPushNotifications() {
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         updatePushStatus('no-soportado', 'Navegador no soporta push');
         return;
       }
 
-      // Registrar service worker
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('✅ Service Worker registrado');
-          checkPushPermission();
-          
-          // Verificar suscripción periódicamente
-          setInterval(() => {
-            registration.pushManager.getSubscription()
-              .then(subscription => {
-                if (!subscription) {
-                  console.log('⚠️ Suscripción perdida, resuscribiendo...');
-                  checkPushPermission();
-                }
-              });
-          }, 60000); // Cada minuto
-        })
-        .catch(error => {
-          console.error('❌ Error registrando Service Worker:', error);
-          updatePushStatus('error', 'Error en Service Worker');
-        });
+      try {
+        // Registrar service worker
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        console.log('✅ Service Worker registrado');
+        
+        // Verificar y restaurar suscripción automáticamente
+        await checkAndRestoreSubscription(registration);
+        
+        // Pedir permiso automáticamente si no está configurado (después de 3 segundos)
+        if (Notification.permission === 'default') {
+          setTimeout(async () => {
+            const savedSub = localStorage.getItem('pushSubscription');
+            if (!savedSub) {
+              await requestPushPermission();
+            }
+          }, 3000);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error registrando Service Worker:', error);
+        updatePushStatus('error', 'Error en Service Worker');
+      }
     }
 
-    function checkPushPermission() {
-      const permission = Notification.permission;
-      const statusEl = document.getElementById('pushStatusText');
-      const btn = document.getElementById('btnNotif');
-      
-      switch(permission) {
-        case 'granted':
-          updatePushStatus('granted', '✅ Notificaciones activadas');
-          btn.textContent = '🔔 Notificaciones Activadas';
-          btn.disabled = true;
-          subscribeUser();
-          break;
-        case 'denied':
-          updatePushStatus('denied', '❌ Notificaciones bloqueadas');
-          btn.textContent = 'Notificaciones Bloqueadas';
-          btn.disabled = true;
-          break;
-        default:
+    async function checkAndRestoreSubscription(registration) {
+      try {
+        // 1. Verificar si ya tenemos suscripción guardada en localStorage
+        const savedSubscription = localStorage.getItem('pushSubscription');
+        
+        if (savedSubscription) {
+          const subData = JSON.parse(savedSubscription);
+          
+          // Verificar si ya estamos suscritos
+          let existingSubscription = await registration.pushManager.getSubscription();
+          
+          if (!existingSubscription || existingSubscription.endpoint !== subData.endpoint) {
+            try {
+              // Intentar resuscribir
+              existingSubscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+              });
+              
+              // Actualizar datos guardados
+              await saveSubscriptionToStorage(existingSubscription);
+              await saveSubscriptionToServer(existingSubscription);
+              console.log('✅ Suscripción restaurada desde localStorage');
+            } catch (error) {
+              console.warn('No se pudo restaurar suscripción:', error);
+              localStorage.removeItem('pushSubscription');
+            }
+          }
+          
+          if (existingSubscription) {
+            updatePushStatus('granted', '✅ Notificaciones activas');
+            return;
+          }
+        }
+        
+        // 2. Si no hay suscripción guardada, verificar si ya está suscrito
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) {
+          await saveSubscriptionToStorage(subscription);
+          await saveSubscriptionToServer(subscription);
+          updatePushStatus('granted', '✅ Notificaciones activas');
+        } else {
           updatePushStatus('default', '🔕 Click para activar');
-          btn.textContent = 'Activar Notificaciones';
-          btn.disabled = false;
+        }
+        
+      } catch (error) {
+        console.error('Error restaurando suscripción:', error);
+        updatePushStatus('default', '🔕 Click para activar');
       }
     }
 
     function updatePushStatus(status, text) {
       const statusEl = document.getElementById('pushStatus');
       const textEl = document.getElementById('pushStatusText');
+      const btn = document.getElementById('btnNotif');
+      
+      if (!textEl || !btn) return;
       
       textEl.textContent = text;
       statusEl.className = 'push-status ' + status;
+      
+      if (status === 'granted') {
+        btn.textContent = '🔔 Notificaciones Activadas';
+        btn.disabled = true;
+      } else if (status === 'denied') {
+        btn.textContent = 'Notificaciones Bloqueadas';
+        btn.disabled = true;
+      } else {
+        btn.textContent = 'Activar Notificaciones';
+        btn.disabled = false;
+      }
     }
 
     async function requestPushPermission() {
+      // Si ya está concedido, solo suscribir
       if (Notification.permission === 'granted') {
         await subscribeUser();
         return true;
       }
       
+      // Si está denegado, informar
       if (Notification.permission === 'denied') {
-        toast('🔕 Permiso denegado. Ve a configuración del navegador.');
+        toast('🔕 Permiso denegado. Ve a configuración del navegador para habilitar.');
         return false;
       }
       
+      // Pedir permiso
       const permission = await Notification.requestPermission();
       
       if (permission === 'granted') {
         await subscribeUser();
-        toast('🔔 Notificaciones push activadas');
+        toast('🔔 Notificaciones push activadas permanentemente');
         return true;
       }
       
@@ -233,24 +280,25 @@
     async function subscribeUser() {
       try {
         const registration = await navigator.serviceWorker.ready;
-        const existingSubscription = await registration.pushManager.getSubscription();
+        let subscription = await registration.pushManager.getSubscription();
         
-        if (existingSubscription) {
+        if (subscription) {
           console.log('✅ Ya suscrito');
-          await savePushSubscription(existingSubscription);
-          checkPushPermission();
-          return existingSubscription;
+        } else {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+          });
+          console.log('✅ Usuario suscrito a push');
         }
         
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-        });
+        // Guardar en localStorage Y en servidor
+        await saveSubscriptionToStorage(subscription);
+        await saveSubscriptionToServer(subscription);
         
-        await savePushSubscription(subscription);
-        console.log('✅ Usuario suscrito a push');
-        checkPushPermission();
+        updatePushStatus('granted', '✅ Notificaciones activas');
         return subscription;
+        
       } catch (error) {
         console.error('❌ Error suscribiendo:', error);
         if (error.name === 'NotAllowedError') {
@@ -262,7 +310,24 @@
       }
     }
 
-    async function savePushSubscription(subscription) {
+    // Guardar suscripción en localStorage
+    async function saveSubscriptionToStorage(subscription) {
+      const subData = {
+        endpoint: subscription.endpoint,
+        expirationTime: subscription.expirationTime,
+        keys: {
+          p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))),
+          auth: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))))
+        }
+      };
+      
+      localStorage.setItem('pushSubscription', JSON.stringify(subData));
+      localStorage.setItem('pushSubscriptionTime', Date.now().toString());
+      console.log('💾 Suscripción guardada en localStorage');
+    }
+
+    // Guardar suscripción en servidor
+    async function saveSubscriptionToServer(subscription) {
       const subData = {
         endpoint: subscription.endpoint,
         keys: {
@@ -277,22 +342,56 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(subData)
         });
+        console.log('🌐 Suscripción guardada en servidor');
       } catch (error) {
-        console.error('Error guardando suscripción:', error);
+        console.error('Error guardando en servidor:', error);
       }
     }
 
-    async function enviarNotificacionLocal(titulo, mensaje, enEspera) {
+    // Enviar notificación push desde servidor cuando haya muchos autos
+    async function enviarNotificacionPushDesdeServidor(enEspera, estimadoMin, horas) {
+      try {
+        const titulo = `🚨 ${enEspera} autos en espera`;
+        const mensaje = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
+        
+        // Enviar al servidor para que mande push a TODOS los dispositivos
+        const response = await fetch(`${API_URL}?funcion=enviarNotificacionPush`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            titulo: titulo,
+            mensaje: mensaje,
+            enEspera: enEspera,
+            estimadoMin: estimadoMin,
+            horas: horas,
+            timestamp: new Date().toISOString()
+          })
+        });
+        
+        const result = await response.json();
+        console.log('📤 Notificación enviada al servidor:', result);
+        
+      } catch (error) {
+        console.error('Error enviando notificación al servidor:', error);
+        // Fallback: enviar notificación local
+        if (Notification.permission === 'granted') {
+          enviarNotificacionLocalFallback(enEspera, estimadoMin, horas);
+        }
+      }
+    }
+
+    // Fallback: notificación local si falla el servidor
+    async function enviarNotificacionLocalFallback(enEspera, estimadoMin, horas) {
       try {
         const registration = await navigator.serviceWorker.ready;
         
-        const options = {
-          body: mensaje,
+        await registration.showNotification(`🚨 ${enEspera} autos en espera`, {
+          body: `Tiempo estimado: ~${estimadoMin} min (${horas}h)`,
           icon: '/icons/icon-192.png',
           badge: '/icons/icon-72.png',
           vibrate: [200, 100, 200, 100, 200],
-          tag: `cola-${enEspera}-${Date.now()}`,
-          requireInteraction: true,
+          tag: `cola-push-${Date.now()}`,
+          requireInteraction: false,
           data: {
             url: window.location.href,
             timestamp: Date.now(),
@@ -304,22 +403,10 @@
               title: '👁️ Ver cola'
             }
           ]
-        };
-        
-        // Enviar notificación
-        await registration.showNotification(titulo, options);
-        console.log('📢 Notificación local enviada:', titulo);
-        
-        // Registrar en consola
-        localStorage.setItem('ultimaNotificacion', JSON.stringify({
-          titulo: titulo,
-          mensaje: mensaje,
-          hora: new Date().toLocaleTimeString(),
-          enEspera: enEspera
-        }));
+        });
         
       } catch (error) {
-        console.error('Error enviando notificación:', error);
+        console.error('Error en fallback local:', error);
       }
     }
 
@@ -442,7 +529,7 @@
             div.appendChild(p);
           });
 
-          // === LÓGICA DE NOTIFICACIONES ===
+          // === LÓGICA MEJORADA DE NOTIFICACIONES ===
           const antes = Number(localStorage.getItem('ultimoConteoEspera') || 0);
           localStorage.setItem('ultimoConteoEspera', String(enEspera));
 
@@ -454,16 +541,10 @@
             const mensajeInApp = `Tienes ${enEspera} autos en espera (~${estimadoMin} min ≈ ${horas}h).`;
             notificar('⚠️ Cola alta en taller', mensajeInApp);
             
-            // 2. Notificación PUSH (solo si permiso granted)
-            if (Notification.permission === 'granted' && enEspera >= UMBRAL_AVISO_ESPERA) {
-              const tituloPush = `🚨 ${enEspera} autos en espera`;
-              const mensajePush = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
-              
-              enviarNotificacionLocal(tituloPush, mensajePush, enEspera);
+            // 2. Enviar notificación REAL desde el servidor (funciona con app cerrada)
+            if (enEspera >= UMBRAL_AVISO_ESPERA) {
+              enviarNotificacionPushDesdeServidor(enEspera, estimadoMin, horas);
             }
-            
-            // Registrar en consola
-            console.log(`📊 Alerta: ${enEspera} autos en espera, ETA: ${estimadoMin} min`);
           }
         })
         .catch(error => {
