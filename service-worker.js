@@ -1,6 +1,5 @@
 // app/service-worker.js
-const VERSION = "v1.23.55"; // ⬅️ subimos versión para forzar update
-
+const VERSION = "v1.23.88"; // ⬅️ Aumenta versión
 
 const PRECACHE = `precache-${VERSION}`;
 const RUNTIME  = `runtime-${VERSION}`;
@@ -13,7 +12,7 @@ const PRECACHE_URLS = [
   "buscar_computadores.html",
   "buscar_dpf.html",
   "buscar.html",
-  "buscar_aplicacion.html", // ⬅️ IMPORTANTE
+  "buscar_aplicacion.html",
   "cliente.html",
   "clientes_turno.html",
   "computador.html",
@@ -23,15 +22,81 @@ const PRECACHE_URLS = [
   "gestion_autos.html",
   "informes.html",
   "panel_clientes.html",
+  "recepcion.html", // ⬅️ AÑADE ESTA LÍNEA
 
   // Iconos
   "icons/icon-192.png",
   "icons/icon-512.png",
+  "icons/icon-72.png",
 
   // Otros
   "img/scanner.png",
   "manifest.json"
 ];
+
+/* ================= NOTIFICACIONES PUSH ================= */
+self.addEventListener('push', event => {
+  console.log('📬 Notificación push recibida');
+  
+  let data = {};
+  try {
+    data = event.data.json();
+  } catch (e) {
+    data = {
+      title: 'Taller - Alerta',
+      body: 'Cola alta en el taller',
+      icon: '/icons/icon-192.png',
+      data: { url: '/recepcion.html' }
+    };
+  }
+
+  const options = {
+    body: data.body || 'Aviso del sistema',
+    icon: data.icon || '/icons/icon-192.png',
+    badge: '/icons/icon-72.png',
+    vibrate: [200, 100, 200, 100, 200],
+    requireInteraction: true,
+    data: {
+      url: data.url || '/recepcion.html',
+      timestamp: Date.now(),
+      enEspera: data.enEspera || 0
+    },
+    actions: [
+      {
+        action: 'ver',
+        title: '👁️ Ver cola'
+      }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || '🚗 Taller App', options)
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  
+  const urlToOpen = event.notification.data.url || '/recepcion.html';
+  
+  if (event.action === 'ver' || !event.action) {
+    event.waitUntil(
+      clients.matchAll({ type: 'window', includeUncontrolled: true })
+        .then(windowClients => {
+          // Buscar si ya hay una ventana abierta
+          for (const client of windowClients) {
+            if (client.url === urlToOpen && 'focus' in client) {
+              return client.focus();
+            }
+          }
+          // Si no hay, abrir nueva
+          if (clients.openWindow) {
+            return clients.openWindow(urlToOpen);
+          }
+        })
+    );
+  }
+});
 
 /* ================= INSTALL ================= */
 self.addEventListener("install", (event) => {
@@ -63,12 +128,7 @@ self.addEventListener("fetch", (event) => {
   // Solo controlamos mismo origen
   if (url.origin !== location.origin) return;
 
-  /* ================= NAVEGACIÓN HTML =================
-     🔑 CAMBIO CLAVE:
-     - NO usamos cache-first para navegación
-     - Evita que el navegador "recicle" la pestaña actual
-     - Permite múltiples ventanas PWA independientes
-  */
+  /* ================= NAVEGACIÓN HTML ================= */
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
@@ -78,7 +138,6 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() =>
-          // fallback offline: intenta servir desde cache
           caches.match(req, { ignoreSearch: true }) ||
           caches.match("index.html")
         )
