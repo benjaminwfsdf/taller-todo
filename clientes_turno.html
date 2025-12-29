@@ -64,7 +64,7 @@
     
     /* Botón notificaciones */
     .btn-notif {
-      background: linear-gradient(135deg, #900000 0%, #700000 100%);
+      background: linear-gradient(135deg, #900000 0%, #700000 100%) !important;
       margin-top: 8px;
     }
     .push-status {
@@ -75,6 +75,10 @@
     }
     .push-status.granted { color: var(--ok); }
     .push-status.denied { color: var(--danger); }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -131,15 +135,14 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzxjqH9ZoNwj9mho0rUWVQff7b0s7Jgmrm_T8MzvETaVgnlgVcw422AMdtNVURGOp0j3A/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxVHnkPbejxbvHvVYebtR-ZXpz9XrSmmd9TDrBwEnEzsQFjttiMDFyHOjkO6W2kepiRxQ/exec";
 
-    // === Parámetros de cola/avisos (puedes ajustarlos) ===
+    // === PARÁMETROS ===
     const MINUTOS_POR_AUTO = 15;
     const UMBRAL_AVISO_ESPERA = 5;
     const MIN_MINUTOS_ENTRE_AVISOS = 20;
 
-    // === CONFIGURACIÓN PUSH ===
-    // Genera tus claves con: web-push generate-vapid-keys
+    // === CLAVE VAPID - GENERA LA TUYA ===
     const VAPID_PUBLIC_KEY = "BCSF-HyQAYGWHULzuxBvmBvJjckLfywCs7Jc0a1xYBeHvskqwJc9W39QRO2kVyGhTpVzQUO-gC6WJzfrR2deGik";
 
     // === FUNCIONES PUSH ===
@@ -154,6 +157,17 @@
         .then(registration => {
           console.log('✅ Service Worker registrado');
           checkPushPermission();
+          
+          // Verificar suscripción periódicamente
+          setInterval(() => {
+            registration.pushManager.getSubscription()
+              .then(subscription => {
+                if (!subscription) {
+                  console.log('⚠️ Suscripción perdida, resuscribiendo...');
+                  checkPushPermission();
+                }
+              });
+          }, 60000); // Cada minuto
         })
         .catch(error => {
           console.error('❌ Error registrando Service Worker:', error);
@@ -171,17 +185,15 @@
           updatePushStatus('granted', '✅ Notificaciones activadas');
           btn.textContent = '🔔 Notificaciones Activadas';
           btn.disabled = true;
-          btn.style.opacity = '0.7';
           subscribeUser();
           break;
         case 'denied':
           updatePushStatus('denied', '❌ Notificaciones bloqueadas');
           btn.textContent = 'Notificaciones Bloqueadas';
           btn.disabled = true;
-          btn.style.opacity = '0.7';
           break;
         default:
-          updatePushStatus('default', '🔕 No configurado');
+          updatePushStatus('default', '🔕 Click para activar');
           btn.textContent = 'Activar Notificaciones';
           btn.disabled = false;
       }
@@ -225,6 +237,8 @@
         
         if (existingSubscription) {
           console.log('✅ Ya suscrito');
+          await savePushSubscription(existingSubscription);
+          checkPushPermission();
           return existingSubscription;
         }
         
@@ -233,14 +247,17 @@
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
         
-        // Guardar suscripción
         await savePushSubscription(subscription);
         console.log('✅ Usuario suscrito a push');
         checkPushPermission();
         return subscription;
       } catch (error) {
         console.error('❌ Error suscribiendo:', error);
-        toast('Error al activar notificaciones');
+        if (error.name === 'NotAllowedError') {
+          toast('Permiso no concedido');
+        } else {
+          toast('Error al activar notificaciones');
+        }
         return null;
       }
     }
@@ -265,17 +282,16 @@
       }
     }
 
-    // Enviar notificación local cuando haya muchos autos
     async function enviarNotificacionLocal(titulo, mensaje, enEspera) {
       try {
         const registration = await navigator.serviceWorker.ready;
         
-        await registration.showNotification(titulo, {
+        const options = {
           body: mensaje,
           icon: '/icons/icon-192.png',
           badge: '/icons/icon-72.png',
           vibrate: [200, 100, 200, 100, 200],
-          tag: `cola-${enEspera}`,
+          tag: `cola-${enEspera}-${Date.now()}`,
           requireInteraction: true,
           data: {
             url: window.location.href,
@@ -288,9 +304,20 @@
               title: '👁️ Ver cola'
             }
           ]
-        });
+        };
         
-        console.log('📢 Notificación local enviada');
+        // Enviar notificación
+        await registration.showNotification(titulo, options);
+        console.log('📢 Notificación local enviada:', titulo);
+        
+        // Registrar en consola
+        localStorage.setItem('ultimaNotificacion', JSON.stringify({
+          titulo: titulo,
+          mensaje: mensaje,
+          hora: new Date().toLocaleTimeString(),
+          enEspera: enEspera
+        }));
+        
       } catch (error) {
         console.error('Error enviando notificación:', error);
       }
@@ -311,7 +338,7 @@
       return outputArray;
     }
 
-    // === FUNCIONES ORIGINALES (modificadas) ===
+    // === FUNCIONES ORIGINALES ===
     function vibrar(ms=200){ if (navigator.vibrate) navigator.vibrate(ms); }
     
     function beep(ms=120, freq=880){
@@ -358,11 +385,20 @@
           document.getElementById("patente").value = "";
           document.getElementById("modelo").value = "";
           setTimeout(cargarTurnos, 800);
+        })
+        .catch(error => {
+          console.error('Error agregando cliente:', error);
+          alert('Error al registrar cliente');
         });
     }
 
     function marcarComoListo() {
-      fetch(`${API_URL}?funcion=eliminarPrimero`).then(() => setTimeout(cargarTurnos, 800));
+      fetch(`${API_URL}?funcion=eliminarPrimero`)
+        .then(() => setTimeout(cargarTurnos, 800))
+        .catch(error => {
+          console.error('Error marcando como listo:', error);
+          alert('Error al marcar como listo');
+        });
     }
 
     function cargarTurnos() {
@@ -381,10 +417,11 @@
 
           const total = data.length;
           const enEspera = Math.max(0, total - 1);
+          
+          // Actualizar UI
           document.getElementById("contadorTotal").innerHTML =
             `🚘 Autos en espera: ${enEspera}` + (enEspera >= UMBRAL_AVISO_ESPERA ? ` <span class="badge-warn">ALTO</span>` : '');
 
-          // ETA
           const estimadoMin = enEspera * MINUTOS_POR_AUTO;
           const horas = (estimadoMin / 60).toFixed(1);
           document.getElementById("etaTexto").textContent = `⏱️ Espera estimada: ~${estimadoMin} min (${horas}h)`;
@@ -405,7 +442,7 @@
             div.appendChild(p);
           });
 
-          // === LÓGICA DE AVISO MEJORADA ===
+          // === LÓGICA DE NOTIFICACIONES ===
           const antes = Number(localStorage.getItem('ultimoConteoEspera') || 0);
           localStorage.setItem('ultimoConteoEspera', String(enEspera));
 
@@ -414,7 +451,7 @@
 
           if ((cruzoUmbral || enEspera >= UMBRAL_AVISO_ESPERA) && puedeAvisar(claveAviso)) {
             // 1. Notificación in-app (siempre)
-            const mensajeInApp = `Tienes ${enEspera} autos en espera (~${estimadoMin} min ≈ ${horas}h). Considera avisar a los clientes.`;
+            const mensajeInApp = `Tienes ${enEspera} autos en espera (~${estimadoMin} min ≈ ${horas}h).`;
             notificar('⚠️ Cola alta en taller', mensajeInApp);
             
             // 2. Notificación PUSH (solo si permiso granted)
@@ -424,10 +461,13 @@
               
               enviarNotificacionLocal(tituloPush, mensajePush, enEspera);
             }
+            
+            // Registrar en consola
+            console.log(`📊 Alerta: ${enEspera} autos en espera, ETA: ${estimadoMin} min`);
           }
         })
-        .catch(() => {
-          // Error de red
+        .catch(error => {
+          console.error('Error cargando turnos:', error);
         });
     }
 
@@ -491,5 +531,3 @@
   <script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_JCycDWmAuEREJmLvbVjph8GtPxvc" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
 </body>
 </html>
-
-<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_8BC3xP9Z36yEozD5aSQAnvUEmLDZ" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
