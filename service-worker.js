@@ -1,5 +1,5 @@
-// app/service-worker.js
-const VERSION = "v1.23.88"; // ⬅️ Aumenta versión
+// app/service-worker.js - CON NOTIFICACIONES PUSH
+const VERSION = "v1.24.0"; // ⬅️ Aumenta versión
 
 const PRECACHE = `precache-${VERSION}`;
 const RUNTIME  = `runtime-${VERSION}`;
@@ -22,12 +22,12 @@ const PRECACHE_URLS = [
   "gestion_autos.html",
   "informes.html",
   "panel_clientes.html",
-  "recepcion.html", // ⬅️ AÑADE ESTA LÍNEA
+  "recepcion.html",
 
   // Iconos
+  "icons/icon-72.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
-  "icons/icon-72.png",
 
   // Otros
   "img/scanner.png",
@@ -42,9 +42,10 @@ self.addEventListener('push', event => {
   try {
     data = event.data.json();
   } catch (e) {
+    // Si no hay datos JSON, crear notificación básica
     data = {
-      title: 'Taller - Alerta',
-      body: 'Cola alta en el taller',
+      title: '🚗 Taller App',
+      body: event.data.text() || 'Nueva alerta del taller',
       icon: '/icons/icon-192.png',
       data: { url: '/recepcion.html' }
     };
@@ -81,19 +82,20 @@ self.addEventListener('notificationclick', event => {
   
   if (event.action === 'ver' || !event.action) {
     event.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true })
-        .then(windowClients => {
-          // Buscar si ya hay una ventana abierta
-          for (const client of windowClients) {
-            if (client.url === urlToOpen && 'focus' in client) {
-              return client.focus();
-            }
+      clients.matchAll({ 
+        type: 'window', 
+        includeUncontrolled: true 
+      })
+      .then(windowClients => {
+        // Buscar ventana ya abierta
+        for (const client of windowClients) {
+          if (client.url.includes('recepcion') && 'focus' in client) {
+            return client.focus();
           }
-          // Si no hay, abrir nueva
-          if (clients.openWindow) {
-            return clients.openWindow(urlToOpen);
-          }
-        })
+        }
+        // Abrir nueva ventana
+        return clients.openWindow(urlToOpen);
+      })
     );
   }
 });
@@ -101,23 +103,30 @@ self.addEventListener('notificationclick', event => {
 /* ================= INSTALL ================= */
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(PRECACHE).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(PRECACHE)
+      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
 /* ================= ACTIVATE ================= */
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => ![PRECACHE, RUNTIME].includes(key))
-          .map((key) => caches.delete(key))
-      )
-    )
+    Promise.all([
+      // Limpiar caches viejos
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (![PRECACHE, RUNTIME].includes(cacheName)) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Tomar control inmediato
+      self.clients.claim()
+    ])
   );
-  self.clients.claim();
 });
 
 /* ================= FETCH ================= */
@@ -146,19 +155,43 @@ self.addEventListener("fetch", (event) => {
   }
 
   /* ================= ARCHIVOS ESTÁTICOS ================= */
-  if (/\.(css|js|png|jpg|jpeg|svg|webp|gif|ico|woff2?|ttf|otf)$/i.test(url.pathname)) {
+  const isStaticFile = /\.(css|js|png|jpg|jpeg|svg|webp|gif|ico|woff2?|ttf|otf|json)$/i.test(url.pathname);
+  
+  if (isStaticFile) {
     event.respondWith(
-      caches.match(req).then((cached) => {
-        const fetchPromise = fetch(req)
-          .then((res) => {
-            const copy = res.clone();
-            caches.open(RUNTIME).then((cache) => cache.put(req, copy));
-            return res;
-          })
-          .catch(() => cached);
+      caches.match(req)
+        .then((cached) => {
+          if (cached) return cached;
+          
+          return fetch(req)
+            .then((res) => {
+              const copy = res.clone();
+              caches.open(RUNTIME).then((cache) => cache.put(req, copy));
+              return res;
+            })
+            .catch(() => {
+              // Fallback para íconos
+              if (url.pathname.includes('icon')) {
+                return caches.match('/icons/icon-192.png');
+              }
+              return new Response('Offline', { status: 503 });
+            });
+        })
+    );
+    return;
+  }
 
-        return cached || fetchPromise;
-      })
+  /* ================= API REQUESTS ================= */
+  if (url.pathname.includes('macros')) {
+    event.respondWith(
+      fetch(req)
+        .catch(() => {
+          // No cache para APIs
+          return new Response(JSON.stringify({ error: 'Offline' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        })
     );
     return;
   }
