@@ -227,12 +227,16 @@
       }
     }
 
-    // ========== FIREBASE NOTIFICATIONS ==========
+    // ========== FIREBASE NOTIFICATIONS - VERSIÓN CORREGIDA ==========
     async function initFirebaseNotifications() {
       try {
-        console.log('🚀 Inicializando Firebase...');
+        console.log('🚀 Inicializando Firebase Notifications...');
         
-        // Inicializar Firebase
+        // 1. Registrar nuestro Service Worker primero
+        const registration = await navigator.serviceWorker.register('/service-worker.js');
+        console.log('✅ Service Worker registrado:', registration.scope);
+        
+        // 2. Inicializar Firebase
         if (!firebase.apps.length) {
           firebase.initializeApp(firebaseConfig);
           console.log('✅ Firebase inicializado');
@@ -240,20 +244,24 @@
         
         messaging = firebase.messaging();
         
-        // Pedir permiso
+        // 3. CRÍTICO: Especificar nuestro Service Worker a Firebase
+        // Esto evita que Firebase busque firebase-messaging-sw.js automáticamente
+        messaging.useServiceWorker(registration);
+        
+        // 4. Pedir permiso para notificaciones
         const permission = await Notification.requestPermission();
         console.log('🔔 Permiso:', permission);
         
         if (permission === 'granted') {
           console.log('✅ Permiso concedido, obteniendo token...');
           
-          // Obtener token FCM - IMPORTANTE: Necesitas configurar en Firebase Console
+          // 5. Obtener token FCM
           fcmToken = await messaging.getToken({ 
             vapidKey: "BFNfvN1aNySCUK0n8Q0eZATyfH0GorLNmcbHptmcxVMuvk8HGGukv0i-I2cs8oeYtCC_q3AxN_mLzuhn4NWaBvA"
           });
           
           if (fcmToken) {
-            console.log('✅ Token FCM obtenido:', fcmToken.substring(0, 50) + '...');
+            console.log('✅ Token FCM obtenido:', fcmToken.substring(0, 30) + '...');
             
             // Guardar token localmente
             localStorage.setItem('fcmToken', fcmToken);
@@ -265,7 +273,7 @@
             updatePushStatus('granted', '✅ Notificaciones activas');
             toast('🔔 Notificaciones Firebase activadas');
             
-            // Configurar mensajes en primer plano
+            // 6. Configurar mensajes en primer plano
             messaging.onMessage((payload) => {
               console.log('📬 Mensaje en primer plano:', payload);
               if (payload.notification) {
@@ -461,6 +469,20 @@
             if (savedToken) {
               console.log('✅ Token FCM encontrado en localStorage');
               updatePushStatus('granted', '✅ Notificaciones activas');
+              
+              // Inicializar Firebase automáticamente si ya hay token
+              if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+              }
+              messaging = firebase.messaging();
+              
+              // Configurar mensajes en primer plano
+              messaging.onMessage((payload) => {
+                console.log('📬 Mensaje en primer plano:', payload);
+                if (payload.notification) {
+                  notificar(payload.notification.title, payload.notification.body);
+                }
+              });
             } else {
               // Verificar estado de permisos
               if (Notification.permission === 'granted') {
