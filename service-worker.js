@@ -1,5 +1,5 @@
 // service-worker.js - CON FIREBASE
-const VERSION = "v1.28.55";
+const VERSION = "v1.29.0";
 
 // Importar Firebase
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
@@ -37,6 +37,34 @@ messaging.onBackgroundMessage((payload) => {
   };
 
   return self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// ========== RECIBIR MENSAJES DEL CLIENTE ==========
+self.addEventListener('message', event => {
+  console.log('📬 Service Worker recibió mensaje:', event.data);
+  
+  if (event.data && event.data.type === 'SEND_PUSH_NOTIFICATION') {
+    const { notification } = event.data;
+    
+    console.log('📤 Mostrando notificación desde cliente:', notification.title);
+    
+    // Mostrar notificación inmediatamente
+    self.registration.showNotification(notification.title, {
+      body: notification.body,
+      icon: notification.icon || '/icons/icon-192.png',
+      badge: '/icons/icon-72.png',
+      vibrate: notification.vibrate || [200, 100, 200, 100, 200],
+      data: notification.data || { url: window.location.href },
+      actions: [
+        {
+          action: 'ver',
+          title: '👁️ Ver cola'
+        }
+      ]
+    }).catch(error => {
+      console.error('Error mostrando notificación desde cliente:', error);
+    });
+  }
 });
 
 // ========== MANEJAR NOTIFICACIONES ESTÁNDAR ==========
