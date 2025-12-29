@@ -1,5 +1,5 @@
 // app/service-worker.js - CON NOTIFICACIONES PUSH
-const VERSION = "v1.24.55"; // ⬅️ Aumenta versión
+const VERSION = "v1.25.3"; // ⬅️ Aumenta versión para forzar update
 
 const PRECACHE = `precache-${VERSION}`;
 const RUNTIME  = `runtime-${VERSION}`;
@@ -36,16 +36,16 @@ const PRECACHE_URLS = [
 
 /* ================= NOTIFICACIONES PUSH ================= */
 self.addEventListener('push', event => {
-  console.log('📬 Notificación push recibida');
+  console.log('📬 Notificación push recibida (Service Worker activo)');
   
   let data = {};
   try {
-    data = event.data.json();
+    data = event.data ? event.data.json() : {};
   } catch (e) {
     // Si no hay datos JSON, crear notificación básica
     data = {
       title: '🚗 Taller App',
-      body: event.data.text() || 'Nueva alerta del taller',
+      body: event.data ? event.data.text() || 'Nueva alerta del taller' : 'Cola alta en el taller',
       icon: '/icons/icon-192.png',
       data: { url: '/recepcion.html' }
     };
@@ -56,7 +56,7 @@ self.addEventListener('push', event => {
     icon: data.icon || '/icons/icon-192.png',
     badge: '/icons/icon-72.png',
     vibrate: [200, 100, 200, 100, 200],
-    requireInteraction: true,
+    requireInteraction: false,
     data: {
       url: data.url || '/recepcion.html',
       timestamp: Date.now(),
@@ -123,7 +123,7 @@ self.addEventListener("activate", (event) => {
           })
         );
       }),
-      // Tomar control inmediato
+      // Tomar control inmediato de todas las pestañas
       self.clients.claim()
     ])
   );
