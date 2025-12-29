@@ -242,11 +242,8 @@
           console.log('✅ Firebase inicializado');
         }
         
+        // 3. Obtener instancia de messaging
         messaging = firebase.messaging();
-        
-        // 3. CRÍTICO: Especificar nuestro Service Worker a Firebase
-        // Esto evita que Firebase busque firebase-messaging-sw.js automáticamente
-        messaging.useServiceWorker(registration);
         
         // 4. Pedir permiso para notificaciones
         const permission = await Notification.requestPermission();
@@ -255,9 +252,11 @@
         if (permission === 'granted') {
           console.log('✅ Permiso concedido, obteniendo token...');
           
-          // 5. Obtener token FCM
-          fcmToken = await messaging.getToken({ 
-            vapidKey: "BFNfvN1aNySCUK0n8Q0eZATyfH0GorLNmcbHptmcxVMuvk8HGGukv0i-I2cs8oeYtCC_q3AxN_mLzuhn4NWaBvA"
+          // 5. Obtener token FCM - FORMA CORRECTA para Firebase v9
+          // La clave: pasar serviceWorkerRegistration como opción
+          fcmToken = await messaging.getToken({
+            vapidKey: "BFNfvN1aNySCUK0n8Q0eZATyfH0GorLNmcbHptmcxVMuvk8HGGukv0i-I2cs8oeYtCC_q3AxN_mLzuhn4NWaBvA",
+            serviceWorkerRegistration: registration  // ← ESTA ES LA LÍNEA CLAVE
           });
           
           if (fcmToken) {
