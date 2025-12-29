@@ -1,5 +1,5 @@
 // service-worker.js - CON FIREBASE
-const VERSION = "v1.29.0";
+const VERSION = "v1.29.55";
 
 // Importar Firebase
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
