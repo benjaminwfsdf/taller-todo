@@ -1,51 +1,55 @@
-// app/service-worker.js - CON NOTIFICACIONES PUSH
-const VERSION = "v1.25.3"; // ⬅️ Aumenta versión para forzar update
+// service-worker.js - CON FIREBASE
+const VERSION = "v1.27.0";
 
-const PRECACHE = `precache-${VERSION}`;
-const RUNTIME  = `runtime-${VERSION}`;
+// Importar Firebase
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
-const PRECACHE_URLS = [
-  // HTML
-  "index.html",
-  "agregar.html",
-  "buscador_averias.html",
-  "buscar_computadores.html",
-  "buscar_dpf.html",
-  "buscar.html",
-  "buscar_aplicacion.html",
-  "cliente.html",
-  "clientes_turno.html",
-  "computador.html",
-  "dpf_anadir.html",
-  "dpf_off.html",
-  "estado.html",
-  "gestion_autos.html",
-  "informes.html",
-  "panel_clientes.html",
-  "recepcion.html",
+// Configuración de Firebase - TUS DATOS
+firebase.initializeApp({
+  apiKey: "AIzaSyDGZEc964LiBmPznahVJc0PCh7xUAzxxGc",
+  authDomain: "taller-todo.firebaseapp.com",
+  projectId: "taller-todo",
+  storageBucket: "taller-todo.firebasestorage.app",
+  messagingSenderId: "986114429526",
+  appId: "1:986114429526:web:0179649bb1b60ceb8361f7"
+});
 
-  // Iconos
-  "icons/icon-72.png",
-  "icons/icon-192.png",
-  "icons/icon-512.png",
+const messaging = firebase.messaging();
 
-  // Otros
-  "img/scanner.png",
-  "manifest.json"
-];
+// ========== MANEJAR NOTIFICACIONES EN BACKGROUND ==========
+messaging.onBackgroundMessage((payload) => {
+  console.log('📬 [Firebase] Notificación en background:', payload);
+  
+  const notificationTitle = payload.notification?.title || '🚗 Taller App';
+  const notificationOptions = {
+    body: payload.notification?.body || 'Nueva alerta del taller',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-72.png',
+    vibrate: [200, 100, 200, 100, 200],
+    data: payload.data || { url: '/recepcion.html' },
+    actions: [
+      {
+        action: 'ver',
+        title: '👁️ Ver cola'
+      }
+    ]
+  };
 
-/* ================= NOTIFICACIONES PUSH ================= */
+  return self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// ========== MANEJAR NOTIFICACIONES ESTÁNDAR ==========
 self.addEventListener('push', event => {
-  console.log('📬 Notificación push recibida (Service Worker activo)');
+  console.log('📬 Notificación push recibida');
   
   let data = {};
   try {
     data = event.data ? event.data.json() : {};
   } catch (e) {
-    // Si no hay datos JSON, crear notificación básica
     data = {
       title: '🚗 Taller App',
-      body: event.data ? event.data.text() || 'Nueva alerta del taller' : 'Cola alta en el taller',
+      body: 'Nueva alerta del taller',
       icon: '/icons/icon-192.png',
       data: { url: '/recepcion.html' }
     };
@@ -56,12 +60,7 @@ self.addEventListener('push', event => {
     icon: data.icon || '/icons/icon-192.png',
     badge: '/icons/icon-72.png',
     vibrate: [200, 100, 200, 100, 200],
-    requireInteraction: false,
-    data: {
-      url: data.url || '/recepcion.html',
-      timestamp: Date.now(),
-      enEspera: data.enEspera || 0
-    },
+    data: data.data || { url: '/recepcion.html' },
     actions: [
       {
         action: 'ver',
@@ -75,129 +74,36 @@ self.addEventListener('push', event => {
   );
 });
 
+// ========== MANEJAR CLIC EN NOTIFICACIÓN ==========
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   
-  const urlToOpen = event.notification.data.url || '/recepcion.html';
+  const urlToOpen = event.notification.data?.url || '/recepcion.html';
   
   if (event.action === 'ver' || !event.action) {
     event.waitUntil(
-      clients.matchAll({ 
-        type: 'window', 
-        includeUncontrolled: true 
-      })
-      .then(windowClients => {
-        // Buscar ventana ya abierta
-        for (const client of windowClients) {
-          if (client.url.includes('recepcion') && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        // Abrir nueva ventana
-        return clients.openWindow(urlToOpen);
-      })
-    );
-  }
-});
-
-/* ================= INSTALL ================= */
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(PRECACHE)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
-  );
-});
-
-/* ================= ACTIVATE ================= */
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    Promise.all([
-      // Limpiar caches viejos
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (![PRECACHE, RUNTIME].includes(cacheName)) {
-              return caches.delete(cacheName);
+      clients.matchAll({ type: 'window', includeUncontrolled: true })
+        .then(windowClients => {
+          for (const client of windowClients) {
+            if (client.url.includes('recepcion') && 'focus' in client) {
+              return client.focus();
             }
-          })
-        );
-      }),
-      // Tomar control inmediato de todas las pestañas
-      self.clients.claim()
-    ])
-  );
+          }
+          return clients.openWindow(urlToOpen);
+        })
+    );
+  }
 });
 
-/* ================= FETCH ================= */
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
+// ========== CACHE BÁSICO ==========
+self.addEventListener('install', event => {
+  event.waitUntil(self.skipWaiting());
+});
 
-  // Solo controlamos mismo origen
-  if (url.origin !== location.origin) return;
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
+});
 
-  /* ================= NAVEGACIÓN HTML ================= */
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(RUNTIME).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() =>
-          caches.match(req, { ignoreSearch: true }) ||
-          caches.match("index.html")
-        )
-    );
-    return;
-  }
-
-  /* ================= ARCHIVOS ESTÁTICOS ================= */
-  const isStaticFile = /\.(css|js|png|jpg|jpeg|svg|webp|gif|ico|woff2?|ttf|otf|json)$/i.test(url.pathname);
-  
-  if (isStaticFile) {
-    event.respondWith(
-      caches.match(req)
-        .then((cached) => {
-          if (cached) return cached;
-          
-          return fetch(req)
-            .then((res) => {
-              const copy = res.clone();
-              caches.open(RUNTIME).then((cache) => cache.put(req, copy));
-              return res;
-            })
-            .catch(() => {
-              // Fallback para íconos
-              if (url.pathname.includes('icon')) {
-                return caches.match('/icons/icon-192.png');
-              }
-              return new Response('Offline', { status: 503 });
-            });
-        })
-    );
-    return;
-  }
-
-  /* ================= API REQUESTS ================= */
-  if (url.pathname.includes('macros')) {
-    event.respondWith(
-      fetch(req)
-        .catch(() => {
-          // No cache para APIs
-          return new Response(JSON.stringify({ error: 'Offline' }), {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' }
-          });
-        })
-    );
-    return;
-  }
-
-  /* ================= OTROS ================= */
-  event.respondWith(
-    fetch(req).catch(() => caches.match(req))
-  );
+self.addEventListener('fetch', event => {
+  event.respondWith(fetch(event.request));
 });
