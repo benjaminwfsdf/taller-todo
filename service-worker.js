@@ -1,5 +1,5 @@
 // app/service-worker.js - CON NOTIFICACIONES PUSH
-const VERSION = "v1.24.0"; // ⬅️ Aumenta versión
+const VERSION = "v1.24.55"; // ⬅️ Aumenta versión
 
 const PRECACHE = `precache-${VERSION}`;
 const RUNTIME  = `runtime-${VERSION}`;
