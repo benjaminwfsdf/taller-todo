@@ -1,5 +1,5 @@
-// service-worker.js - CON FIREBASE
-const VERSION = "v1.33.0";
+// service-worker.js - CON FIREBASE - VERSIÓN CORREGIDA
+const VERSION = "v1.34.11";
 
 // Importar Firebase
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
@@ -48,13 +48,16 @@ self.addEventListener('message', event => {
     
     console.log('📤 Mostrando notificación desde cliente:', notification.title);
     
+    // CORRECCIÓN: No usar window.location.href en Service Worker
+    const notificationData = notification.data || { url: '/recepcion.html' };
+    
     // Mostrar notificación inmediatamente
     self.registration.showNotification(notification.title, {
       body: notification.body,
       icon: notification.icon || '/icons/icon-192.png',
       badge: '/icons/icon-72.png',
       vibrate: notification.vibrate || [200, 100, 200, 100, 200],
-      data: notification.data || { url: window.location.href },
+      data: notificationData,
       actions: [
         {
           action: 'ver',
@@ -108,30 +111,135 @@ self.addEventListener('notificationclick', event => {
   
   const urlToOpen = event.notification.data?.url || '/recepcion.html';
   
+  console.log('👆 Notificación clickeada, abriendo:', urlToOpen);
+  
   if (event.action === 'ver' || !event.action) {
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true })
         .then(windowClients => {
+          // Buscar ventana existente
           for (const client of windowClients) {
             if (client.url.includes('recepcion') && 'focus' in client) {
+              console.log('✅ Enfocando ventana existente');
               return client.focus();
             }
           }
+          // Abrir nueva ventana
+          console.log('🆕 Abriendo nueva ventana');
+          return clients.openWindow(urlToOpen);
+        })
+        .catch(error => {
+          console.error('Error al manejar clic en notificación:', error);
+          // Fallback: intentar abrir directamente
           return clients.openWindow(urlToOpen);
         })
     );
   }
 });
 
-// ========== CACHE BÁSICO ==========
+// ========== CACHE BÁSICO MEJORADO ==========
+const CACHE_NAME = 'taller-cache-v1';
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/recepcion.html',
+  '/clientes_turno.html',
+  '/icons/icon-72.png',
+  '/icons/icon-192.png',
+  '/manifest.json',
+  '/service-worker.js'
+];
+
 self.addEventListener('install', event => {
-  event.waitUntil(self.skipWaiting());
+  console.log('🔧 Service Worker instalándose...');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('📦 Cacheando archivos esenciales');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        console.log('✅ Skip waiting activado');
+        return self.skipWaiting();
+      })
+  );
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
+  console.log('⚡ Service Worker activado');
+  event.waitUntil(
+    Promise.all([
+      // Limpiar caches viejos
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('🗑️ Eliminando cache viejo:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Tomar control de todas las pestañas
+      self.clients.claim()
+    ])
+  );
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(fetch(event.request));
+  // Solo cachear solicitudes GET
+  if (event.request.method !== 'GET') return;
+  
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Si está en cache, devolverlo
+        if (response) {
+          console.log('📦 Sirviendo desde cache:', event.request.url);
+          return response;
+        }
+        
+        // Si no está en cache, hacer fetch y cachear
+        console.log('🌐 Haciendo fetch:', event.request.url);
+        return fetch(event.request)
+          .then(response => {
+            // Verificar si la respuesta es válida
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            
+            // Clonar la respuesta para cachearla
+            const responseToCache = response.clone();
+            
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+            
+            return response;
+          })
+          .catch(error => {
+            console.error('Error en fetch:', error);
+            // Si es una página y falla, mostrar offline
+            if (event.request.mode === 'navigate') {
+              return caches.match('/index.html');
+            }
+            return new Response('Error de conexión', { status: 503 });
+          });
+      })
+  );
+});
+
+// ========== MANEJAR SINCRONIZACIÓN EN BACKGROUND ==========
+self.addEventListener('sync', event => {
+  console.log('🔄 Sincronización en background:', event.tag);
+  
+  if (event.tag === 'sync-notifications') {
+    event.waitUntil(
+      // Aquí podrías sincronizar datos pendientes
+      Promise.resolve().then(() => {
+        console.log('✅ Sincronización completada');
+      })
+    );
+  }
 });
