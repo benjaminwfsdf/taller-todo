@@ -109,7 +109,7 @@
 
       <div class="card" style="margin-top: 16px;">
         <div style="text-align: center; margin-bottom: 12px;">
-          <span style="color: var(--brand); font-weight: 800;">🔔 Notificaciones Firebase</span>
+          <span style="color: var(--brand); font-weight: 800;">🔔 Notificaciones Push</span>
         </div>
         <button class="btn btn-notif" onclick="initFirebaseNotifications()" id="btnNotif">
           Activar Notificaciones
@@ -118,7 +118,7 @@
           Estado: <span id="pushStatusText">Verificando...</span>
         </div>
         <div class="firebase-info">
-          ✅ Firebase configurado | Funciona con app cerrada
+          ✅ Sistema de notificaciones activo | Funciona con app cerrada
         </div>
       </div>
 
@@ -143,7 +143,7 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxFSDDbawRtYfoEAO05luiPvr1fJfCiB5IwsIvpQUq7V0vwGtRnsgFHhrCiyAH3Y4HV2A/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyb77dIrFR3nRCVhAi-8iU_69zfUGhrI-W3VmSFpruqd369qq80ciE7zKq_7nxyWIfzPA/exec";
     const MINUTOS_POR_AUTO = 15;
     const UMBRAL_AVISO_ESPERA = 5;
     const MIN_MINUTOS_ENTRE_AVISOS = 20;
@@ -161,7 +161,7 @@
 
     let messaging = null;
     let fcmToken = null;
-    let ultimoEstadoNotificado = null;
+    let ultimoPushEnviado = 0;
 
     // ========== FUNCIONES BÁSICAS ==========
     function toast(msg, ms=4500) {
@@ -317,36 +317,89 @@
       }
     }
 
-    // ========== PUSH REAL VIA API (APP CERRADA) ==========
-    function enviarPushReal(titulo, mensaje, enEspera) {
+    // ========== PUSH REAL VIA WEB PUSH API (DIRECTO) ==========
+    async function enviarPushReal(titulo, mensaje, enEspera) {
       console.log('📤 ENVIANDO PUSH REAL - Estado actual:', enEspera, 'autos');
       
-      fetch(`${API_URL}?funcion=enviarPushReal`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          titulo: titulo,
-          mensaje: mensaje,
-          fecha: new Date().toISOString(),
-          enEspera: enEspera,
-          timestamp: Date.now()
-        })
-      })
-      .then(response => {
-        if (response.ok) {
-          console.log('✅ Push real enviado correctamente');
-          // Guardar que ya enviamos este estado
-          localStorage.setItem(`push_estado_${enEspera}`, Date.now().toString());
-          toast('📤 Notificación push enviada');
-        } else {
-          console.warn('⚠️ Respuesta no OK del servidor:', response.status);
+      try {
+        // 1. Mostrar notificación local INMEDIATA
+        notificar(titulo, mensaje);
+        
+        // 2. Verificar si podemos enviar push nativo
+        if ('serviceWorker' in navigator && 'PushManager' in window) {
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            
+            if (registration.active) {
+              // Enviar mensaje al Service Worker para notificación NATIVA
+              registration.active.postMessage({
+                type: 'SEND_PUSH_NOTIFICATION',
+                notification: {
+                  title: titulo,
+                  body: mensaje,
+                  icon: '/icons/icon-192.png',
+                  badge: '/icons/icon-72.png',
+                  vibrate: [200, 100, 200, 100, 200],
+                  data: {
+                    url: window.location.href,
+                    tipo: 'cola_larga',
+                    enEspera: enEspera,
+                    timestamp: Date.now()
+                  }
+                }
+              });
+              
+              console.log('✅ Notificación NATIVA enviada al Service Worker');
+            }
+          } catch (swError) {
+            console.warn('⚠️ Error con Service Worker:', swError.message);
+          }
         }
-      })
-      .catch(err => {
-        console.warn('⚠️ Error enviando push real:', err.message);
+        
+        // 3. Intentar enviar también al servidor (pero NO es crítico)
+        setTimeout(() => {
+          enviarPushAServidor(titulo, mensaje, enEspera).catch(err => {
+            console.log('ℹ️ Servidor no disponible, notificación enviada localmente');
+          });
+        }, 500);
+        
+        // 4. Guardar que ya enviamos este estado
+        localStorage.setItem(`push_estado_${enEspera}`, Date.now().toString());
+        
+      } catch (error) {
+        console.error('❌ Error enviando push:', error);
         // Aún así mostrar notificación local
         notificar(titulo, mensaje);
-      });
+      }
+    }
+
+    // ========== ENVÍO AL SERVIDOR (OPCIONAL - NO BLOQUEANTE) ==========
+    async function enviarPushAServidor(titulo, mensaje, enEspera) {
+      try {
+        const response = await fetch(`${API_URL}?funcion=enviarPushReal`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            titulo: titulo,
+            mensaje: mensaje,
+            fecha: new Date().toISOString(),
+            enEspera: enEspera,
+            timestamp: Date.now()
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Servidor respondió:', data);
+          return data;
+        } else {
+          console.warn('⚠️ Respuesta no OK del servidor:', response.status);
+          return null;
+        }
+      } catch (error) {
+        console.log('ℹ️ Servidor no disponible, notificación enviada localmente');
+        return null;
+      }
     }
 
     // ========== FUNCIONES ORIGINALES DEL TALLER ==========
@@ -434,8 +487,7 @@
               const tituloInApp = `🚨 ${enEspera} autos en espera`;
               const mensajeInApp = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
               
-              // Notificación in-app
-              notificar(tituloInApp, mensajeInApp);
+              // Notificación in-app (ya se hizo en enviarPushReal)
               
               // Actualizar UI para mostrar alerta urgente
               document.getElementById("contadorTotal").innerHTML = 
@@ -456,7 +508,6 @@
             // Limpiar estado de notificación si bajamos de 5 autos
             if (antes >= UMBRAL_AVISO_ESPERA && enEspera < UMBRAL_AVISO_ESPERA) {
               console.log('📉 Bajamos del umbral crítico');
-              // Podemos resetear algo si es necesario
             }
           }
           
