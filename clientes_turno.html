@@ -4,7 +4,6 @@
   <base target="_self">
   <link rel="manifest" href="/manifest.json">
   
- 
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js"></script>
 
@@ -380,21 +379,32 @@
         return false;
       }
     }
-    // ========== PUSH REAL VIA API (APP CERRADA) ==========
-function enviarPushReal(titulo, mensaje) {
-  fetch(`${API_URL}?funcion=enviarPushReal`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      titulo: titulo,
-      mensaje: mensaje,
-      fecha: new Date().toISOString()
-    })
-  }).catch(err => {
-    console.warn('⚠️ Error enviando push real:', err.message);
-  });
-}
 
+    // ========== PUSH REAL VIA API (APP CERRADA) ==========
+    function enviarPushReal(titulo, mensaje, enEspera) {
+      console.log('📤 Enviando push real al servidor:', titulo);
+      
+      fetch(`${API_URL}?funcion=enviarPushReal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titulo: titulo,
+          mensaje: mensaje,
+          fecha: new Date().toISOString(),
+          enEspera: enEspera
+        })
+      })
+      .then(response => {
+        if (response.ok) {
+          console.log('✅ Push real enviado correctamente');
+        } else {
+          console.warn('⚠️ Respuesta no OK del servidor para push real:', response.status);
+        }
+      })
+      .catch(err => {
+        console.warn('⚠️ Error enviando push real:', err.message);
+      });
+    }
 
     // ========== FUNCIONES ORIGINALES DEL TALLER ==========
     function agregarCliente() {
@@ -434,7 +444,7 @@ function enviarPushReal(titulo, mensaje) {
         .then(res => res.json())
         .then(data => {
           if (!data || !data.length) {
-            updateUI(0, [], 0, 0, '0');
+            updateUI(0, [], 0, 0);
             return;
           }
 
@@ -462,49 +472,57 @@ function enviarPushReal(titulo, mensaje) {
           console.log('🎯 ¿Cruzó umbral?', cruzoUmbral ? 'SÍ' : 'NO');
           console.log('⏰ ¿Puede avisar?', puedeAvisar(claveAviso) ? 'SÍ' : 'NO');
 
-          // LÓGICA CORREGIDA - AHORA SIEMPRE NOTIFICA CON 5+ AUTOS
-          if (enEspera >= UMBRAL_AVISO_ESPERA && puedeAvisar(claveAviso)) {
-            console.log('🚨🚨🚨 ACTIVANDO NOTIFICACIÓN URGENTE 🚨🚨🚨');
+          // LÓGICA CORREGIDA - SEPARACIÓN DE NOTIFICACIONES
+          if (enEspera >= UMBRAL_AVISO_ESPERA) {
+            console.log('🚨🚨🚨 UMBRAL CRÍTICO ALCANZADO 🚨🚨🚨');
             console.log('🎯 Motivo:', enEspera, 'autos en espera (>=', UMBRAL_AVISO_ESPERA, ')');
             
-            // 1. Notificación in-app (SIEMPRE funciona)
-            const tituloInApp = `🚨 ${enEspera} autos en espera`;
-            const mensajeInApp = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
+            // 1. NOTIFICACIÓN PUSH REAL (Siempre se envía si hay 5+ autos)
+            const tituloPush = `🚨 ${enEspera} autos en espera`;
+            const mensajePush = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
             
-            notificar(tituloInApp, mensajeInApp);
+            console.log('📤 Enviando notificación push remota...');
+            enviarPushReal(tituloPush, mensajePush, enEspera);
             
-            // 2. Actualizar UI para mostrar alerta urgente
-            document.getElementById("contadorTotal").innerHTML = 
-              `🚨🚨 AUTOS EN ESPERA: ${enEspera} <span class="badge-warn">ALTO URGENTE</span>`;
-            
-            // 3. Vibrar más fuerte para alerta
-            if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300, 100, 300]);
-            
-            // 4. Intentar notificación Firebase/Web Push
-            setTimeout(() => {
-              console.log('📤 Intentando notificación push avanzada...');
-              enviarNotificacionFirebase(enEspera, estimadoMin, horas)
+            // 2. NOTIFICACIONES LOCALES (sujetas a tiempo mínimo entre avisos)
+            if (cruzoUmbral && puedeAvisar(claveAviso)) {
+              console.log('📱 Enviando notificaciones locales...');
               
-                .then(result => {
-                  console.log('✅ Resultado notificación push:', result ? 'Éxito' : 'Falló');
-                })
-                .catch(err => {
-                  console.error('❌ Error notificación push:', err);
-                });
-                       // 🔥 PUSH REAL (funciona con app cerrada)
-enviarPushReal(
-  `🚨 ${enEspera} autos en espera`,
-  `Tiempo estimado: ~${estimadoMin} min (${horas}h)`
-);
-
-            }, 500);
-     
-            
-            console.log('✅ Notificación activada correctamente');
-          } else if (enEspera >= UMBRAL_AVISO_ESPERA && !puedeAvisar(claveAviso)) {
-            console.log('⏸️ Ya se notificó recientemente, esperando...');
-            document.getElementById("contadorTotal").innerHTML = 
-              `⚠️ Autos en espera: ${enEspera} <span class="badge-warn">ALTO (Esperando...)</span>`;
+              const tituloInApp = `🚨 ${enEspera} autos en espera`;
+              const mensajeInApp = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
+              
+              // Notificación in-app
+              notificar(tituloInApp, mensajeInApp);
+              
+              // Intentar notificación Firebase/Web Push adicional
+              setTimeout(() => {
+                console.log('📤 Intentando notificación Firebase adicional...');
+                enviarNotificacionFirebase(enEspera, estimadoMin, horas)
+                  .then(result => {
+                    console.log('✅ Resultado notificación Firebase:', result ? 'Éxito' : 'Falló');
+                  })
+                  .catch(err => {
+                    console.error('❌ Error notificación Firebase:', err);
+                  });
+              }, 500);
+              
+              // Actualizar UI para mostrar alerta urgente
+              document.getElementById("contadorTotal").innerHTML = 
+                `🚨🚨 AUTOS EN ESPERA: ${enEspera} <span class="badge-warn">ALTO URGENTE</span>`;
+              
+              // Vibrar más fuerte para alerta
+              if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300, 100, 300]);
+              
+              console.log('✅ Notificaciones locales activadas correctamente');
+            } else if (cruzoUmbral && !puedeAvisar(claveAviso)) {
+              console.log('⏸️ Notificaciones locales: Ya se notificó recientemente');
+              document.getElementById("contadorTotal").innerHTML = 
+                `⚠️ Autos en espera: ${enEspera} <span class="badge-warn">ALTO (Esperando...)</span>`;
+            } else {
+              console.log('✅ Estado crítico persistente:', enEspera, 'autos en espera');
+              document.getElementById("contadorTotal").innerHTML = 
+                `🚨 Autos en espera: ${enEspera} <span class="badge-warn">ALTO</span>`;
+            }
           } else {
             console.log('✅ Estado normal:', enEspera, 'autos en espera');
           }
