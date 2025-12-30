@@ -87,6 +87,22 @@
       background: rgba(144,0,0,0.1);
       border-radius: 6px;
     }
+    .notificacion-estado {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(144,0,0,0.1);
+    }
+    .notificacion-estado.activo {
+      color: var(--ok);
+      background: rgba(61, 220, 151, 0.1);
+    }
+    .notificacion-estado.pendiente {
+      color: var(--warn);
+      background: rgba(255, 188, 73, 0.1);
+    }
   </style>
 </head>
 <body>
@@ -131,6 +147,8 @@
 
       <div class="subtitulo" id="contadorTotal">🚘 Autos en espera: 0</div>
       <div class="eta" id="etaTexto">⏱️ Espera estimada: ~0 min</div>
+      
+      <div id="notificacionEstado" class="notificacion-estado"></div>
 
       <div class="subtitulo">🔜 Próximos</div>
       <div id="proximos"></div>
@@ -194,41 +212,11 @@
       beep();
     }
 
-    function puedeAvisar(clave, minPause = MIN_MINUTOS_ENTRE_AVISOS) {
-      const now = Date.now();
-      const last = Number(localStorage.getItem(clave) || 0);
-      const minutosPasados = (now - last) / (60 * 1000);
-      
-      if (now - last > minPause * 60 * 1000) {
-        localStorage.setItem(clave, String(now));
-        console.log(`⏱️ Puede avisar: Sí (último aviso hace ${minutosPasados.toFixed(1)} min)`);
-        return true;
-      }
-      console.log(`⏱️ Puede avisar: No (último aviso hace ${minutosPasados.toFixed(1)} min, necesita ${minPause} min)`);
-      return false;
-    }
-
-    function updatePushStatus(status, text) {
-      const textEl = document.getElementById('pushStatusText');
-      const btn = document.getElementById('btnNotif');
-      const statusEl = document.getElementById('pushStatus');
-      
-      if (textEl) textEl.textContent = text;
-      if (statusEl) statusEl.className = 'push-status ' + status;
-      
-      if (btn) {
-        if (status === 'granted') {
-          btn.textContent = '🔔 Notificaciones Activadas';
-          btn.disabled = true;
-          btn.onclick = null;
-        } else if (status === 'denied') {
-          btn.textContent = 'Notificaciones Bloqueadas';
-          btn.disabled = true;
-        } else {
-          btn.textContent = 'Activar Notificaciones';
-          btn.disabled = false;
-          btn.onclick = initFirebaseNotifications;
-        }
+    function updateNotificacionEstado(texto, tipo = '') {
+      const el = document.getElementById('notificacionEstado');
+      if (el) {
+        el.textContent = texto;
+        el.className = 'notificacion-estado ' + tipo;
       }
     }
 
@@ -363,9 +351,6 @@
           });
         }, 500);
         
-        // 4. Guardar que ya enviamos este estado
-        localStorage.setItem(`push_estado_${enEspera}`, Date.now().toString());
-        
       } catch (error) {
         console.error('❌ Error enviando push:', error);
         // Aún así mostrar notificación local
@@ -434,13 +419,17 @@
         });
     }
 
-    // ========== FUNCIÓN CARGARTURNOS CORREGIDA ==========
+    // ========== FUNCIÓN CARGARTURNOS MODIFICADA (SISTEMA INTELIGENTE) ==========
     function cargarTurnos() {
       fetch(`${API_URL}?funcion=obtenerClientes`)
         .then(res => res.json())
         .then(data => {
           if (!data || !data.length) {
             updateUI(0, [], 0, 0);
+            // RESETEAR ESTADO cuando no hay autos
+            localStorage.removeItem('yaAviso5Autos');
+            localStorage.removeItem('estadoAnterior');
+            updateNotificacionEstado('✅ Sin clientes en espera', 'activo');
             return;
           }
 
@@ -451,77 +440,71 @@
 
           updateUI(enEspera, data, estimadoMin, horas);
 
-          // DEBUG: Mostrar información
-          console.log('=================== DEBUG NOTIFICACIONES ===================');
-          console.log('🚗 Total clientes:', total);
-          console.log('⏱️ En espera:', enEspera);
-          console.log('📊 Umbral ALTO:', UMBRAL_AVISO_ESPERA);
-          console.log('✅ ¿Alcanzó umbral?', enEspera >= UMBRAL_AVISO_ESPERA ? 'SÍ' : 'NO');
+          // Obtener el estado anterior del almacenamiento
+          const yaAviso = localStorage.getItem('yaAviso5Autos') === 'true';
+          const estadoAnterior = parseInt(localStorage.getItem('estadoAnterior') || '0');
+          const estadoActual = enEspera;
           
-          const antes = Number(localStorage.getItem('ultimoConteoEspera') || 0);
-          localStorage.setItem('ultimoConteoEspera', String(enEspera));
-
-          const cruzoUmbral = (antes < UMBRAL_AVISO_ESPERA && enEspera >= UMBRAL_AVISO_ESPERA);
-          const claveAviso = 'tsAvisoColaLarga';
-
-          console.log('📈 Antes:', antes, '| Ahora:', enEspera);
-          console.log('🎯 ¿Cruzó umbral?', cruzoUmbral ? 'SÍ' : 'NO');
-          console.log('⏰ ¿Puede avisar?', puedeAvisar(claveAviso) ? 'SÍ' : 'NO');
-
-          // LÓGICA MODIFICADA: SIEMPRE ENVIAR PUSH CON 5+ AUTOS
+          // LÓGICA INTELIGENTE: SÓLO ENVIAR NOTIFICACIÓN CUANDO:
+          // 1. Llegamos a 5+ autos por PRIMERA VEZ (estadoAnterior < 5)
+          // 2. O cuando bajamos de 5 y volvemos a subir (yaAviso = false)
           if (enEspera >= UMBRAL_AVISO_ESPERA) {
-            console.log('🚨🚨🚨 UMBRAL CRÍTICO ALCANZADO 🚨🚨🚨');
-            console.log('🎯 Motivo:', enEspera, 'autos en espera (>=', UMBRAL_AVISO_ESPERA, ')');
+            const cruzoUmbral = (estadoAnterior < UMBRAL_AVISO_ESPERA);
             
-            // 1. NOTIFICACIÓN PUSH REAL (SIEMPRE se envía si hay 5+ autos - SIN LÍMITES DE TIEMPO)
-            const tituloPush = `🚨 ${enEspera} autos en espera`;
-            const mensajePush = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
-            
-            console.log('📤 Enviando notificación push remota...');
-            enviarPushReal(tituloPush, mensajePush, enEspera);
-            
-            // 2. NOTIFICACIONES LOCALES (solo cuando se CRUZA el umbral por primera vez)
-            if (cruzoUmbral) {
-              console.log('📱 Enviando notificaciones locales...');
+            if (!yaAviso || cruzoUmbral) {
+              console.log('📤 ENVIANDO NOTIFICACIÓN (primera vez o cruce de umbral)');
               
-              const tituloInApp = `🚨 ${enEspera} autos en espera`;
-              const mensajeInApp = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
+              const tituloPush = `🚨 ${enEspera} autos en espera`;
+              const mensajePush = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
               
-              // Notificación in-app (ya se hizo en enviarPushReal)
+              enviarPushReal(tituloPush, mensajePush, enEspera);
               
-              // Actualizar UI para mostrar alerta urgente
+              // Marcar que YA avisamos sobre este estado
+              localStorage.setItem('yaAviso5Autos', 'true');
+              updateNotificacionEstado('🔔 Notificación enviada por cola llena', 'activo');
+              
+              // Actualizar UI para mostrar que estamos en estado crítico
               document.getElementById("contadorTotal").innerHTML = 
-                `🚨🚨 AUTOS EN ESPERA: ${enEspera} <span class="badge-warn">ALTO URGENTE</span>`;
-              
-              // Vibrar más fuerte para alerta
-              if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300, 100, 300]);
-              
-              console.log('✅ Notificaciones locales activadas correctamente');
+                `🚨🚨 AUTOS EN ESPERA: ${enEspera} <span class="badge-warn">ALERTA ENVIADA</span>`;
             } else {
-              console.log('✅ Estado crítico persistente:', enEspera, 'autos en espera');
+              console.log('⏸️ Ya se avisó sobre 5+ autos, no se repite notificación');
+              updateNotificacionEstado('⏸️ Alerta ya enviada (5+ autos)', 'pendiente');
+              
               document.getElementById("contadorTotal").innerHTML = 
-                `🚨 Autos en espera: ${enEspera} <span class="badge-warn">ALTO</span>`;
+                `🚨 Autos en espera: ${enEspera} <span style="color: #ffbc49;">(CRÍTICO - Ya notificado)</span>`;
             }
           } else {
             console.log('✅ Estado normal:', enEspera, 'autos en espera');
+            updateNotificacionEstado('✅ Estado normal', 'activo');
             
-            // Limpiar estado de notificación si bajamos de 5 autos
-            if (antes >= UMBRAL_AVISO_ESPERA && enEspera < UMBRAL_AVISO_ESPERA) {
-              console.log('📉 Bajamos del umbral crítico');
+            // Si bajamos de 5 autos, RESETEAR el estado para que pueda avisar de nuevo cuando suba
+            if (estadoAnterior >= UMBRAL_AVISO_ESPERA && enEspera < UMBRAL_AVISO_ESPERA) {
+              console.log('📉 Bajamos del umbral crítico - RESETEANDO estado de notificación');
+              localStorage.setItem('yaAviso5Autos', 'false');
+              
+              document.getElementById("contadorTotal").innerHTML = 
+                `✅ Autos en espera: ${enEspera} <span style="color: #3ddc97;">(Normalizado)</span>`;
+              updateNotificacionEstado('✅ Listo para nueva alerta', 'activo');
             }
           }
           
-          console.log('===================================================');
+          // Guardar el estado actual para la próxima comprobación
+          localStorage.setItem('estadoAnterior', estadoActual.toString());
         })
         .catch(error => {
           console.error('Error cargando turnos:', error);
+          updateNotificacionEstado('❌ Error cargando datos', '');
         });
     }
 
     function updateUI(enEspera, data, estimadoMin, horas) {
-      document.getElementById("contadorTotal").innerHTML = 
-        `🚘 Autos en espera: ${enEspera}` + 
-        (enEspera >= UMBRAL_AVISO_ESPERA ? ` <span class="badge-warn">ALTO</span>` : '');
+      if (enEspera >= UMBRAL_AVISO_ESPERA) {
+        document.getElementById("contadorTotal").innerHTML = 
+          `🚨 Autos en espera: ${enEspera}`;
+      } else {
+        document.getElementById("contadorTotal").innerHTML = 
+          `🚘 Autos en espera: ${enEspera}`;
+      }
       
       document.getElementById("etaTexto").textContent = `⏱️ Espera estimada: ~${estimadoMin} min (${horas}h)`;
 
@@ -544,6 +527,30 @@
         document.getElementById("patenteActual").textContent = "---";
         document.getElementById("modeloActual").textContent = "---";
         document.getElementById("proximos").innerHTML = "";
+      }
+    }
+
+    function updatePushStatus(status, text) {
+      const textEl = document.getElementById('pushStatusText');
+      const btn = document.getElementById('btnNotif');
+      const statusEl = document.getElementById('pushStatus');
+      
+      if (textEl) textEl.textContent = text;
+      if (statusEl) statusEl.className = 'push-status ' + status;
+      
+      if (btn) {
+        if (status === 'granted') {
+          btn.textContent = '🔔 Notificaciones Activadas';
+          btn.disabled = true;
+          btn.onclick = null;
+        } else if (status === 'denied') {
+          btn.textContent = 'Notificaciones Bloqueadas';
+          btn.disabled = true;
+        } else {
+          btn.textContent = 'Activar Notificaciones';
+          btn.disabled = false;
+          btn.onclick = initFirebaseNotifications;
+        }
       }
     }
 
@@ -630,6 +637,15 @@
     function testPushReal() {
       console.log('📤 Probando push real...');
       enviarPushReal('🧪 PRUEBA MANUAL', 'Esta es una prueba de push real ' + new Date().toLocaleTimeString(), 5);
+    }
+    
+    // ========== RESETEAR NOTIFICACIONES (para pruebas) ==========
+    function resetearNotificaciones() {
+      localStorage.removeItem('yaAviso5Autos');
+      localStorage.removeItem('estadoAnterior');
+      updateNotificacionEstado('✅ Estado de notificaciones reseteado', 'activo');
+      toast('✅ Notificaciones reseteadas - Listo para nueva alerta');
+      console.log('🔄 Estado de notificaciones reseteado');
     }
   </script>
 
