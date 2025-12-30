@@ -161,8 +161,7 @@
 
     let messaging = null;
     let fcmToken = null;
-    let ultimoPushEnviado = 0;
-    const MIN_SEGUNDOS_ENTRE_PUSH = 300; // 5 minutos
+    let ultimoEstadoNotificado = null;
 
     // ========== FUNCIONES BÁSICAS ==========
     function toast(msg, ms=4500) {
@@ -320,17 +319,7 @@
 
     // ========== PUSH REAL VIA API (APP CERRADA) ==========
     function enviarPushReal(titulo, mensaje, enEspera) {
-      const ahora = Date.now();
-      const tiempoDesdeUltimoPush = (ahora - ultimoPushEnviado) / 1000;
-      
-      // Evitar enviar pushs demasiado seguido
-      if (tiempoDesdeUltimoPush < MIN_SEGUNDOS_ENTRE_PUSH) {
-        console.log(`⏸️ Push real omitido: Solo pasaron ${tiempoDesdeUltimoPush.toFixed(1)} segundos desde el último`);
-        return;
-      }
-      
-      console.log('📤 Enviando push real al servidor:', titulo);
-      ultimoPushEnviado = ahora;
+      console.log('📤 ENVIANDO PUSH REAL - Estado actual:', enEspera, 'autos');
       
       fetch(`${API_URL}?funcion=enviarPushReal`, {
         method: 'POST',
@@ -339,23 +328,18 @@
           titulo: titulo,
           mensaje: mensaje,
           fecha: new Date().toISOString(),
-          enEspera: enEspera
+          enEspera: enEspera,
+          timestamp: Date.now()
         })
       })
       .then(response => {
         if (response.ok) {
-          return response.json();
+          console.log('✅ Push real enviado correctamente');
+          // Guardar que ya enviamos este estado
+          localStorage.setItem(`push_estado_${enEspera}`, Date.now().toString());
+          toast('📤 Notificación push enviada');
         } else {
-          throw new Error(`HTTP ${response.status}`);
-        }
-      })
-      .then(data => {
-        console.log('✅ Push real enviado correctamente:', data);
-        localStorage.setItem('ultimoPushExitoso', ahora.toString());
-        
-        // Mostrar confirmación
-        if (data.ok) {
-          toast('📤 Notificación push enviada al servidor');
+          console.warn('⚠️ Respuesta no OK del servidor:', response.status);
         }
       })
       .catch(err => {
@@ -431,20 +415,20 @@
           console.log('🎯 ¿Cruzó umbral?', cruzoUmbral ? 'SÍ' : 'NO');
           console.log('⏰ ¿Puede avisar?', puedeAvisar(claveAviso) ? 'SÍ' : 'NO');
 
-          // LÓGICA CORREGIDA - SEPARACIÓN DE NOTIFICACIONES
+          // LÓGICA MODIFICADA: SIEMPRE ENVIAR PUSH CON 5+ AUTOS
           if (enEspera >= UMBRAL_AVISO_ESPERA) {
             console.log('🚨🚨🚨 UMBRAL CRÍTICO ALCANZADO 🚨🚨🚨');
             console.log('🎯 Motivo:', enEspera, 'autos en espera (>=', UMBRAL_AVISO_ESPERA, ')');
             
-            // 1. NOTIFICACIÓN PUSH REAL (Siempre se envía si hay 5+ autos)
+            // 1. NOTIFICACIÓN PUSH REAL (SIEMPRE se envía si hay 5+ autos - SIN LÍMITES DE TIEMPO)
             const tituloPush = `🚨 ${enEspera} autos en espera`;
             const mensajePush = `Tiempo estimado: ~${estimadoMin} min (${horas}h)`;
             
             console.log('📤 Enviando notificación push remota...');
             enviarPushReal(tituloPush, mensajePush, enEspera);
             
-            // 2. NOTIFICACIONES LOCALES (sujetas a tiempo mínimo entre avisos)
-            if (cruzoUmbral && puedeAvisar(claveAviso)) {
+            // 2. NOTIFICACIONES LOCALES (solo cuando se CRUZA el umbral por primera vez)
+            if (cruzoUmbral) {
               console.log('📱 Enviando notificaciones locales...');
               
               const tituloInApp = `🚨 ${enEspera} autos en espera`;
@@ -461,10 +445,6 @@
               if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300, 100, 300]);
               
               console.log('✅ Notificaciones locales activadas correctamente');
-            } else if (cruzoUmbral && !puedeAvisar(claveAviso)) {
-              console.log('⏸️ Notificaciones locales: Ya se notificó recientemente');
-              document.getElementById("contadorTotal").innerHTML = 
-                `⚠️ Autos en espera: ${enEspera} <span class="badge-warn">ALTO (Esperando...)</span>`;
             } else {
               console.log('✅ Estado crítico persistente:', enEspera, 'autos en espera');
               document.getElementById("contadorTotal").innerHTML = 
@@ -472,6 +452,12 @@
             }
           } else {
             console.log('✅ Estado normal:', enEspera, 'autos en espera');
+            
+            // Limpiar estado de notificación si bajamos de 5 autos
+            if (antes >= UMBRAL_AVISO_ESPERA && enEspera < UMBRAL_AVISO_ESPERA) {
+              console.log('📉 Bajamos del umbral crítico');
+              // Podemos resetear algo si es necesario
+            }
           }
           
           console.log('===================================================');
