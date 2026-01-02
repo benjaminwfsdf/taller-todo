@@ -7,8 +7,9 @@
 
 <style>
 :root{
-  --brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;
-  --bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;
+  --brand:#900000;--ink:#e9ecef;
+  --bg:#0b0b0c;--panel:#0f0f11;
+  --card:#16181b;--card-border:#272a2f;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
@@ -17,24 +18,13 @@ body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
 .frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel)}
 .header{background:var(--brand);padding:18px;border-radius:14px;text-align:center}
 .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:20px}
-
-.check{
-  display:flex;align-items:center;gap:12px;
-  background:#0c0c0e;padding:12px;border-radius:10px;margin-bottom:12px;
-}
+.check{display:flex;align-items:center;gap:12px;background:#0c0c0e;padding:12px;border-radius:10px;margin-bottom:12px}
 .check input{transform:scale(1.3)}
-.check label{flex:1}
-
-input[type=file]{margin-top:10px;color:var(--muted)}
-.ok{color:#7CFF7C;font-weight:700;display:none;margin-top:6px}
-.error{display:none;margin-top:12px;color:#ffb3b3}
-
-.btn{
-  margin-top:20px;width:100%;min-height:48px;
-  border-radius:12px;border:2px solid var(--brand);
-  background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer;
-}
+.photo{background:#0c0c0e;padding:14px;border-radius:12px;border:1px dashed #444;margin-top:14px}
+.error{display:none;margin-top:12px;color:#ffb3b3;font-weight:700}
+.btn{margin-top:20px;width:100%;min-height:48px;border-radius:12px;border:2px solid var(--brand);background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer}
 .btn:hover{background:var(--brand)}
+.btn:disabled{opacity:.6}
 </style>
 </head>
 
@@ -46,73 +36,90 @@ input[type=file]{margin-top:10px;color:var(--muted)}
 <div class="frame">
 
 <div class="header">
-<h1>🛢️ Paso 4 · Cambio de filtro</h1>
+  <h1>🛢️ Paso 4 · Cambio de filtro</h1>
 </div>
 
 <div class="card">
 
-<div class="check">
-  <input type="checkbox" id="filtro_viejo">
-  <label for="filtro_viejo">Filtro viejo retirado</label>
-</div>
+  <div class="check">
+    <input type="checkbox" id="filtro_viejo">
+    <label>Filtro viejo retirado</label>
+  </div>
 
-<div class="check">
-  <input type="checkbox" id="sello_viejo">
-  <label for="sello_viejo">Sello viejo retirado</label>
-</div>
+  <div class="check">
+    <input type="checkbox" id="sello_viejo">
+    <label>Sello viejo retirado</label>
+  </div>
 
-<div class="check">
-  <input type="checkbox" id="filtro_nuevo">
-  <label for="filtro_nuevo">Filtro nuevo instalado</label>
-</div>
+  <div class="check">
+    <input type="checkbox" id="filtro_nuevo">
+    <label>Filtro nuevo instalado</label>
+  </div>
 
-<strong>📸 Foto filtro instalado (opcional)</strong><br>
-<input type="file" id="fotoFiltro" accept="image/*">
-<div id="okFoto" class="ok">✔ Foto registrada</div>
+  <div class="photo">
+    <strong>📸 Foto filtro instalado (opcional)</strong><br>
+    <input type="file" id="fotoFiltro" accept="image/*">
+  </div>
 
-<div id="error" class="error">
-❌ Debes confirmar todos los pasos del cambio de filtro.
-</div>
+  <div id="error" class="error">❌ Debes confirmar todos los pasos</div>
 
-<button class="btn" onclick="guardar()">Guardar y continuar</button>
+  <button class="btn" onclick="guardar()">Guardar y continuar</button>
 
 </div>
 </div>
 </div>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
-const id=sessionStorage.getItem("aceite_id");
+const API_URL = "https://script.google.com/macros/s/AKfycbyCWZr55wnOeEs4xkNqspybet5jJ3MYJZor1wztE-3WdgBAjXTAXOPL8wT1d-sgFP9ODw/exec";
+const id = sessionStorage.getItem("aceite_id");
 
-fotoFiltro.onchange = () => okFoto.style.display = "block";
+function toBase64(file){
+  return new Promise(resolve=>{
+    const r = new FileReader();
+    r.onload = ()=>resolve(r.result.split(",")[1]);
+    r.readAsDataURL(file);
+  });
+}
 
-async function apiGet(p){
-  const r = await fetch(API_URL + "?" + new URLSearchParams(p));
-  return r.json();
+function post(payload){
+  return fetch(API_URL,{
+    method:"POST",
+    body: JSON.stringify(payload)
+  });
 }
 
 async function guardar(){
-  if(!id){
-    alert("Sesión perdida");
-    location.href="aceite_nuevo.html";
-    return;
-  }
 
   if(!(filtro_viejo.checked && sello_viejo.checked && filtro_nuevo.checked)){
     error.style.display="block";
     return;
   }
 
-  await apiGet({
+  const btn = document.querySelector(".btn");
+  btn.disabled = true;
+  btn.innerText = "Guardando…";
+
+  // 1️⃣ Guardar checklist (POST)
+  await post({
     action: "actualizar_servicio",
     id_servicio: id,
-    p4_filtro_viejo_retirado: filtro_viejo.checked ? "SI" : "NO",
-    p4_sello_viejo_retirado: sello_viejo.checked ? "SI" : "NO",
-    p4_filtro_nuevo_instalado: filtro_nuevo.checked ? "SI" : "NO",
-    p4_foto_filtro_url: fotoFiltro.files.length ? "PENDIENTE_SUBIDA" : ""
+    p4_filtro_viejo_retirado: "SI",
+    p4_sello_viejo_retirado: "SI",
+    p4_filtro_nuevo_instalado: "SI"
   });
 
-  location.href="aceite_paso5.html";
+  // 2️⃣ Guardar foto (POST)
+  if(fotoFiltro.files.length){
+    const base64 = await toBase64(fotoFiltro.files[0]);
+    await post({
+      action: "subir_foto_paso4",
+      id_servicio: id,
+      foto_filtro_instalado: base64
+    });
+  }
+
+  // 3️⃣ Continuar
+  location.href = "aceite_paso5.html";
 }
 </script>
 
