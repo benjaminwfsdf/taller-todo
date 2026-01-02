@@ -13,7 +13,7 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
 .topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700}
-.wrapper{max-width:800px;margin:24px auto;padding:0 12px}
+.wrapper{max-width:900px;margin:24px auto;padding:0 12px}
 .frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel)}
 .header{background:var(--brand);padding:18px;border-radius:14px;text-align:center}
 .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px}
@@ -21,36 +21,67 @@ body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
 .row:last-child{border-bottom:none}
 .label{color:var(--muted)}
 .value{font-weight:700;text-align:right}
+
+.section{margin-top:24px}
+.section h3{margin-bottom:12px}
+
+.foto-link{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 12px;
+  background:#0c0c0e;
+  border:1px dashed #444;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+.foto-link a{
+  color:#7db7ff;
+  font-weight:700;
+  text-decoration:none;
+}
+
+.foto-link a:hover{
+  text-decoration:underline;
+}
+
 .note{margin-top:14px;background:#0c0c0e;padding:12px;border-radius:10px;border:1px dashed #444}
 .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
 </style>
 </head>
 
 <body>
+
 <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
 <div class="wrapper">
 <div class="frame">
 
-<div class="header"><h1>🛢️ Registro de Cambio de Aceite</h1></div>
+<div class="header">
+  <h1>🛢️ Registro de Cambio de Aceite</h1>
+</div>
+
 <div id="contenido" class="card">Cargando registro…</div>
 
-<div class="footer">Este registro respalda el servicio realizado.</div>
+<div class="footer">
+Este registro respalda el servicio realizado.
+</div>
+
 </div>
 </div>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
-const id=new URLSearchParams(location.search).get("id");
+const API_URL = "https://script.google.com/macros/s/AKfycbxAgXWy1VKHJU5rMFJViA_bWthtZ45ukt-_06iHv0LQ1D1YoQ1WRilTzMCYqKOZkEXZSw/exec";
+const id = new URLSearchParams(location.search).get("id");
 
-function formatearFecha(iso){
-  if(!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleDateString("es-CL");
+function formatearFecha(v){
+  if(!v) return "—";
+  return new Date(v).toLocaleDateString("es-CL");
 }
 
 async function apiGet(p){
-  const r=await fetch(API_URL+"?"+new URLSearchParams(p));
+  const r = await fetch(API_URL + "?" + new URLSearchParams(p));
   return r.json();
 }
 
@@ -60,46 +91,41 @@ async function cargar(){
     return;
   }
 
-  const r=await apiGet({action:"obtener_servicio",id_servicio:id});
-  if(!r || !r.patente){
+  const r = await apiGet({ action:"obtener_servicio", id_servicio:id });
+  if(!r || r.error){
     contenido.innerText="Registro no encontrado.";
     return;
   }
 
-  contenido.innerHTML=`
-    <div class="row">
-      <span class="label">Patente</span>
-      <span class="value">${r.patente}</span>
-    </div>
+  contenido.innerHTML = `
+    <div class="row"><span class="label">Patente</span><span class="value">${r.patente}</span></div>
+    <div class="row"><span class="label">Fecha</span><span class="value">${formatearFecha(r.fecha_cierre)}</span></div>
+    <div class="row"><span class="label">Kilometraje</span><span class="value">${r.km_inicial || "—"} km</span></div>
+    <div class="row"><span class="label">Aceite</span><span class="value">${(r.aceite_tipo||"")} ${(r.aceite_norma||"")}</span></div>
+    <div class="row"><span class="label">Cantidad</span><span class="value">${r.aceite_cantidad_litros || "—"} L</span></div>
 
-    <div class="row">
-      <span class="label">Fecha</span>
-      <span class="value">${formatearFecha(r.fecha_cierre)}</span>
-    </div>
+    <div class="section">
+      <h3>📸 Evidencia del Servicio</h3>
 
-    <div class="row">
-      <span class="label">Kilometraje</span>
-      <span class="value">${r.km_inicial ? r.km_inicial + " km" : "—"}</span>
-    </div>
-
-    <div class="row">
-      <span class="label">Aceite</span>
-      <span class="value">${(r.aceite_tipo || "")} ${(r.aceite_norma || "")}</span>
-    </div>
-
-    <div class="row">
-      <span class="label">Cantidad</span>
-      <span class="value">${r.aceite_cantidad_litros ? r.aceite_cantidad_litros + " L" : "—"}</span>
-    </div>
-
-    <div class="row">
-      <span class="label">Próximo servicio</span>
-      <span class="value">${r.proximo_servicio_km ? r.proximo_servicio_km + " km" : "—"}</span>
+      ${linkFoto("Paso 2 · Estado del aceite antes del servicio", r.p2_foto_aceite_url)}
+      ${linkFoto("Paso 2 · Estado del filtro antes del cambio", r.p2_foto_filtro_url)}
+      ${linkFoto("Paso 4 · Filtro nuevo instalado", r.p4_foto_filtro_url)}
+      ${linkFoto("Paso 6 · Verificación final / nivel de aceite", r.p6_foto_final_url)}
     </div>
 
     <div class="note">
-      <strong>Observaciones:</strong><br>
+      <strong>Observaciones finales:</strong><br>
       ${r.observaciones_finales || "SIN OBSERVACIONES"}
+    </div>
+  `;
+}
+
+function linkFoto(texto, url){
+  if(!url) return "";
+  return `
+    <div class="foto-link">
+      <span>${texto}</span>
+      <a href="${url}" target="_blank">📷 Ver foto</a>
     </div>
   `;
 }
