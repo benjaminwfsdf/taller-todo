@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detalle interno</title>
+
+<style>
+:root{--brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;--bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink);}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700;}
+.wrapper{max-width:1100px;margin:24px auto;padding:0 12px;}
+.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel);}
+.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center;}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px;}
+.section{margin-top:12px}
+.label{color:var(--muted);font-size:13px}
+.value{font-weight:700}
+.paso{background:#0c0c0e;border-radius:10px;padding:8px;margin-bottom:6px}
+.link{color:#9fd0ff;text-decoration:underline;cursor:pointer}
+</style>
+</head>
+
+<body>
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+<div class="frame">
+<div class="header"><h1>🧠 Detalle interno</h1></div>
+
+<div id="datos" class="card">Cargando…</div>
+<div id="pasos" class="card"></div>
+<div class="card">
+  <strong>Registro público</strong><br>
+  <span id="qr" class="link"></span>
+</div>
+
+</div>
+</div>
+
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+const id=new URLSearchParams(location.search).get("id");
+
+async function apiGet(p){
+  const r=await fetch(API_URL+"?"+new URLSearchParams(p));
+  return r.json();
+}
+
+async function cargar(){
+  if(!id){
+    datos.innerText="ID no válido";
+    return;
+  }
+
+  const s = await apiGet({action:"obtener_servicio", id_servicio:id});
+  if(!s || !s.patente){
+    datos.innerText="Servicio no encontrado";
+    return;
+  }
+
+  // Datos generales
+  datos.innerHTML = `
+    <div class="section"><span class="label">Patente</span><div class="value">${s.patente}</div></div>
+    <div class="section"><span class="label">Fecha</span><div class="value">${s.fecha_creacion || "—"}</div></div>
+    <div class="section"><span class="label">Kilometraje</span><div class="value">${s.km_inicial || "—"} km</div></div>
+    <div class="section"><span class="label">Técnico</span><div class="value">${s.tecnico || "—"}</div></div>
+    <div class="section"><span class="label">Estado</span><div class="value">${s.estado}</div></div>
+  `;
+
+  // Pasos (resumen desde columnas)
+  pasos.innerHTML = `
+    <strong>Pasos registrados</strong>
+    <div class="paso">Paso 1: ${s.p1_alertas || "OK"}</div>
+    <div class="paso">Paso 2: Evidencia registrada</div>
+    <div class="paso">Paso 3: Tapón ${s.p3_estado_tapon || "—"}</div>
+    <div class="paso">Paso 4: Filtro cambiado</div>
+    <div class="paso">Paso 5: ${s.aceite_tipo || ""} ${s.aceite_norma || ""} (${s.aceite_cantidad_litros || ""} L)</div>
+    <div class="paso">Paso 6: Verificación final OK</div>
+  `;
+
+  // Link QR público
+  const urlPublica = `${location.origin}/aceite_publico.html?id=${encodeURIComponent(id)}`;
+  qr.innerText = urlPublica;
+  qr.onclick = ()=>window.open(urlPublica,"_blank");
+}
+
+cargar();
+</script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cierre · Cambio de Aceite</title>
+
+  <style>
+    :root{
+      --brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;
+      --bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
+    .topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700}
+    .wrapper{max-width:900px;margin:24px auto;padding:0 12px}
+    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel)}
+    .header{background:var(--brand);padding:18px;border-radius:14px;text-align:center}
+    .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:20px}
+    label{display:block;margin-top:12px;font-weight:700}
+    textarea,input{
+      width:100%;margin-top:6px;padding:12px;border-radius:10px;
+      background:#0c0c0e;color:#fff;border:1px solid #333
+    }
+    .btn{
+      margin-top:18px;width:100%;min-height:48px;
+      border-radius:12px;border:2px solid var(--brand);
+      background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer
+    }
+    .btn:hover{background:var(--brand)}
+    .qrbox{
+      margin-top:16px;background:#0c0c0e;border:1px dashed #444;
+      border-radius:12px;padding:14px;text-align:center;display:none
+    }
+    .muted{color:var(--muted);font-size:13px}
+    .link{word-break:break-all;font-size:13px;color:#9fd0ff}
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+<div class="frame">
+
+<div class="header">
+  <h1>🧾 Cierre del servicio</h1>
+</div>
+
+<div class="card">
+  <label>Observaciones finales</label>
+  <textarea id="obs" placeholder="EJ: TODO OK, SIN FUGAS"></textarea>
+
+  <label>Próximo cambio (KM)</label>
+  <input id="kmprox" type="number" placeholder="EJ: 10000">
+
+  <button class="btn" onclick="cerrarServicio()">
+    Cerrar servicio y generar QR
+  </button>
+</div>
+
+<div id="qrbox" class="qrbox">
+  <strong>📲 Registro para el cliente</strong>
+  <div class="muted">Escanea o comparte este QR</div>
+  <canvas id="qr"></canvas>
+  <div class="link" id="link"></div>
+  <button class="btn" onclick="copiar()">Copiar link</button>
+  <a class="btn" href="aceite_index.html"
+     style="display:block;margin-top:10px;text-decoration:none">
+     Volver
+  </a>
+</div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+const id = sessionStorage.getItem("aceite_id");
+
+async function apiGet(params){
+  const res = await fetch(API_URL + "?" + new URLSearchParams(params));
+  return res.json();
+}
+
+async function cerrarServicio(){
+  try{
+    if(!id){
+      alert("Sesión perdida");
+      location.href="aceite_nuevo.html";
+      return;
+    }
+
+    const observaciones = document.getElementById("obs").value.trim().toUpperCase();
+    const kmProx = document.getElementById("kmprox").value.trim();
+
+    if(!kmProx){
+      alert("Debes indicar el próximo kilometraje");
+      return;
+    }
+
+    // 📅 FECHA REAL DEL CIERRE
+    const hoy = new Date().toISOString().slice(0,10);
+
+    // ✅ GUARDAR EN GOOGLE SHEETS (COLUMNAS EXACTAS)
+    await apiGet({
+      action: "actualizar_servicio",
+      id_servicio: id,
+
+      observaciones_finales: observaciones,
+      proximo_servicio_km: kmProx,
+      fecha_cierre: hoy,
+      estado: "cerrado"
+    });
+
+    // 📲 QR PÚBLICO
+    const urlPublica =
+      `${location.origin}/aceite_publico.html?id=${encodeURIComponent(id)}`;
+
+    new QRious({
+      element: document.getElementById("qr"),
+      value: urlPublica,
+      size: 220
+    });
+
+    document.getElementById("link").innerText = urlPublica;
+    document.getElementById("qrbox").style.display = "block";
+
+  }catch(err){
+    console.error(err);
+    alert("Error de conexión con la API");
+  }
+}
+
+function copiar(){
+  navigator.clipboard.writeText(
+    document.getElementById("link").innerText
+  );
+  alert("Link copiado");
+}
+</script>
+
+</body>
+</html>

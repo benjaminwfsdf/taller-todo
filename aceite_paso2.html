@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paso 2 · Evidencia</title>
+
+<style>
+:root{
+  --brand:#900000;--ink:#e9ecef;
+  --bg:#0b0b0c;--panel:#0f0f11;
+  --card:#16181b;--card-border:#272a2f;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700}
+.wrapper{max-width:900px;margin:24px auto;padding:0 12px}
+.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel)}
+.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:20px}
+.photo{background:#0c0c0e;padding:14px;border-radius:12px;border:1px dashed #444;margin-bottom:14px}
+.btn{margin-top:20px;width:100%;min-height:48px;border-radius:12px;border:2px solid var(--brand);background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer}
+.btn:hover{background:var(--brand)}
+input{font-size:16px}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+<div class="frame">
+
+<div class="header">
+  <h1>📸 Paso 2 · Evidencia obligatoria</h1>
+</div>
+
+<div class="card">
+
+<div class="photo">
+  <strong>Foto aceite nuevo sellado</strong><br>
+  <input type="file" id="fotoAceite" accept="image/*" required>
+</div>
+
+<div class="photo">
+  <strong>Foto filtro nuevo</strong><br>
+  <input type="file" id="fotoFiltro" accept="image/*" required>
+</div>
+
+<button class="btn" onclick="enviar()">Guardar y continuar</button>
+
+</div>
+</div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycby7lJV9f1He8IckUnHJTWz6IeQl1b_BVK57l6UoA14sQqX-mcCcmjEfTuS3VwjOEyq1-w/exec";
+
+const id = sessionStorage.getItem("aceite_id");
+if(!id){
+  alert("Sesión perdida. Vuelve a iniciar el servicio.");
+  location.href="aceite_nuevo.html";
+}
+
+function toBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function enviar(){
+  try{
+    const a = fotoAceite.files[0];
+    const f = fotoFiltro.files[0];
+
+    if(!a || !f){
+      alert("Debes seleccionar ambas fotos");
+      return;
+    }
+
+    const payload = {
+      action: "subir_fotos",
+      id_servicio: id,
+      foto_aceite: await toBase64(a),
+      foto_filtro: await toBase64(f)
+    };
+
+    const res = await fetch(API_URL,{
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    const txt = await res.text();
+    document.write(txt);
+
+  }catch(e){
+    console.error(e);
+    alert("Error al subir las fotos");
+  }
+}
+</script>
+
+</body>
+</html>

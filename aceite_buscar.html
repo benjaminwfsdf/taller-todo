@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buscar cambios de aceite</title>
+
+<style>
+:root{
+  --brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;
+  --bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;
+  --card-border:#272a2f;--radius:16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink);}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700;}
+.wrapper{max-width:1000px;margin:24px auto;padding:0 12px;}
+.frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);}
+.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center;}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px;}
+input{width:100%;padding:12px;border-radius:10px;background:#0c0c0e;color:#fff;border:1px solid #333;font-size:16px;}
+.btn{margin-top:12px;width:100%;min-height:48px;border-radius:12px;border:2px solid var(--brand);background:#0c0c0e;color:#fff;font-weight:800;}
+.btn:hover{background:var(--brand);}
+.row{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;padding:10px 0;border-bottom:1px solid #333;}
+.link{color:#9fd0ff;text-decoration:underline;cursor:pointer}
+.muted{color:var(--muted)}
+</style>
+</head>
+
+<body>
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+  <div class="frame">
+    <div class="header"><h1>🔍 Buscar cambios de aceite</h1></div>
+
+    <div class="card">
+      <input id="patente" placeholder="Ej: ABCD12">
+      <button class="btn" onclick="buscar()">Buscar</button>
+    </div>
+
+    <div id="resultados" class="card" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+
+async function apiGet(p){
+  const r=await fetch(API_URL+"?"+new URLSearchParams(p));
+  return r.json();
+}
+
+async function buscar(){
+  const patente=document.getElementById("patente").value.trim().toUpperCase();
+  if(!patente){alert("Ingresa una patente");return;}
+
+  const r=await apiGet({action:"buscar_por_patente",patente});
+  const box=document.getElementById("resultados");
+  box.style.display="block";
+
+  if(!r||!r.length){
+    box.innerHTML="<div class='muted'>Sin resultados</div>";
+    return;
+  }
+
+  box.innerHTML=r.map(s=>`
+    <div class="row">
+      <div><b>${new Date(s.fecha).toLocaleDateString()}</b></div>
+      <div>${s.km} km</div>
+      <div class="link" onclick="ver('${s.id}')">Ver</div>
+    </div>
+  `).join("");
+}
+
+function ver(id){
+  window.open(`aceite_detalle.html?id=${encodeURIComponent(id)}`,"_blank");
+}
+</script>
+</body>
+</html>

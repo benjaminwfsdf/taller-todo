@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo Cambio de Aceite</title>
+
+  <style>
+    :root{
+      --brand:#900000;
+      --ink:#e9ecef;
+      --muted:#b9c0c7;
+      --bg:#0b0b0c;
+      --panel:#0f0f11;
+      --card:#16181b;
+      --card-border:#272a2f;
+      --radius:16px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:var(--bg);
+      color:var(--ink);
+    }
+
+    .topbar{
+      background:#000;
+      color:#fff;
+      text-align:center;
+      padding:14px;
+      border-bottom:4px solid var(--brand);
+      font-weight:700;
+    }
+
+    .wrapper{max-width:900px;margin:24px auto;padding:0 12px;}
+    .frame{
+      border:3px solid var(--brand);
+      border-radius:var(--radius);
+      padding:20px;
+      background:var(--panel);
+    }
+
+    .header{
+      background:var(--brand);
+      padding:18px;
+      border-radius:14px;
+      text-align:center;
+    }
+    .header h1{margin:0}
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--card-border);
+      border-radius:14px;
+      padding:16px;
+      margin-top:20px;
+    }
+
+    label{
+      display:block;
+      margin-top:12px;
+      font-weight:700;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #333;
+      background:#0c0c0e;
+      color:#fff;
+      margin-top:6px;
+      font-size:16px;
+    }
+
+    .btn{
+      margin-top:20px;
+      width:100%;
+      min-height:48px;
+      border-radius:12px;
+      border:2px solid var(--brand);
+      background:#0c0c0e;
+      color:#fff;
+      font-weight:800;
+      cursor:pointer;
+      font-size:16px;
+    }
+    .btn:hover{background:var(--brand);}
+
+    .muted{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:6px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+  <div class="frame">
+
+    <div class="header">
+      <h1>🛢️ Nuevo Cambio de Aceite</h1>
+    </div>
+
+    <div class="card">
+      <label>Patente</label>
+      <input id="patente" placeholder="Ej: ABCD12">
+
+      <label>Trabajador / Técnico</label>
+      <input id="tecnico" placeholder="Ej: JUAN / PEDRO">
+
+      <label>Kilometraje actual</label>
+      <input id="km" placeholder="Ej: 80.000">
+
+      <label>Teléfono cliente (WhatsApp)</label>
+      <input id="telefono" value="569">
+      <div class="muted">Solo escribe los 8 dígitos restantes</div>
+
+      <button class="btn" onclick="iniciarServicio()">Iniciar servicio</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ===============================
+   CONFIG API (TU API REAL)
+================================ */
+const API_URL =
+"https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+
+/* ===============================
+   MAYÚSCULA EN VIVO (PATENTE + TÉCNICO)
+================================ */
+["patente","tecnico"].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener("input",()=>{
+    el.value = el.value.toUpperCase();
+  });
+});
+
+/* ===============================
+   TELÉFONO CON 569 FIJO
+================================ */
+const tel = document.getElementById("telefono");
+tel.addEventListener("focus",()=>{
+  // deja el cursor al final
+  setTimeout(()=>tel.setSelectionRange(tel.value.length, tel.value.length), 0);
+});
+tel.addEventListener("input",()=>{
+  // solo números
+  tel.value = tel.value.replace(/[^0-9]/g,"");
+
+  // si borran o intentan editar el prefijo, lo reponemos
+  if(!tel.value.startsWith("569")){
+    tel.value = "569";
+  }
+
+  // cursor al final
+  tel.setSelectionRange(tel.value.length, tel.value.length);
+});
+
+/* ===============================
+   KM: PERMITE PUNTOS Y GUARDA SIN PUNTOS
+================================ */
+const kmEl = document.getElementById("km");
+kmEl.addEventListener("input",()=>{
+  // solo números y puntos
+  kmEl.value = kmEl.value.replace(/[^0-9.]/g,"");
+});
+
+/* ===============================
+   UTILIDADES
+================================ */
+function generarID(patente){
+  // ID ÚNICO (evita "Servicio ya existe")
+  const d = new Date();
+  const fecha =
+    d.getFullYear() +
+    String(d.getMonth()+1).padStart(2,'0') +
+    String(d.getDate()).padStart(2,'0') +
+    String(d.getHours()).padStart(2,'0') +
+    String(d.getMinutes()).padStart(2,'0') +
+    String(d.getSeconds()).padStart(2,'0');
+
+  return `ACEITE-${fecha}-${patente}`;
+}
+
+async function apiGet(params){
+  const url = API_URL + "?" + new URLSearchParams(params);
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
+}
+
+/* ===============================
+   FLUJO PRINCIPAL
+================================ */
+async function iniciarServicio(){
+  try{
+    const patente = document.getElementById("patente").value.trim().toUpperCase();
+    const tecnico = document.getElementById("tecnico").value.trim().toUpperCase();
+    const km = document.getElementById("km").value.replace(/\./g,"").trim(); // sin puntos
+    const telefono = tel.value.trim();
+
+    if(!patente || !tecnico || !km){
+      alert("Debes ingresar patente, trabajador y kilometraje");
+      return;
+    }
+
+    // 569 + 8 dígitos = 11
+    if(telefono.length !== 11){
+      alert("El teléfono debe quedar como 569 + 8 dígitos (11 números en total).");
+      return;
+    }
+
+    const id = generarID(patente);
+
+    const r = await apiGet({
+      action: "nuevo_servicio",
+      id_servicio: id,
+      patente: patente,
+      km_inicial: km,
+      tecnico: tecnico,
+      telefono: telefono
+    });
+
+    if(!r || r.ok !== true){
+      alert("Error al crear el servicio");
+      return;
+    }
+
+    sessionStorage.setItem("aceite_id", id);
+    location.href = "aceite_paso1.html";
+
+  }catch(err){
+    console.error(err);
+    alert("Error de conexión con la API");
+  }
+}
+</script>
+
+</body>
+</html>

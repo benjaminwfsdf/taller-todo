@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Servicio</title>
+
+<style>
+:root{
+  --brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;
+  --bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700}
+.wrapper{max-width:800px;margin:24px auto;padding:0 12px}
+.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel)}
+.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px}
+.row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #333;padding:8px 0}
+.row:last-child{border-bottom:none}
+.label{color:var(--muted)}
+.value{font-weight:700;text-align:right}
+.note{margin-top:14px;background:#0c0c0e;padding:12px;border-radius:10px;border:1px dashed #444}
+.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
+</style>
+</head>
+
+<body>
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+<div class="frame">
+
+<div class="header"><h1>🛢️ Registro de Cambio de Aceite</h1></div>
+<div id="contenido" class="card">Cargando registro…</div>
+
+<div class="footer">Este registro respalda el servicio realizado.</div>
+</div>
+</div>
+
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+const id=new URLSearchParams(location.search).get("id");
+
+function formatearFecha(iso){
+  if(!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleDateString("es-CL");
+}
+
+async function apiGet(p){
+  const r=await fetch(API_URL+"?"+new URLSearchParams(p));
+  return r.json();
+}
+
+async function cargar(){
+  if(!id){
+    contenido.innerText="Registro no válido.";
+    return;
+  }
+
+  const r=await apiGet({action:"obtener_servicio",id_servicio:id});
+  if(!r || !r.patente){
+    contenido.innerText="Registro no encontrado.";
+    return;
+  }
+
+  contenido.innerHTML=`
+    <div class="row">
+      <span class="label">Patente</span>
+      <span class="value">${r.patente}</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Fecha</span>
+      <span class="value">${formatearFecha(r.fecha_cierre)}</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Kilometraje</span>
+      <span class="value">${r.km_inicial ? r.km_inicial + " km" : "—"}</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Aceite</span>
+      <span class="value">${(r.aceite_tipo || "")} ${(r.aceite_norma || "")}</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Cantidad</span>
+      <span class="value">${r.aceite_cantidad_litros ? r.aceite_cantidad_litros + " L" : "—"}</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Próximo servicio</span>
+      <span class="value">${r.proximo_servicio_km ? r.proximo_servicio_km + " km" : "—"}</span>
+    </div>
+
+    <div class="note">
+      <strong>Observaciones:</strong><br>
+      ${r.observaciones_finales || "SIN OBSERVACIONES"}
+    </div>
+  `;
+}
+
+cargar();
+</script>
+
+</body>
+</html>

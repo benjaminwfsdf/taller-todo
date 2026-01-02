@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recordatorios · Cambio de Aceite</title>
+
+<style>
+:root{--brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;--bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink);}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700;}
+.wrapper{max-width:1100px;margin:24px auto;padding:0 12px;}
+.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel);}
+.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center;}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px;}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;padding:10px 0;border-bottom:1px solid #333;}
+.btn{padding:8px 12px;border-radius:10px;border:2px solid var(--brand);background:#0c0c0e;color:#fff;font-weight:800;}
+.sent{color:#7CFF7C;font-weight:700}
+</style>
+</head>
+
+<body>
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+<div class="frame">
+<div class="header"><h1>⏰ Recordatorios</h1></div>
+<div id="lista" class="card">Cargando…</div>
+</div>
+</div>
+
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+
+async function apiGet(p){
+  const r=await fetch(API_URL+"?"+new URLSearchParams(p));
+  return r.json();
+}
+
+async function cargar(){
+  const r=await apiGet({action:"listar_recordatorios"});
+  const box=document.getElementById("lista");
+
+  if(!r||!r.length){
+    box.innerHTML="Sin recordatorios.";
+    return;
+  }
+
+  box.innerHTML=r.map(x=>`
+    <div class="row">
+      <div><b>${x.patente}</b></div>
+      <div>${x.fecha}</div>
+      <div>${x.proximo}</div>
+      <div>
+        ${x.enviado==="SI"
+          ? "<span class='sent'>✔ Enviado</span>"
+          : `<button class="btn" onclick="enviar('${x.telefono}','${x.patente}','${x.id}')">WhatsApp</button>`
+        }
+      </div>
+    </div>
+  `).join("");
+}
+
+function enviar(tel,pat,id){
+  const msg=`Hola 👋 Desde *El Señor de los Scanner*. Tu ${pat} ya corresponde a cambio de aceite.`;
+  window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`,"_blank");
+  apiGet({action:"marcar_enviado",id});
+  setTimeout(cargar,800);
+}
+
+cargar();
+</script>
+</body>
+</html>

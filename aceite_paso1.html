@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paso 1 · Verificación previa</title>
+
+  <style>
+    :root{
+      --brand:#900000;
+      --ink:#e9ecef;
+      --muted:#b9c0c7;
+      --bg:#0b0b0c;
+      --panel:#0f0f11;
+      --card:#16181b;
+      --card-border:#272a2f;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:var(--bg);
+      color:var(--ink);
+    }
+    .topbar{
+      background:#000;color:#fff;text-align:center;
+      padding:14px;border-bottom:4px solid var(--brand);font-weight:700;
+    }
+    .wrapper{max-width:900px;margin:24px auto;padding:0 12px;}
+    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);}
+    .header{background:var(--brand);padding:18px;border-radius:14px;text-align:center;}
+    .header h1{margin:0}
+    .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:20px;}
+    .check{
+      display:flex;align-items:center;gap:10px;margin:10px 0;
+      background:#0c0c0e;padding:12px;border-radius:10px;
+    }
+    .check input{transform:scale(1.3)}
+    .check label{flex:1}
+    textarea{
+      width:100%;margin-top:12px;padding:12px;border-radius:10px;
+      background:#0c0c0e;color:#fff;border:1px solid #333;font-size:16px;
+    }
+    .alert{
+      margin-top:12px;background:#2a0f0f;border:1px solid var(--brand);
+      padding:12px;border-radius:10px;color:#ffb3b3;display:none;
+    }
+    .btn{
+      margin-top:20px;width:100%;min-height:48px;
+      border-radius:12px;border:2px solid var(--brand);
+      background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer;
+    }
+    .btn:hover{background:var(--brand);}
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+  <div class="frame">
+
+    <div class="header">
+      <h1>🛢️ Paso 1 · Verificación previa</h1>
+    </div>
+
+    <div class="card">
+
+      <div class="check">
+        <input type="checkbox" id="luz">
+        <label for="luz">Testigo de aceite encendido</label>
+      </div>
+
+      <div class="check">
+        <input type="checkbox" id="fugas">
+        <label for="fugas">Fugas visibles antes del servicio</label>
+      </div>
+
+      <div class="check">
+        <input type="checkbox" id="nivel">
+        <label for="nivel">Nivel de aceite bajo</label>
+      </div>
+
+      <textarea id="observaciones" placeholder="Observaciones obligatorias si marcas alguna alerta..."></textarea>
+
+      <div id="alerta" class="alert">
+        ⚠️ Marcaste una condición previa. Debes dejar observación antes de continuar.
+      </div>
+
+      <button class="btn" onclick="guardarPaso()">Guardar y continuar</button>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+const id = sessionStorage.getItem("aceite_id");
+
+async function apiGet(p){
+  const r = await fetch(API_URL + "?" + new URLSearchParams(p));
+  return r.json();
+}
+
+function hayAlertas(){
+  return luz.checked || fugas.checked || nivel.checked;
+}
+
+async function guardarPaso(){
+  if(!id){
+    alert("Sesión perdida");
+    location.href="aceite_nuevo.html";
+    return;
+  }
+
+  const obs = observaciones.value.trim();
+
+  if(hayAlertas() && obs.length < 5){
+    alerta.style.display="block";
+    return;
+  }
+
+  await apiGet({
+    action: "actualizar_servicio",
+    id_servicio: id,
+    p1_testigo_aceite: luz.checked ? "SI" : "NO",
+    p1_fugas_previas: fugas.checked ? "SI" : "NO",
+    p1_nivel_bajo: nivel.checked ? "SI" : "NO",
+    p1_observaciones: obs
+  });
+
+  location.href="aceite_paso2.html";
+}
+</script>
+
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>

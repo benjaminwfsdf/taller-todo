@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paso 6 · Verificación final</title>
+
+<style>
+:root{
+  --brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;
+  --bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700}
+.wrapper{max-width:900px;margin:24px auto;padding:0 12px}
+.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel)}
+.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:20px}
+
+.check{
+  display:flex;align-items:center;gap:12px;
+  background:#0c0c0e;padding:12px;border-radius:10px;margin-bottom:12px;
+}
+.check input{transform:scale(1.3)}
+.check label{flex:1}
+
+input[type=file]{margin-top:10px;color:var(--muted)}
+.ok{color:#7CFF7C;font-weight:700;display:none;margin-top:6px}
+.error{display:none;margin-top:12px;color:#ffb3b3}
+
+.btn{
+  margin-top:20px;width:100%;min-height:48px;
+  border-radius:12px;border:2px solid var(--brand);
+  background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer;
+}
+.btn:hover{background:var(--brand)}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+<div class="wrapper">
+<div class="frame">
+
+<div class="header">
+<h1>🔍 Paso 6 · Verificación final</h1>
+</div>
+
+<div class="card">
+
+<div class="check"><input type="checkbox" id="motor"><label>Motor encendido correctamente</label></div>
+<div class="check"><input type="checkbox" id="luz"><label>Testigo de aceite apagado</label></div>
+<div class="check"><input type="checkbox" id="fugas"><label>Sin fugas en tapón ni filtro</label></div>
+<div class="check"><input type="checkbox" id="nivel"><label>Nivel final de aceite correcto</label></div>
+
+<strong>📸 Foto nivel final / motor (opcional)</strong><br>
+<input type="file" id="fotoFinal" accept="image/*">
+<div id="okFoto" class="ok">✔ Foto registrada</div>
+
+<div id="error" class="error">
+❌ Debes confirmar todas las verificaciones.
+</div>
+
+<button class="btn" onclick="guardar()">Finalizar servicio</button>
+
+</div>
+</div>
+</div>
+
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+const id=sessionStorage.getItem("aceite_id");
+
+fotoFinal.onchange = () => okFoto.style.display="block";
+
+async function apiGet(p){
+  const r = await fetch(API_URL + "?" + new URLSearchParams(p));
+  return r.json();
+}
+
+async function guardar(){
+  if(!id){
+    alert("Sesión perdida");
+    location.href="aceite_nuevo.html";
+    return;
+  }
+
+  if(!(motor.checked && luz.checked && fugas.checked && nivel.checked)){
+    error.style.display="block";
+    return;
+  }
+
+  await apiGet({
+    action: "actualizar_servicio",
+    id_servicio: id,
+    p6_motor_ok: motor.checked ? "SI" : "NO",
+    p6_testigo_aceite_ok: luz.checked ? "SI" : "NO",
+    p6_sin_fugas: fugas.checked ? "SI" : "NO",
+    p6_nivel_final_ok: nivel.checked ? "SI" : "NO",
+    p6_foto_final_url: fotoFinal.files.length ? "PENDIENTE_SUBIDA" : ""
+  });
+
+  location.href="aceite_cierre.html";
+}
+</script>
+
+</body>
+</html>
