@@ -29,6 +29,9 @@ input{
   background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer
 }
 .btn:hover{background:var(--brand)}
+.btn-sec{
+  background:#111;border:1px solid #444
+}
 
 .servicio{
   border:1px solid #333;border-radius:12px;
@@ -79,6 +82,7 @@ a{color:#7db7ff}
 <div class="card">
   <input id="patente" placeholder="ABCD12">
   <button class="btn" onclick="buscar()">Buscar</button>
+  <button class="btn btn-sec" onclick="volver()">⬅ Volver al menú</button>
 </div>
 
 <div id="resultados" class="card" style="display:none"></div>
@@ -190,6 +194,10 @@ async function verDetalle(el,id){
     <div>${s.observaciones_finales||"—"}</div>
   `;
   box.style.display="block";
+}
+
+function volver(){
+  window.location.href="checklist.html";
 }
 </script>
 
