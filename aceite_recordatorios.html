@@ -6,70 +6,148 @@
 <title>Recordatorios · Cambio de Aceite</title>
 
 <style>
-:root{--brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;--bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;}
+:root{
+  --brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;
+  --bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink);}
-.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700;}
-.wrapper{max-width:1100px;margin:24px auto;padding:0 12px;}
-.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel);}
-.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center;}
-.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px;}
-.row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;padding:10px 0;border-bottom:1px solid #333;}
-.btn{padding:8px 12px;border-radius:10px;border:2px solid var(--brand);background:#0c0c0e;color:#fff;font-weight:800;}
-.sent{color:#7CFF7C;font-weight:700}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700}
+.wrapper{max-width:1000px;margin:24px auto;padding:0 12px}
+.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel)}
+.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px}
+
+input{
+  width:100%;padding:14px;border-radius:10px;
+  background:#0c0c0e;color:#fff;border:1px solid #333;
+  font-size:16px;text-transform:uppercase
+}
+.btn{
+  margin-top:12px;width:100%;min-height:48px;
+  border-radius:12px;border:2px solid var(--brand);
+  background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer
+}
+.btn:hover{background:var(--brand)}
+.btn-sec{background:#111;border:1px solid #444}
+
+.resultado{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px;border-radius:12px;border:1px solid #333;
+  margin-bottom:12px;background:#111;
+}
+.resultado.destacado{
+  border:2px solid var(--brand);
+  background:#1a0000;
+}
+.info{display:flex;flex-direction:column}
+.fecha{font-weight:800}
+.km{color:var(--muted);font-size:14px}
+.next{font-weight:800;color:#ffd27d}
+.badge{
+  background:var(--brand);color:#fff;font-size:12px;
+  padding:2px 8px;border-radius:20px;margin-top:6px;width:max-content
+}
+.link{color:#9fd0ff;cursor:pointer;font-weight:700;text-decoration:underline}
+.muted{color:var(--muted)}
 </style>
 </head>
 
 <body>
+
 <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
 <div class="wrapper">
 <div class="frame">
-<div class="header"><h1>⏰ Recordatorios</h1></div>
-<div id="lista" class="card">Cargando…</div>
+
+<div class="header">
+  <h1>⏰ Recordatorios de Cambio de Aceite</h1>
+</div>
+
+<div class="card">
+  <input id="patente" placeholder="ABCD12">
+  <button class="btn" onclick="buscar()">Buscar</button>
+  <button class="btn btn-sec" onclick="volver()">⬅ Volver al menú</button>
+</div>
+
+<div id="resultados" class="card" style="display:none"></div>
+
 </div>
 </div>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbyiLmLWJI3c9zXXxtyPMMe6byh7Cfk3hlSwnc9V_JeRTM9Daf3oKTT_jc745HLmpgZA/exec";
+
+/* ========= UTILIDADES ========= */
+function fechaValida(v){
+  if(!v) return "—";
+  const d=new Date(v);
+  if(isNaN(d)) return "—";
+  return d.toLocaleDateString("es-CL");
+}
+
+function calcularProximoKm(kmActual, proximo){
+  kmActual=Number(kmActual);
+  proximo=Number(proximo);
+  if(isNaN(kmActual)||isNaN(proximo)) return "—";
+  return proximo<=kmActual ? kmActual+proximo : proximo;
+}
 
 async function apiGet(p){
   const r=await fetch(API_URL+"?"+new URLSearchParams(p));
   return r.json();
 }
 
-async function cargar(){
-  const r=await apiGet({action:"listar_recordatorios"});
-  const box=document.getElementById("lista");
+/* ========= BUSCAR ========= */
+async function buscar(){
+  const input=document.getElementById("patente");
+  const patente=input.value.trim().toUpperCase();
+  input.value=patente;
+
+  if(!patente){alert("Ingresa una patente");return;}
+
+  const r=await apiGet({action:"recordatorios_por_patente",patente});
+  const box=document.getElementById("resultados");
+  box.style.display="block";
 
   if(!r||!r.length){
-    box.innerHTML="Sin recordatorios.";
+    box.innerHTML="<div class='muted'>Sin registros</div>";
     return;
   }
 
-  box.innerHTML=r.map(x=>`
-    <div class="row">
-      <div><b>${x.patente}</b></div>
-      <div>${x.fecha}</div>
-      <div>${x.proximo}</div>
-      <div>
-        ${x.enviado==="SI"
-          ? "<span class='sent'>✔ Enviado</span>"
-          : `<button class="btn" onclick="enviar('${x.telefono}','${x.patente}','${x.id}')">WhatsApp</button>`
-        }
+  box.innerHTML=r.map((s,i)=>{
+    const proxKm=calcularProximoKm(s.km_actual,s.proximo_servicio_km);
+    return `
+      <div class="resultado ${i===0?"destacado":""}">
+        <div class="info">
+          <div class="fecha">${fechaValida(s.fecha_servicio)}</div>
+          <div class="km">${s.km_actual} km</div>
+          <div class="next">🔔 Próximo servicio: ${proxKm} km</div>
+          <div class="km">📞 ${s.telefono||"—"}</div>
+          ${i===0?'<div class="badge">Último servicio</div>':""}
+        </div>
+        <div>
+          <div class="link" onclick="ver('${s.id_servicio}')">Ver registro</div><br>
+          ${s.telefono?`<div class="link" onclick="whatsapp('${s.telefono}','${s.patente}')">WhatsApp</div>`:""}
+        </div>
       </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
-function enviar(tel,pat,id){
-  const msg=`Hola 👋 Desde *El Señor de los Scanner*. Tu ${pat} ya corresponde a cambio de aceite.`;
+function whatsapp(tel,pat){
+  const msg=`Hola 👋 Desde *El Señor de los Scanner*.\nTu ${pat} ya corresponde a cambio de aceite.`;
   window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`,"_blank");
-  apiGet({action:"marcar_enviado",id});
-  setTimeout(cargar,800);
 }
 
-cargar();
+function ver(id){
+  window.open(`aceite_publico.html?id=${encodeURIComponent(id)}`,"_blank");
+}
+
+function volver(){
+  location.href="checklist.html";
+}
 </script>
+
 </body>
 </html>
