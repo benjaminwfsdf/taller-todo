@@ -3,90 +3,195 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Detalle interno</title>
+<title>Historial interno completo</title>
 
 <style>
-:root{--brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;--bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;}
+:root{
+  --brand:#900000;--ink:#e9ecef;--muted:#b9c0c7;
+  --bg:#0b0b0c;--panel:#0f0f11;--card:#16181b;--card-border:#272a2f;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink);}
-.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700;}
-.wrapper{max-width:1100px;margin:24px auto;padding:0 12px;}
-.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel);}
-.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center;}
-.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px;}
-.section{margin-top:12px}
-.label{color:var(--muted);font-size:13px}
-.value{font-weight:700}
-.paso{background:#0c0c0e;border-radius:10px;padding:8px;margin-bottom:6px}
-.link{color:#9fd0ff;text-decoration:underline;cursor:pointer}
+body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
+.topbar{background:#000;color:#fff;text-align:center;padding:14px;border-bottom:4px solid var(--brand);font-weight:700}
+.wrapper{max-width:1300px;margin:24px auto;padding:0 12px}
+.frame{border:3px solid var(--brand);border-radius:16px;padding:20px;background:var(--panel)}
+.header{background:var(--brand);padding:18px;border-radius:14px;text-align:center}
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin-top:16px}
+
+input{
+  width:100%;padding:14px;border-radius:10px;
+  background:#0c0c0e;color:#fff;border:1px solid #333;
+  font-size:16px;text-transform:uppercase
+}
+.btn{
+  margin-top:12px;width:100%;min-height:48px;
+  border-radius:12px;border:2px solid var(--brand);
+  background:#0c0c0e;color:#fff;font-weight:800;cursor:pointer
+}
+.btn:hover{background:var(--brand)}
+
+.servicio{
+  border:1px solid #333;border-radius:12px;
+  padding:14px;margin-bottom:14px;background:#111
+}
+.servicio.destacado{
+  border:2px solid var(--brand);
+  background:#1a0000
+}
+
+.fila{font-size:14px;margin-top:4px}
+.badge{
+  background:var(--brand);color:#fff;font-size:12px;
+  padding:2px 8px;border-radius:20px;margin-top:6px;display:inline-block
+}
+.link{color:#9fd0ff;cursor:pointer;font-weight:700;text-decoration:underline;margin-top:10px}
+.detalle{
+  margin-top:14px;
+  padding:14px;
+  border-radius:12px;
+  background:#0c0c0e;
+  border:1px dashed #444;
+}
+.detalle h4{
+  margin:12px 0 6px;
+  color:#fff;
+  border-bottom:1px solid #333;
+  padding-bottom:4px;
+}
+.ok{color:#7CFF7C}
+.no{color:#FF7C7C}
+.muted{color:var(--muted)}
+a{color:#7db7ff}
 </style>
 </head>
 
 <body>
+
 <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
 <div class="wrapper">
 <div class="frame">
-<div class="header"><h1>🧠 Detalle interno</h1></div>
 
-<div id="datos" class="card">Cargando…</div>
-<div id="pasos" class="card"></div>
-<div class="card">
-  <strong>Registro público</strong><br>
-  <span id="qr" class="link"></span>
+<div class="header">
+  <h1>🧠 HISTORIAL INTERNO COMPLETO</h1>
 </div>
+
+<div class="card">
+  <input id="patente" placeholder="ABCD12">
+  <button class="btn" onclick="buscar()">Buscar</button>
+</div>
+
+<div id="resultados" class="card" style="display:none"></div>
 
 </div>
 </div>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbxEYzoxATV0Cqn6zpug6PPTBRyO62XToCtEhk2F_Hgrq9v99f8zZr473PB6j_5v8e1qwA/exec";
-const id=new URLSearchParams(location.search).get("id");
+const API_URL="https://script.google.com/macros/s/AKfycbwixg2mzNGSSwebf3I-YknTYVBj3iBaQx0O6F7vU2jtjKI2oDsWSa7rCOMzt3V0y-oYaA/exec";
 
 async function apiGet(p){
-  const r=await fetch(API_URL+"?"+new URLSearchParams(p));
+  const r = await fetch(API_URL + "?" + new URLSearchParams(p));
   return r.json();
 }
 
-async function cargar(){
-  if(!id){
-    datos.innerText="ID no válido";
-    return;
-  }
-
-  const s = await apiGet({action:"obtener_servicio", id_servicio:id});
-  if(!s || !s.patente){
-    datos.innerText="Servicio no encontrado";
-    return;
-  }
-
-  // Datos generales
-  datos.innerHTML = `
-    <div class="section"><span class="label">Patente</span><div class="value">${s.patente}</div></div>
-    <div class="section"><span class="label">Fecha</span><div class="value">${s.fecha_creacion || "—"}</div></div>
-    <div class="section"><span class="label">Kilometraje</span><div class="value">${s.km_inicial || "—"} km</div></div>
-    <div class="section"><span class="label">Técnico</span><div class="value">${s.tecnico || "—"}</div></div>
-    <div class="section"><span class="label">Estado</span><div class="value">${s.estado}</div></div>
-  `;
-
-  // Pasos (resumen desde columnas)
-  pasos.innerHTML = `
-    <strong>Pasos registrados</strong>
-    <div class="paso">Paso 1: ${s.p1_alertas || "OK"}</div>
-    <div class="paso">Paso 2: Evidencia registrada</div>
-    <div class="paso">Paso 3: Tapón ${s.p3_estado_tapon || "—"}</div>
-    <div class="paso">Paso 4: Filtro cambiado</div>
-    <div class="paso">Paso 5: ${s.aceite_tipo || ""} ${s.aceite_norma || ""} (${s.aceite_cantidad_litros || ""} L)</div>
-    <div class="paso">Paso 6: Verificación final OK</div>
-  `;
-
-  // Link QR público
-  const urlPublica = `${location.origin}/aceite_publico.html?id=${encodeURIComponent(id)}`;
-  qr.innerText = urlPublica;
-  qr.onclick = ()=>window.open(urlPublica,"_blank");
+function fecha(v){
+  if(!v) return "—";
+  const d=new Date(v);
+  if(isNaN(d)) return "—";
+  return d.toLocaleDateString("es-CL");
 }
 
-cargar();
+function proximoKm(km,prox){
+  km=Number(km); prox=Number(prox);
+  if(isNaN(km)||isNaN(prox)) return "—";
+  return prox<=km ? km+prox : prox;
+}
+
+function estado(v){
+  return v==="SI"||v===true ? `<span class="ok">✔</span>` : `<span class="no">✖</span>`;
+}
+
+async function buscar(){
+  const input=document.getElementById("patente");
+  const patente=input.value.trim().toUpperCase();
+  input.value=patente;
+  if(!patente){alert("Ingresa una patente");return;}
+
+  const r=await apiGet({action:"buscar_por_patente",patente});
+  const box=document.getElementById("resultados");
+  box.style.display="block";
+
+  if(!r||!r.length){
+    box.innerHTML="<div class='muted'>Sin servicios</div>";
+    return;
+  }
+
+  box.innerHTML=r.map((s,i)=>`
+    <div class="servicio ${i===0?"destacado":""}">
+      <div class="fila"><b>ID:</b> ${s.id_servicio}</div>
+      <div class="fila"><b>Fecha cierre:</b> ${fecha(s.fecha)}</div>
+      <div class="fila"><b>Kilometraje:</b> ${s.km} km</div>
+      <div class="fila"><b>Próximo servicio:</b> ${proximoKm(s.km,s.proximo_servicio_km)} km</div>
+      ${i===0?`<div class="badge">Último servicio</div>`:""}
+      <div class="link" onclick="verDetalle(this,'${s.id_servicio}')">Ver detalle completo</div>
+      <div class="detalle" style="display:none"></div>
+    </div>
+  `).join("");
+}
+
+async function verDetalle(el,id){
+  const box=el.nextElementSibling;
+  if(box.style.display==="block"){box.style.display="none";return;}
+
+  const s=await apiGet({action:"obtener_servicio",id_servicio:id});
+  if(!s||s.error){box.innerHTML="Error";box.style.display="block";return;}
+
+  box.innerHTML=`
+    <h4>Datos generales</h4>
+    <div class="fila"><b>Patente:</b> ${s.patente}</div>
+    <div class="fila"><b>Técnico:</b> ${s.tecnico}</div>
+    <div class="fila"><b>Teléfono:</b> ${s.telefono}</div>
+    <div class="fila"><b>Estado:</b> ${s.estado}</div>
+
+    <h4>Paso 1 · Inspección inicial</h4>
+    <div>Testigo aceite: ${estado(s.p1_testigo_aceite)}</div>
+    <div>Fugas previas: ${estado(s.p1_fugas_previas)}</div>
+    <div>Nivel bajo: ${estado(s.p1_nivel_bajo)}</div>
+    <div>Obs: ${s.p1_observaciones||"—"}</div>
+
+    <h4>Paso 2 · Evidencia</h4>
+    ${s.p2_foto_aceite_url?`<div><a href="${s.p2_foto_aceite_url}" target="_blank">Aceite antes</a></div>`:""}
+    ${s.p2_foto_filtro_url?`<div><a href="${s.p2_foto_filtro_url}" target="_blank">Filtro antes</a></div>`:""}
+
+    <h4>Paso 3 · Drenado</h4>
+    <div>Motor temp OK: ${estado(s.p3_motor_temperatura_ok)}</div>
+    <div>Tapón retirado: ${estado(s.p3_tapon_retirado)}</div>
+    <div>Drenado completo: ${estado(s.p3_drenado_completo)}</div>
+    <div>Estado tapón: ${s.p3_estado_tapon||"—"}</div>
+    <div>Obs: ${s.p3_observaciones||"—"}</div>
+
+    <h4>Paso 4 · Filtro</h4>
+    <div>Filtro viejo retirado: ${estado(s.p4_filtro_viejo_retirado)}</div>
+    <div>Sello viejo retirado: ${estado(s.p4_sello_viejo_retirado)}</div>
+    <div>Filtro nuevo instalado: ${estado(s.p4_filtro_nuevo_instalado)}</div>
+    ${s.p4_foto_filtro_url?`<div><a href="${s.p4_foto_filtro_url}" target="_blank">Foto filtro nuevo</a></div>`:""}
+
+    <h4>Paso 5 · Aceite</h4>
+    <div>${s.aceite_tipo} ${s.aceite_norma} (${s.aceite_cantidad_litros} L)</div>
+
+    <h4>Paso 6 · Verificación final</h4>
+    <div>Motor OK: ${estado(s.p6_motor_ok)}</div>
+    <div>Testigo OK: ${estado(s.p6_testigo_aceite_ok)}</div>
+    <div>Sin fugas: ${estado(s.p6_sin_fugas)}</div>
+    <div>Nivel final OK: ${estado(s.p6_nivel_final_ok)}</div>
+    ${s.p6_foto_final_url?`<div><a href="${s.p6_foto_final_url}" target="_blank">Foto final</a></div>`:""}
+
+    <h4>Observaciones finales</h4>
+    <div>${s.observaciones_finales||"—"}</div>
+  `;
+  box.style.display="block";
+}
 </script>
+
 </body>
 </html>
