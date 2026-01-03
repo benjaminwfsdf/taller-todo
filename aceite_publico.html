@@ -22,6 +22,14 @@ body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
 .label{color:var(--muted)}
 .value{font-weight:700;text-align:right}
 
+.destacado{
+  background:#1a0000;
+  border:1px solid var(--brand);
+  border-radius:8px;
+  padding:10px;
+  margin-top:10px;
+}
+
 .section{margin-top:24px}
 .section h3{margin-bottom:12px}
 
@@ -41,10 +49,7 @@ body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
   font-weight:700;
   text-decoration:none;
 }
-
-.foto-link a:hover{
-  text-decoration:underline;
-}
+.foto-link a:hover{text-decoration:underline}
 
 .note{margin-top:14px;background:#0c0c0e;padding:12px;border-radius:10px;border:1px dashed #444}
 .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
@@ -75,9 +80,29 @@ Este registro respalda el servicio realizado.
 const API_URL = "https://script.google.com/macros/s/AKfycbxAgXWy1VKHJU5rMFJViA_bWthtZ45ukt-_06iHv0LQ1D1YoQ1WRilTzMCYqKOZkEXZSw/exec";
 const id = new URLSearchParams(location.search).get("id");
 
+/* =========================
+   UTILIDADES
+========================= */
 function formatearFecha(v){
   if(!v) return "—";
   return new Date(v).toLocaleDateString("es-CL");
+}
+
+function calcularProximoServicio(kmActual, proximo){
+  if(!kmActual || !proximo) return "—";
+
+  kmActual = Number(kmActual);
+  proximo  = Number(proximo);
+
+  if(isNaN(kmActual) || isNaN(proximo)) return "—";
+
+  // 👉 si el valor es menor o igual al km actual, se interpreta como intervalo
+  if(proximo <= kmActual){
+    return (kmActual + proximo) + " km";
+  }
+
+  // 👉 si es mayor, es km absoluto
+  return proximo + " km";
 }
 
 async function apiGet(p){
@@ -85,6 +110,9 @@ async function apiGet(p){
   return r.json();
 }
 
+/* =========================
+   CARGA PRINCIPAL
+========================= */
 async function cargar(){
   if(!id){
     contenido.innerText="Registro no válido.";
@@ -99,14 +127,22 @@ async function cargar(){
 
   contenido.innerHTML = `
     <div class="row"><span class="label">Patente</span><span class="value">${r.patente}</span></div>
-    <div class="row"><span class="label">Fecha</span><span class="value">${formatearFecha(r.fecha_cierre)}</span></div>
+    <div class="row"><span class="label">Fecha del servicio</span><span class="value">${formatearFecha(r.fecha_cierre)}</span></div>
     <div class="row"><span class="label">Kilometraje</span><span class="value">${r.km_inicial || "—"} km</span></div>
     <div class="row"><span class="label">Aceite</span><span class="value">${(r.aceite_tipo||"")} ${(r.aceite_norma||"")}</span></div>
     <div class="row"><span class="label">Cantidad</span><span class="value">${r.aceite_cantidad_litros || "—"} L</span></div>
 
+    <div class="destacado">
+      <div class="row">
+        <span class="label">🔔 Próximo servicio recomendado</span>
+        <span class="value">
+          ${calcularProximoServicio(r.km_inicial, r.proximo_servicio_km)}
+        </span>
+      </div>
+    </div>
+
     <div class="section">
       <h3>📸 Evidencia del Servicio</h3>
-
       ${linkFoto("Paso 2 · Estado del aceite antes del servicio", r.p2_foto_aceite_url)}
       ${linkFoto("Paso 2 · Estado del filtro antes del cambio", r.p2_foto_filtro_url)}
       ${linkFoto("Paso 4 · Filtro nuevo instalado", r.p4_foto_filtro_url)}
