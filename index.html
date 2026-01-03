@@ -101,11 +101,84 @@
     .title{margin:0 0 6px;font-size:clamp(16px,2.2vw,18px);font-weight:800;color:#f5f7fa;}
     .desc{margin:0;color:var(--muted);font-size:14.5px;}
     .actions{display:flex;align-items:center;gap:10px;margin-left:auto;}
-    .btn{border:2px solid var(--brand);border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer;
-         text-decoration:none;color:#fff;background:#0c0c0e;box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(179,0,0,.25);}
-    .btn:hover{background:var(--brand);}
+    
+    /* Botones con tamaño consistente */
+    .btn{
+      border:2px solid var(--brand);
+      border-radius:12px;
+      padding:10px 18px; /* Padding ajustado */
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+      color:#fff;
+      background:#0c0c0e;
+      box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(179,0,0,.25);
+      transition:.2s;
+      display:inline-block;
+      text-align:center;
+      min-width: 110px; /* Mismo ancho mínimo para todos */
+      white-space: nowrap; /* Evita que el texto se divida */
+      font-size: 14px; /* Mismo tamaño de fuente */
+    }
+    
+    .btn:hover{
+      background:var(--brand);
+    }
+    
+    /* Botón de volver */
+    .btn-back{
+      border:2px solid var(--muted);
+      color:var(--muted);
+      margin-bottom:20px;
+      display:inline-block;
+      padding:10px 18px;
+      border-radius:12px;
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+      background:#0c0c0e;
+      transition:.2s;
+    }
+    
+    .btn-back:hover{
+      background:var(--muted);
+      color:#000;
+    }
+    
     .footer{text-align:center;color:#8c96a3;font-size:12px;margin:20px 0 32px;}
     .footer strong{color:#cfd6de;}
+    
+    /* Estilos para las secciones específicas */
+    .section-content{display:none;}
+    .section-content.active{display:block;}
+    
+    /* Header de sección */
+    .section-header{display:flex;align-items:center;gap:15px;margin-bottom:20px;}
+    .section-header .icon-large{flex:0 0 60px;height:60px;border-radius:14px;display:grid;place-items:center;
+          background:#0c0c0e;border:3px solid var(--brand);color:#fff;font-size:28px;
+          box-shadow:inset 0 0 16px rgba(179,0,0,.35);}
+    .section-header .header-content{flex:1;}
+    .section-header h2{margin:0 0 5px;font-size:24px;color:#fff;}
+    .section-header p{margin:0;color:var(--muted);}
+    
+    /* Indicador de grupo - más sutil */
+    .group-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      padding: 2px 8px;
+      background: rgba(144, 0, 0, 0.08);
+      border-radius: 12px;
+    }
+    
+    .group-indicator::before {
+      content: "📂";
+      font-size: 10px;
+      opacity: 0.7;
+    }
   </style>
 
   <script>
@@ -133,7 +206,8 @@
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
   <div class="wrapper">
-    <div class="frame">
+    <!-- MENÚ PRINCIPAL (sección inicial) -->
+    <div id="main-menu" class="frame section-content active">
       <div class="header"><h1>Panel Principal</h1></div>
 
       <div class="grid" role="list">
@@ -144,7 +218,9 @@
             <h2 class="title">Gestión de Vehículos</h2>
             <p class="desc">Añadir, buscar y actualizar el estado de los autos del taller.</p>
           </div>
-          <div class="actions"><a class="btn" href="gestion_autos.html">Abrir</a></div>
+          <div class="actions">
+            <a class="btn" href="gestion_autos.html">Abrir</a>
+          </div>
         </article>
 
         <!-- 💻 Computadoras -->
@@ -154,17 +230,22 @@
             <h2 class="title">Computadoras</h2>
             <p class="desc">Gestión de DPF OFF y registro/consulta de ECUs y BCMs.</p>
           </div>
-          <div class="actions"><a class="btn" href="dpf_off.html">Abrir</a></div>
+          <div class="actions">
+            <a class="btn" href="dpf_off.html">Abrir</a>
+          </div>
         </article>
 
-        <!-- 🛢️ Aceites -->
-        <article class="card" role="listitem">
+        <!-- 🛢️ ACEITE (Grupo: Gestión de Aceites + Checklist) -->
+        <article class="card" role="listitem" onclick="showSection('grupo-aceite')">
           <div class="icon">🛢️</div>
           <div class="content">
-            <h2 class="title">Gestión de Aceites</h2>
-            <p class="desc">Control de inventario, ventas y reportes de lubricantes.</p>
+            <h2 class="title">Aceite</h2>
+            <p class="desc">Gestión de aceites y checklist de servicio</p>
+            <div class="group-indicator">Contiene: Gestión de Aceites + Checklist</div>
           </div>
-          <div class="actions"><a class="btn" href="aceite.html">Abrir</a></div>
+          <div class="actions">
+            <button class="btn" onclick="event.stopPropagation();showSection('grupo-aceite')">Ver opciones</button>
+          </div>
         </article>
 
         <!-- 📄 Informes -->
@@ -174,73 +255,168 @@
             <h2 class="title">Informes de Diagnóstico</h2>
             <p class="desc">Crear informes. Se abre en una pestaña nueva.</p>
           </div>
-          <div class="actions"><a class="btn" href="https://taller-todo.vercel.app/informes.html" target="_blank">Abrir</a></div>
+          <div class="actions">
+            <a class="btn" href="https://taller-todo.vercel.app/informes.html" target="_blank">Abrir</a>
+          </div>
         </article>
 
-        <!-- 🕰️ Orden de llegada -->
+        <!-- 👥 ORDEN Y CLIENTES (Grupo) -->
+        <article class="card" role="listitem" onclick="showSection('grupo-clientes')">
+          <div class="icon">👥</div>
+          <div class="content">
+            <h2 class="title">Orden y Clientes</h2>
+            <p class="desc">Gestión de turnos y panel para clientes</p>
+            <div class="group-indicator">Contiene: Orden de llegada + Panel clientes</div>
+          </div>
+          <div class="actions">
+            <button class="btn" onclick="event.stopPropagation();showSection('grupo-clientes')">Ver opciones</button>
+          </div>
+        </article>
+
+        <!-- ℹ️ INFORMACIÓN (Grupo) -->
+        <article class="card" role="listitem" onclick="showSection('grupo-informacion')">
+          <div class="icon">ℹ️</div>
+          <div class="content">
+            <h2 class="title">Información</h2>
+            <p class="desc">Herramientas de consulta y contacto</p>
+            <div class="group-indicator">Contiene: Tarjeta virtual + Buscador + Patentes</div>
+          </div>
+          <div class="actions">
+            <button class="btn" onclick="event.stopPropagation();showSection('grupo-informacion')">Ver opciones</button>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- GRUPO ACEITE: Gestión de Aceites + Checklist -->
+    <div id="grupo-aceite" class="frame section-content">
+      <div class="section-header">
+        <div class="icon-large">🛢️</div>
+        <div class="header-content">
+          <h2>Aceite</h2>
+          <p>Gestión de lubricantes y checklist de servicio de cambio de aceite</p>
+        </div>
+      </div>
+      
+      <a href="javascript:void(0)" class="btn btn-back" onclick="showSection('main-menu')">← Volver al menú principal</a>
+      
+      <div class="grid" role="list">
+        <!-- Gestión de Aceites -->
+        <article class="card" role="listitem">
+          <div class="icon">🛢️</div>
+          <div class="content">
+            <h2 class="title">Gestión de Aceites</h2>
+            <p class="desc">Control de inventario, ventas y reportes de lubricantes.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="aceite.html">Abrir</a>
+          </div>
+        </article>
+        
+        <!-- Checklist de Servicio -->
+        <article class="card" role="listitem">
+          <div class="icon">✅</div>
+          <div class="content">
+            <h2 class="title">Checklist de Servicio</h2>
+            <p class="desc">Registrar y seguir paso a paso el cambio de aceite.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="checklist.html">Abrir</a>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- GRUPO CLIENTES: Orden de llegada + Panel clientes -->
+    <div id="grupo-clientes" class="frame section-content">
+      <div class="section-header">
+        <div class="icon-large">👥</div>
+        <div class="header-content">
+          <h2>Orden y Clientes</h2>
+          <p>Gestión de turnos y visualización para clientes</p>
+        </div>
+      </div>
+      
+      <a href="javascript:void(0)" class="btn btn-back" onclick="showSection('main-menu')">← Volver al menú principal</a>
+      
+      <div class="grid" role="list">
+        <!-- Orden de llegada -->
         <article class="card" role="listitem">
           <div class="icon">🕰️</div>
           <div class="content">
             <h2 class="title">Orden de llegada</h2>
             <p class="desc">Gestión de turnos de clientes por orden de ingreso.</p>
           </div>
-          <div class="actions"><a class="btn" href="clientes_turno.html">Abrir</a></div>
+          <div class="actions">
+            <a class="btn" href="clientes_turno.html">Abrir</a>
+          </div>
         </article>
-
-        <!-- 🧾 Panel clientes -->
+        
+        <!-- Panel clientes -->
         <article class="card" role="listitem">
           <div class="icon">🧾</div>
           <div class="content">
             <h2 class="title">Panel clientes (Orden)</h2>
             <p class="desc">Vista pública para que el cliente vea su turno.</p>
           </div>
-          <div class="actions"><a class="btn" href="panel_clientes.html">Abrir</a></div>
+          <div class="actions">
+            <a class="btn" href="panel_clientes.html">Abrir</a>
+          </div>
         </article>
+      </div>
+    </div>
 
-        <!-- 🤳 Tarjeta virtual -->
+    <!-- GRUPO INFORMACIÓN: Tarjeta virtual + Buscador + Patentes -->
+    <div id="grupo-informacion" class="frame section-content">
+      <div class="section-header">
+        <div class="icon-large">ℹ️</div>
+        <div class="header-content">
+          <h2>Información</h2>
+          <p>Herramientas de consulta y contacto</p>
+        </div>
+      </div>
+      
+      <a href="javascript:void(0)" class="btn btn-back" onclick="showSection('main-menu')">← Volver al menú principal</a>
+      
+      <div class="grid" role="list">
+        <!-- Tarjeta virtual -->
         <article class="card" role="listitem">
           <div class="icon">🤳</div>
           <div class="content">
             <h2 class="title">Tarjeta Virtual</h2>
             <p class="desc">Mostrar código QR o compartir link de contacto.</p>
           </div>
-          <div class="actions"><a class="btn" href="tarjeta-virtual.html">Abrir</a></div>
+          <div class="actions">
+            <a class="btn" href="tarjeta-virtual.html">Abrir</a>
+          </div>
         </article>
-
-        <!-- 🏎️ Buscador -->
+        
+        <!-- Buscador de códigos -->
         <article class="card" role="listitem">
           <div class="icon">🏎️</div>
           <div class="content">
             <h2 class="title">Buscador de códigos</h2>
             <p class="desc">Consulta rápida de DTC y descripciones de averías.</p>
           </div>
-          <div class="actions"><a class="btn" href="buscador_averias.html" target="_blank">Abrir</a></div>
+          <div class="actions">
+            <a class="btn" href="buscador_averias.html" target="_blank">Abrir</a>
+          </div>
         </article>
-
-        <!-- ✅ Checklist de servicio -->
-<article class="card" role="listitem">
-  <div class="icon">✅</div>
-  <div class="content">
-    <h2 class="title">Checklist de Servicio</h2>
-    <p class="desc">Registrar y seguir paso a paso el cambio de aceite.</p>
-  </div>
-  <div class="actions">
-    <a class="btn" href="checklist.html">Abrir</a>
-  </div>
-</article>
-
-
-        <!-- 🔢 Patentes Chile -->
+        
+        <!-- Patentes Chile -->
         <article class="card" role="listitem">
           <div class="icon">🔢</div>
           <div class="content">
             <h2 class="title">Patentes Chile</h2>
             <p class="desc">Consulta externa de información por patente.</p>
           </div>
-          <div class="actions"><a class="btn" href="https://www.patentechile.com/" target="_blank" rel="noopener">Abrir</a></div>
+          <div class="actions">
+            <a class="btn" href="https://www.patentechile.com/" target="_blank" rel="noopener">Abrir</a>
+          </div>
         </article>
       </div>
     </div>
+    
     <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
   </div>
 
@@ -270,6 +446,59 @@
         sessionStorage.setItem('splashShownV2','1');
       },Math.max(0,MIN_SPLASH_MS-elapsed));
     })();
+    
+    // Función para cambiar entre secciones
+    function showSection(sectionId) {
+      // Ocultar todas las secciones
+      document.querySelectorAll('.section-content').forEach(section => {
+        section.classList.remove('active');
+      });
+      
+      // Mostrar la sección solicitada
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+        
+        // Actualizar el título de la página según la sección
+        let pageTitle = 'Panel Principal';
+        if (sectionId === 'grupo-aceite') {
+          pageTitle = 'Aceite - Panel Principal';
+        } else if (sectionId === 'grupo-clientes') {
+          pageTitle = 'Orden y Clientes - Panel Principal';
+        } else if (sectionId === 'grupo-informacion') {
+          pageTitle = 'Información - Panel Principal';
+        }
+        document.title = pageTitle;
+        
+        // Hacer scroll suave al principio de la página
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+    
+    // Manejar el botón de retroceso del navegador
+    window.addEventListener('popstate', function(event) {
+      if (event.state && event.state.section) {
+        showSection(event.state.section);
+      } else {
+        showSection('main-menu');
+      }
+    });
+    
+    // También puedes agregar una función para inicializar según la URL
+    function initFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const section = urlParams.get('section');
+      const validSections = ['grupo-aceite', 'grupo-clientes', 'grupo-informacion'];
+      if (section && validSections.includes(section)) {
+        showSection(section);
+        // Actualizar el historial
+        history.replaceState({section: section}, '', `?section=${section}`);
+      }
+    }
+    
+    // Inicializar cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', initFromURL);
   </script>
 </body>
 </html>
+<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_BrTaK8zsPjXswZZxQwmdBrLnMabY" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
