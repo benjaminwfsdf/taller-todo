@@ -129,7 +129,7 @@ async function buscar(){
     box.innerHTML="<div class='muted'>Sin servicios</div>";
     return;
   }
-
+ <!-- 📄 Informes -->
   box.innerHTML=r.map((s,i)=>`
     <div class="servicio ${i===0?"destacado":""}">
       <div class="fila"><b>ID:</b> ${s.id_servicio}</div>
@@ -203,3 +203,4 @@ function volver(){
 
 </body>
 </html>
+
