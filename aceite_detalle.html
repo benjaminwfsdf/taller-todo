@@ -64,7 +64,11 @@ input{
 .ok{color:#7CFF7C}
 .no{color:#FF7C7C}
 .muted{color:var(--muted)}
-a{color:#7db7ff}
+a{color:#7db7ff;text-decoration:none}
+.foto-link{display:inline-block;margin:5px 10px 5px 0;padding:8px 12px;background:#1a1a2e;border-radius:6px;}
+.foto-link:hover{background:#2a2a3e;transform:scale(1.02);}
+.loader{text-align:center;padding:20px;color:var(--muted)}
+.loader.hidden{display:none}
 </style>
 </head>
 
@@ -85,17 +89,52 @@ a{color:#7db7ff}
   <button class="btn btn-sec" onclick="volver()">⬅ Volver al menú</button>
 </div>
 
+<div id="loader" class="loader hidden">Buscando servicios...</div>
+
 <div id="resultados" class="card" style="display:none"></div>
 
 </div>
 </div>
 
 <script>
+// URL de la API
 const API_URL="https://script.google.com/macros/s/AKfycbwixg2mzNGSSwebf3I-YknTYVBj3iBaQx0O6F7vU2jtjKI2oDsWSa7rCOMzt3V0y-oYaA/exec";
 
+// Al cargar la página, restaurar la patente si existe
+document.addEventListener('DOMContentLoaded', function() {
+  const patenteGuardada = localStorage.getItem('ultima_patente_buscada');
+  if (patenteGuardada) {
+    document.getElementById('patente').value = patenteGuardada;
+    
+    // Si hay patente guardada y también resultados guardados, cargarlos
+    const resultadosGuardados = localStorage.getItem('resultados_busqueda');
+    if (resultadosGuardados) {
+      document.getElementById('resultados').innerHTML = resultadosGuardados;
+      document.getElementById('resultados').style.display = 'block';
+    }
+  }
+  
+  // Prevenir que los enlaces recarguen la página
+  document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'A' && e.target.href) {
+      // Si es un enlace a foto, abrir en nueva pestaña en móvil para evitar recarga
+      if (window.innerWidth <= 768 && e.target.href.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        e.preventDefault();
+        window.open(e.target.href, '_blank');
+        return false;
+      }
+    }
+  });
+});
+
 async function apiGet(p){
-  const r = await fetch(API_URL + "?" + new URLSearchParams(p));
-  return r.json();
+  try {
+    const r = await fetch(API_URL + "?" + new URLSearchParams(p));
+    return r.json();
+  } catch (error) {
+    console.error('Error en API:', error);
+    return {error: 'Error de conexión'};
+  }
 }
 
 function fecha(v){
@@ -121,87 +160,161 @@ async function buscar(){
   input.value=patente;
   if(!patente){alert("Ingresa una patente");return;}
 
-  const r=await apiGet({action:"buscar_por_patente",patente});
-  const box=document.getElementById("resultados");
-  box.style.display="block";
+  // Guardar patente en localStorage
+  localStorage.setItem('ultima_patente_buscada', patente);
+  
+  // Mostrar loader
+  const loader = document.getElementById('loader');
+  const box = document.getElementById('resultados');
+  loader.classList.remove('hidden');
+  box.style.display='none';
 
-  if(!r||!r.length){
-    box.innerHTML="<div class='muted'>Sin servicios</div>";
-    return;
+  try {
+    const r=await apiGet({action:"buscar_por_patente",patente});
+    
+    // Ocultar loader
+    loader.classList.add('hidden');
+    box.style.display="block";
+
+    if(!r||!r.length){
+      box.innerHTML="<div class='muted'>Sin servicios</div>";
+      localStorage.removeItem('resultados_busqueda');
+      return;
+    }
+
+    const html = r.map((s,i)=>`
+      <div class="servicio ${i===0?"destacado":""}">
+        <div class="fila"><b>ID:</b> ${s.id_servicio}</div>
+        <div class="fila"><b>Fecha cierre:</b> ${fecha(s.fecha)}</div>
+        <div class="fila"><b>Kilometraje:</b> ${s.km} km</div>
+        <div class="fila"><b>Próximo servicio:</b> ${proximoKm(s.km,s.proximo_servicio_km)} km</div>
+        ${i===0?`<div class="badge">Último servicio</div>`:""}
+        <div class="link" onclick="verDetalle(this,'${s.id_servicio}')">Ver detalle completo</div>
+        <div class="detalle" style="display:none"></div>
+      </div>
+    `).join("");
+    
+    box.innerHTML = html;
+    
+    // Guardar resultados en localStorage para persistencia
+    localStorage.setItem('resultados_busqueda', html);
+    
+  } catch (error) {
+    loader.classList.add('hidden');
+    box.innerHTML="<div class='muted'>Error al buscar servicios</div>";
   }
-
-  box.innerHTML=r.map((s,i)=>`
-    <div class="servicio ${i===0?"destacado":""}">
-      <div class="fila"><b>ID:</b> ${s.id_servicio}</div>
-      <div class="fila"><b>Fecha cierre:</b> ${fecha(s.fecha)}</div>
-      <div class="fila"><b>Kilometraje:</b> ${s.km} km</div>
-      <div class="fila"><b>Próximo servicio:</b> ${proximoKm(s.km,s.proximo_servicio_km)} km</div>
-      ${i===0?`<div class="badge">Último servicio</div>`:""}
-      <div class="link" onclick="verDetalle(this,'${s.id_servicio}')">Ver detalle completo</div>
-      <div class="detalle" style="display:none"></div>
-    </div>
-  `).join("");
 }
 
 async function verDetalle(el,id){
   const box=el.nextElementSibling;
-  if(box.style.display==="block"){box.style.display="none";return;}
-
-  const s=await apiGet({action:"obtener_servicio",id_servicio:id});
-  if(!s||s.error){box.innerHTML="Error";box.style.display="block";return;}
-
-  box.innerHTML=`
-    <h4>Datos generales</h4>
-    <div class="fila"><b>Patente:</b> ${s.patente}</div>
-    <div class="fila"><b>Técnico:</b> ${s.tecnico}</div>
-    <div class="fila"><b>Teléfono:</b> ${s.telefono}</div>
-    <div class="fila"><b>Estado:</b> ${s.estado}</div>
-
-    <h4>Paso 1 · Inspección inicial</h4>
-    <div>Testigo aceite: ${estado(s.p1_testigo_aceite)}</div>
-    <div>Fugas previas: ${estado(s.p1_fugas_previas)}</div>
-    <div>Nivel bajo: ${estado(s.p1_nivel_bajo)}</div>
-    <div>Obs: ${s.p1_observaciones||"—"}</div>
-
-    <h4>Paso 2 · Evidencia</h4>
-    ${s.p2_foto_aceite_url?`<div><a href="${s.p2_foto_aceite_url}" target="_blank">Aceite antes</a></div>`:""}
-    ${s.p2_foto_filtro_url?`<div><a href="${s.p2_foto_filtro_url}" target="_blank">Filtro antes</a></div>`:""}
-
-    <h4>Paso 3 · Drenado</h4>
-    <div>Motor temp OK: ${estado(s.p3_motor_temperatura_ok)}</div>
-    <div>Tapón retirado: ${estado(s.p3_tapon_retirado)}</div>
-    <div>Drenado completo: ${estado(s.p3_drenado_completo)}</div>
-    <div>Estado tapón: ${s.p3_estado_tapon||"—"}</div>
-    <div>Obs: ${s.p3_observaciones||"—"}</div>
-
-    <h4>Paso 4 · Filtro</h4>
-    <div>Filtro viejo retirado: ${estado(s.p4_filtro_viejo_retirado)}</div>
-    <div>Sello viejo retirado: ${estado(s.p4_sello_viejo_retirado)}</div>
-    <div>Filtro nuevo instalado: ${estado(s.p4_filtro_nuevo_instalado)}</div>
-    ${s.p4_foto_filtro_url?`<div><a href="${s.p4_foto_filtro_url}" target="_blank">Foto filtro nuevo</a></div>`:""}
-
-    <h4>Paso 5 · Aceite</h4>
-    <div>${s.aceite_tipo} ${s.aceite_norma} (${s.aceite_cantidad_litros} L)</div>
-
-    <h4>Paso 6 · Verificación final</h4>
-    <div>Motor OK: ${estado(s.p6_motor_ok)}</div>
-    <div>Testigo OK: ${estado(s.p6_testigo_aceite_ok)}</div>
-    <div>Sin fugas: ${estado(s.p6_sin_fugas)}</div>
-    <div>Nivel final OK: ${estado(s.p6_nivel_final_ok)}</div>
-    ${s.p6_foto_final_url?`<div><a href="${s.p6_foto_final_url}" target="_blank">Foto final</a></div>`:""}
-
-    <h4>Observaciones finales</h4>
-    <div>${s.observaciones_finales||"—"}</div>
-  `;
+  const servicioDiv = el.parentElement;
+  
+  // Si ya está abierto, cerrarlo
+  if(box.style.display==="block"){
+    box.style.display="none";
+    return;
+  }
+  
+  // Cerrar otros detalles abiertos
+  document.querySelectorAll('.detalle').forEach(d => {
+    if (d !== box) d.style.display = 'none';
+  });
+  
+  // Mostrar este
   box.style.display="block";
+  box.innerHTML = "<div class='muted'>Cargando detalles...</div>";
+  
+  // Si ya tenemos los detalles guardados localmente, usarlos
+  const detallesGuardados = localStorage.getItem(`detalle_${id}`);
+  if (detallesGuardados) {
+    box.innerHTML = detallesGuardados;
+    return;
+  }
+
+  try {
+    const s=await apiGet({action:"obtener_servicio",id_servicio:id});
+    if(!s||s.error){
+      box.innerHTML="<div class='muted'>Error al cargar detalles</div>";
+      return;
+    }
+
+    const html = `
+      <h4>Datos generales</h4>
+      <div class="fila"><b>Patente:</b> ${s.patente}</div>
+      <div class="fila"><b>Técnico:</b> ${s.tecnico}</div>
+      <div class="fila"><b>Teléfono:</b> ${s.telefono}</div>
+      <div class="fila"><b>Estado:</b> ${s.estado}</div>
+
+      <h4>Paso 1 · Inspección inicial</h4>
+      <div>Testigo aceite: ${estado(s.p1_testigo_aceite)}</div>
+      <div>Fugas previas: ${estado(s.p1_fugas_previas)}</div>
+      <div>Nivel bajo: ${estado(s.p1_nivel_bajo)}</div>
+      <div>Obs: ${s.p1_observaciones||"—"}</div>
+
+      <h4>Paso 2 · Evidencia</h4>
+      ${s.p2_foto_aceite_url?`<div><a href="${s.p2_foto_aceite_url}" target="_blank" class="foto-link">📸 Aceite antes</a></div>`:""}
+      ${s.p2_foto_filtro_url?`<div><a href="${s.p2_foto_filtro_url}" target="_blank" class="foto-link">📸 Filtro antes</a></div>`:""}
+
+      <h4>Paso 3 · Drenado</h4>
+      <div>Motor temp OK: ${estado(s.p3_motor_temperatura_ok)}</div>
+      <div>Tapón retirado: ${estado(s.p3_tapon_retirado)}</div>
+      <div>Drenado completo: ${estado(s.p3_drenado_completo)}</div>
+      <div>Estado tapón: ${s.p3_estado_tapon||"—"}</div>
+      <div>Obs: ${s.p3_observaciones||"—"}</div>
+
+      <h4>Paso 4 · Filtro</h4>
+      <div>Filtro viejo retirado: ${estado(s.p4_filtro_viejo_retirado)}</div>
+      <div>Sello viejo retirado: ${estado(s.p4_sello_viejo_retirado)}</div>
+      <div>Filtro nuevo instalado: ${estado(s.p4_filtro_nuevo_instalado)}</div>
+      ${s.p4_foto_filtro_url?`<div><a href="${s.p4_foto_filtro_url}" target="_blank" class="foto-link">📸 Foto filtro nuevo</a></div>`:""}
+
+      <h4>Paso 5 · Aceite</h4>
+      <div>${s.aceite_tipo} ${s.aceite_norma} (${s.aceite_cantidad_litros} L)</div>
+
+      <h4>Paso 6 · Verificación final</h4>
+      <div>Motor OK: ${estado(s.p6_motor_ok)}</div>
+      <div>Testigo OK: ${estado(s.p6_testigo_aceite_ok)}</div>
+      <div>Sin fugas: ${estado(s.p6_sin_fugas)}</div>
+      <div>Nivel final OK: ${estado(s.p6_nivel_final_ok)}</div>
+      ${s.p6_foto_final_url?`<div><a href="${s.p6_foto_final_url}" target="_blank" class="foto-link">📸 Foto final</a></div>`:""}
+
+      <h4>Observaciones finales</h4>
+      <div>${s.observaciones_finales||"—"}</div>
+    `;
+    
+    box.innerHTML = html;
+    
+    // Guardar detalles en localStorage
+    localStorage.setItem(`detalle_${id}`, html);
+    
+  } catch (error) {
+    box.innerHTML="<div class='muted'>Error al cargar detalles</div>";
+  }
 }
 
 function volver(){
+  // Limpiar localStorage si se desea
+  // localStorage.removeItem('ultima_patente_buscada');
+  // localStorage.removeItem('resultados_busqueda');
   window.location.href="checklist.html";
 }
+
+// Prevenir recarga accidental en móviles
+window.addEventListener('beforeunload', function(e) {
+  // No hacer nada, permitir que la página se recargue normalmente
+});
+
+// Si el usuario hace swipe para refrescar, mantener los datos
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    // La página viene de cache, restaurar datos
+    const patenteGuardada = localStorage.getItem('ultima_patente_buscada');
+    if (patenteGuardada) {
+      document.getElementById('patente').value = patenteGuardada;
+    }
+  }
+});
 </script>
 
 </body>
 </html>
-
-
