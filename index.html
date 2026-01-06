@@ -4,8 +4,7 @@
   <link rel="manifest" href="manifest.json">
 
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Taller">
@@ -14,15 +13,7 @@
   <meta name="theme-color" content="#000000">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("service-worker.js");
-      });
-    }
-  </script>
-
-  <title>Panel Principal</title>
+  <title>Buscar Informes por Patente</title>
   <style>
     :root{
       --brand:#900000;
@@ -38,39 +29,24 @@
       --radius:16px;
     }
 
-    html,body{height:100%}
-    body{
+    * {
+      box-sizing: border-box;
+    }
+
+    html,body{
+      height:100%;
       margin:0;
+      padding:0;
+      overflow-x: hidden; /* Previene scroll horizontal */
+    }
+    
+    body{
       font-family: system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
       background: var(--bg);
       color: var(--ink);
       line-height: 1.55;
-    }
-
-    #splash{
-      position: fixed;
-      inset: 0;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity .4s ease;
-      text-align:center;
-      padding: 24px;
-      opacity: 1;
-    }
-    #splash img{
-      width:160px;
-      height:auto;
-      margin-bottom:14px;
-      filter: drop-shadow(0 8px 22px rgba(144,0,0,.35));
-      animation: glow 1.2s ease-in-out infinite alternate;
-    }
-    @keyframes glow{
-      from{ filter: drop-shadow(0 6px 16px rgba(144,0,0,.25)); }
-      to  { filter: drop-shadow(0 12px 28px rgba(144,0,0,.45)); }
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .topbar{
@@ -82,88 +58,284 @@
       letter-spacing:.6px;
       border-bottom:4px solid var(--brand);
       box-shadow: 0 6px 16px rgba(0,0,0,.55);
+      font-size: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
-    .wrapper{max-width:1100px;margin:28px auto 44px;padding:0 16px;opacity:0;transition:opacity .4s ease;}
-    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow);}
-    .header{margin:10px;background:var(--brand);color:#fff;border-radius:18px;padding:20px 24px;text-align:center;box-shadow:0 10px 22px rgba(179,0,0,.35);}
-    .header h1{margin:0;font-size:clamp(20px,3.2vw,28px);letter-spacing:.5px;}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding:12px;}
-    @media(max-width:900px){.grid{grid-template-columns:1fr;}}
-    .card{position:relative;background:var(--card);border:1px solid var(--card-border);border-radius:14px;
-          box-shadow:0 6px 18px rgba(0,0,0,.35);padding:18px;display:flex;gap:16px;align-items:flex-start;
-          transition:.2s;isolation:isolate;}
-    .card::before{content:"";position:absolute;inset:0 auto 0 0;width:8px;border-radius:14px 0 0 14px;background:var(--brand);}
-    .card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);border-color:#32363d;background:#191c20;}
-    .icon{flex:0 0 44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#0c0c0e;
-          border:2px solid var(--brand);color:#fff;font-size:22px;margin-left:6px;box-shadow:inset 0 0 12px rgba(179,0,0,.35);}
-    .content{flex:1 1 auto;min-width:0;}
-    .title{margin:0 0 6px;font-size:clamp(16px,2.2vw,18px);font-weight:800;color:#f5f7fa;}
-    .desc{margin:0;color:var(--muted);font-size:14.5px;}
-    .actions{display:flex;align-items:center;gap:10px;margin-left:auto;}
+    .wrapper{
+      max-width:1100px;
+      margin:20px auto;
+      padding:0 16px;
+      width: 100%;
+    }
     
-    /* BOTÓN PRINCIPAL - Para "Abrir" */
+    .frame{
+      border:3px solid var(--brand);
+      border-radius:var(--radius);
+      padding:20px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      width: 100%;
+      margin-bottom: 30px;
+    }
+    
+    .search-card{
+      position:relative;
+      background:var(--card);
+      border:1px solid var(--card-border);
+      border-radius:14px;
+      box-shadow:0 6px 18px rgba(0,0,0,.35);
+      padding:20px;
+      margin-bottom:22px;
+      width: 100%;
+    }
+    
+    .search-card::before{
+      content:"";
+      position:absolute;
+      inset:0 auto 0 0;
+      width:8px;
+      border-radius:14px 0 0 14px;
+      background:var(--brand);
+    }
+    
+    label{
+      display:block;
+      margin:8px 0 6px;
+      font-weight:700;
+      color:var(--ink);
+      font-size:16px;
+      width: 100%;
+    }
+    
+    input{
+      width:100%;
+      padding:14px 16px;
+      border:2px solid var(--card-border);
+      border-radius:12px;
+      background:rgba(0,0,0,0.3);
+      color:var(--ink);
+      font-size:16px;
+      text-transform:uppercase;
+      margin-bottom:16px;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
     .btn{
       border:2px solid var(--brand);
       border-radius:12px;
-      padding:10px 16px;
+      padding:14px 24px;
       font-weight:800;
       cursor:pointer;
       text-decoration:none;
       color:#fff;
       background:#0c0c0e;
       box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(179,0,0,.25);
-      display:inline-block;
+      display:block;
+      width:100%;
       text-align:center;
-      font-size:14px;
-      min-width: 100px;
-      white-space: nowrap;
+      font-size:16px;
+      margin-top:10px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    
+    .btn:active{
+      transform: translateY(1px);
+      box-shadow:0 1px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(179,0,0,.25);
     }
     
     .btn:hover{
       background:var(--brand);
     }
     
-    /* BOTÓN "VER OPCIONES" - TAMAÑO FIJO PARA TODOS */
-    .btn-options{
-      border:2px solid var(--brand);
+    .btn-back{
+      border:2px solid var(--muted);
       border-radius:12px;
-      padding:10px 16px;
+      padding:12px 16px;
       font-weight:800;
       cursor:pointer;
       text-decoration:none;
-      color:#fff;
+      color:var(--muted);
       background:#0c0c0e;
-      box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(179,0,0,.25);
-      display:inline-block;
-      text-align:center;
+      box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(185,192,199,.25);
+      display:inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom:20px;
+      margin-top:10px;
       font-size:14px;
-      min-width: 120px; /* Mismo tamaño para todos */
-      white-space: nowrap;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
     }
     
-    .btn-options:hover{
+    .btn-back:hover{
+      background:var(--muted);
+      color:#000;
+    }
+    
+    /* Estilos para resultados */
+    .result-block{
+      margin-top:20px;
+      background:var(--card);
+      border:2px solid var(--card-border);
+      border-radius:12px;
+      padding:20px;
+      color:var(--ink);
+      margin-bottom:16px;
+      position:relative;
+      width: 100%;
+    }
+    
+    .ultimo{
+      border:3px solid #00ff8c !important;
+      box-shadow:0 0 14px rgba(0,255,140,0.3) !important;
+    }
+    
+    .result-header{
+      display:flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom:16px;
+      padding-bottom:12px;
+      border-bottom:1px solid var(--card-border);
+      width: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .result-header{
+        flex-direction: row;
+        justify-content:space-between;
+        align-items:center;
+        gap: 0;
+      }
+    }
+    
+    .result-title{
+      font-size:18px;
+      font-weight:800;
+      color:#fff;
+      margin:0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .result-date{
+      color:var(--muted);
+      font-size:14px;
+      background:rgba(0,0,0,0.3);
+      padding:6px 12px;
+      border-radius:8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+    }
+    
+    .badge{
       background:var(--brand);
+      color:#fff;
+      padding:4px 10px;
+      border-radius:8px;
+      font-size:12px;
+      font-weight:700;
+      margin-left:10px;
     }
     
-    .footer{text-align:center;color:#8c96a3;font-size:12px;margin:20px 0 32px;}
-    .footer strong{color:#cfd6de;}
+    .data-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+      width: 100%;
+    }
     
-    /* Estilos para las secciones específicas */
-    .section-content{display:none;}
-    .section-content.active{display:block;}
+    @media (max-width: 480px) {
+      .data-grid{
+        grid-template-columns:1fr;
+        gap: 10px;
+      }
+    }
     
-    /* Header de sección */
+    .data-item{
+      margin-bottom:8px;
+      width: 100%;
+    }
+    
+    .data-label{
+      display:block;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:600;
+      margin-bottom:4px;
+      width: 100%;
+    }
+    
+    .data-value{
+      color:var(--ink);
+      font-size:15px;
+      font-weight:500;
+      word-break:break-word;
+      width: 100%;
+    }
+    
+    .text-content{
+      background:rgba(0,0,0,0.2);
+      border-radius:8px;
+      padding:12px;
+      margin-top:12px;
+      white-space:pre-line;
+      font-size:14px;
+      line-height:1.5;
+      width: 100%;
+      overflow-wrap: break-word;
+    }
+    
+    .no-results{
+      text-align:center;
+      padding:40px 20px;
+      color:var(--muted);
+      font-style:italic;
+      background:rgba(0,0,0,0.2);
+      border-radius:12px;
+      border:2px dashed var(--card-border);
+      width: 100%;
+    }
+    
+    .loading{
+      text-align:center;
+      padding:40px 20px;
+      color:var(--muted);
+      width: 100%;
+    }
+    
+    .footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-top:30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--card-border);
+      width: 100%;
+    }
+    
     .section-header{
       display:flex;
       align-items:center;
       gap:15px;
       margin-bottom:20px;
-      padding: 20px;
-      background: var(--brand);
+      padding:20px;
+      background:var(--brand);
       color:#fff;
       border-radius:18px;
       box-shadow:0 10px 22px rgba(179,0,0,.35);
+      width: 100%;
     }
     
     .section-header .icon-large{
@@ -179,415 +351,441 @@
       box-shadow:inset 0 0 16px rgba(179,0,0,.35);
     }
     
-    .section-header .header-content{flex:1;}
+    .section-header .header-content{
+      flex:1;
+      min-width: 0;
+    }
+    
     .section-header h2{
       margin:0 0 5px;
       font-size:24px;
       color:#fff;
       letter-spacing:.5px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
     
     .section-header p{
       margin:0;
       color:rgba(255,255,255,0.8);
       font-size:14.5px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
     
-    /* Botón de volver */
-    .btn-back{
-      border:2px solid var(--muted);
-      border-radius:12px;
-      padding:10px 16px;
-      font-weight:800;
-      cursor:pointer;
-      text-decoration:none;
-      color:var(--muted);
-      background:#0c0c0e;
-      box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(185,192,199,.25);
-      display:inline-block;
-      margin-bottom:20px;
-      font-size:14px;
+    /* Mejoras específicas para móvil */
+    @media (max-width: 768px) {
+      .wrapper{
+        margin:16px auto;
+        padding:0 12px;
+      }
+      
+      .frame{
+        padding:16px;
+      }
+      
+      .search-card{
+        padding:16px;
+      }
+      
+      .section-header{
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+        padding: 16px;
+      }
+      
+      .section-header .icon-large{
+        flex: 0 0 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+      
+      .section-header h2{
+        font-size: 20px;
+      }
+      
+      .section-header p{
+        font-size: 14px;
+      }
+      
+      .result-block{
+        padding: 16px;
+      }
+      
+      input{
+        padding: 12px 14px;
+        font-size: 15px;
+      }
+      
+      .btn{
+        padding: 12px 20px;
+        font-size: 15px;
+      }
+      
+      .btn-back{
+        padding: 10px 14px;
+        font-size: 13px;
+      }
     }
     
-    .btn-back:hover{
-      background:var(--muted);
-      color:#000;
+    @media (max-width: 360px) {
+      .wrapper{
+        padding:0 10px;
+        margin: 12px auto;
+      }
+      
+      .frame{
+        padding: 14px;
+      }
+      
+      .search-card{
+        padding: 14px;
+      }
+      
+      .section-header .icon-large{
+        flex: 0 0 45px;
+        height: 45px;
+        font-size: 22px;
+      }
+      
+      .section-header h2{
+        font-size: 18px;
+      }
+      
+      .btn{
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+      
+      .result-date{
+        font-size: 12px;
+        padding: 4px 8px;
+      }
+      
+      .badge{
+        font-size: 11px;
+        padding: 3px 8px;
+      }
     }
     
-    /* Indicador de grupo */
-    .group-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
+    /* Prevenir zoom en iOS */
+    @media (max-width: 768px) {
+      input, textarea, select {
+        font-size: 16px; /* Previene zoom automático en iOS */
+      }
     }
     
-    .group-indicator::before {
-      content: "📁";
-      font-size: 10px;
+    /* Mejorar toque en móviles */
+    @media (hover: none) and (pointer: coarse) {
+      .btn, .btn-back {
+        min-height: 44px; /* Tamaño mínimo para toque en iOS */
+      }
+      
+      input {
+        min-height: 44px; /* Tamaño mínimo para toque en iOS */
+      }
     }
   </style>
-
-  <script>
-    (function(){
-      const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
-      const isFirstNav = nav ? nav.type === 'navigate' : true;
-      const alreadyShown = sessionStorage.getItem('splashShownV2') === '1';
-      window.__SHOW_SPLASH__ = isFirstNav && !alreadyShown;
-      if(!window.__SHOW_SPLASH__){
-        const s=document.createElement('style');
-        s.innerHTML='#splash{display:none!important;opacity:0!important}.wrapper{opacity:1!important}';
-        document.head.appendChild(s);
-      }
-    })();
-  </script>
 </head>
 <body>
-  <div id="splash" aria-live="polite">
-    <img src="icons/icon-192.png" alt="Logo Taller">
-    <div class="brand">El Señor de los Scanner</div>
-    <div class="tagline">Cargando panel principal…</div>
-    <div class="bar" aria-hidden="true"></div>
-  </div>
-
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
 
   <div class="wrapper">
-    <!-- MENÚ PRINCIPAL (sección inicial) -->
-    <div id="main-menu" class="frame section-content active">
-      <div class="header"><h1>Panel Principal</h1></div>
-
-      <div class="grid" role="list">
-        <!-- 🚗 Gestión de Vehículos -->
-        <article class="card" role="listitem">
-          <div class="icon">🚗</div>
-          <div class="content">
-            <h2 class="title">Gestión de Vehículos</h2>
-            <p class="desc">Añadir, buscar y actualizar el estado de los autos del taller.</p>
-          </div>
-          <div class="actions"><a class="btn" href="gestion_autos.html">Abrir</a></div>
-        </article>
-
-        <!-- 💻 Computadoras -->
-        <article class="card" role="listitem">
-          <div class="icon">💻</div>
-          <div class="content">
-            <h2 class="title">Computadoras</h2>
-            <p class="desc">Gestión de DPF OFF y registro/consulta de ECUs y BCMs.</p>
-          </div>
-          <div class="actions"><a class="btn" href="dpf_off.html">Abrir</a></div>
-        </article>
-
-        <!-- 🛢️ ACEITE (Grupo: Gestión de Aceites + Checklist) -->
-        <article class="card" role="listitem" onclick="showSection('grupo-aceite')">
-          <div class="icon">🛢️</div>
-          <div class="content">
-            <h2 class="title">Aceite</h2>
-            <p class="desc">Inventario Serviteca y checklist de servicio</p>
-            <div class="group-indicator">Contiene: Inventario Serviteca  + Checklist</div>
-          </div>
-          <div class="actions">
-            <button class="btn-options" onclick="event.stopPropagation();showSection('grupo-aceite')">Ver opciones</button>
-          </div>
-        </article>
-
-        <!-- 📄 INFORMES (NUEVO GRUPO) -->
-        <article class="card" role="listitem" onclick="showSection('grupo-informes')">
-          <div class="icon">📄</div>
-          <div class="content">
-            <h2 class="title">Informes de Diagnóstico</h2>
-            <p class="desc">Crear y buscar informes de diagnóstico</p>
-            <div class="group-indicator">Contiene: Crear informes + Buscar informes</div>
-          </div>
-          <div class="actions">
-            <button class="btn-options" onclick="event.stopPropagation();showSection('grupo-informes')">Ver opciones</button>
-          </div>
-        </article>
-
-        <!-- 👥 ORDEN Y CLIENTES (Grupo) -->
-        <article class="card" role="listitem" onclick="showSection('grupo-clientes')">
-          <div class="icon">👥</div>
-          <div class="content">
-            <h2 class="title">Orden y Clientes</h2>
-            <p class="desc">Gestión de turnos y panel para clientes</p>
-            <div class="group-indicator">Contiene: Orden de llegada + Panel clientes</div>
-          </div>
-          <div class="actions">
-            <button class="btn-options" onclick="event.stopPropagation();showSection('grupo-clientes')">Ver opciones</button>
-          </div>
-        </article>
-
-        <!-- ℹ️ INFORMACIÓN (Grupo) -->
-        <article class="card" role="listitem" onclick="showSection('grupo-informacion')">
-          <div class="icon">ℹ️</div>
-          <div class="content">
-            <h2 class="title">Información</h2>
-            <p class="desc">Herramientas de consulta y contacto</p>
-            <div class="group-indicator">Contiene: Tarjeta virtual + Buscador + Patentes</div>
-          </div>
-          <div class="actions">
-            <button class="btn-options" onclick="event.stopPropagation();showSection('grupo-informacion')">Ver opciones</button>
-          </div>
-        </article>
-      </div>
-    </div>
-
-    <!-- GRUPO ACEITE: Gestión de Aceites + Checklist -->
-    <div id="grupo-aceite" class="frame section-content">
+    <div class="frame">
       <div class="section-header">
-        <div class="icon-large">🛢️</div>
+        <div class="icon-large">🔍</div>
         <div class="header-content">
-          <h2>Aceite</h2>
-          <p>Inventario Serviteca y checklist de servicio de cambio de aceite</p>
+          <h2>Buscar Informes por Patente</h2>
+          <p>Consulta el historial completo de diagnósticos del vehículo</p>
         </div>
       </div>
-      
-      <a href="javascript:void(0)" class="btn btn-back" onclick="showSection('main-menu')">← Volver al menú principal</a>
-      
-      <div class="grid" role="list">
-        <!-- Gestión de Aceites -->
-        <article class="card" role="listitem">
-          <div class="icon">🛢️</div>
-          <div class="content">
-            <h2 class="title">Inventario Serviteca</h2>
-            <p class="desc">Control de inventario, ventas y reportes de lubricantes.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="aceite.html">Abrir</a>
-          </div>
-        </article>
-        
-        <!-- Checklist de Servicio -->
-        <article class="card" role="listitem">
-          <div class="icon">✅</div>
-          <div class="content">
-            <h2 class="title">Checklist de Servicio</h2>
-            <p class="desc">Registrar y seguir paso a paso el cambio de aceite.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="checklist.html">Abrir</a>
-          </div>
-        </article>
-      </div>
-    </div>
 
-    <!-- GRUPO CLIENTES: Orden de llegada + Panel clientes -->
-    <div id="grupo-clientes" class="frame section-content">
-      <div class="section-header">
-        <div class="icon-large">👥</div>
-        <div class="header-content">
-          <h2>Orden y Clientes</h2>
-          <p>Gestión de turnos y visualización para clientes</p>
-        </div>
-      </div>
-      
-      <a href="javascript:void(0)" class="btn btn-back" onclick="showSection('main-menu')">← Volver al menú principal</a>
-      
-      <div class="grid" role="list">
-        <!-- Orden de llegada -->
-        <article class="card" role="listitem">
-          <div class="icon">🕰️</div>
-          <div class="content">
-            <h2 class="title">Orden de llegada</h2>
-            <p class="desc">Gestión de turnos de clientes por orden de ingreso.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="clientes_turno.html">Abrir</a>
-          </div>
-        </article>
-        
-        <!-- Panel clientes -->
-        <article class="card" role="listitem">
-          <div class="icon">🧾</div>
-          <div class="content">
-            <h2 class="title">Panel clientes (Orden)</h2>
-            <p class="desc">Vista pública para que el cliente vea su turno.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="panel_clientes.html">Abrir</a>
-          </div>
-        </article>
-      </div>
-    </div>
+      <a href="index.html" class="btn-back">
+        <span style="font-size: 18px;">←</span>
+        <span>Volver al Panel Principal</span>
+      </a>
 
-    <!-- GRUPO INFORMACIÓN: Tarjeta virtual + Buscador + Patentes -->
-    <div id="grupo-informacion" class="frame section-content">
-      <div class="section-header">
-        <div class="icon-large">ℹ️</div>
-        <div class="header-content">
-          <h2>Información</h2>
-          <p>Herramientas de consulta y contacto</p>
-        </div>
+      <div class="search-card">
+        <label for="patenteInput">Ingresa la patente del vehículo:</label>
+        <input 
+          type="text" 
+          id="patenteInput" 
+          placeholder="EJ: AB123CD" 
+          style="text-transform: uppercase;"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="characters"
+          spellcheck="false"
+        >
+        
+        <button class="btn" onclick="buscarInformes()">
+          <span>🔍 Buscar Informes</span>
+        </button>
+        
+        <div id="resultados" style="margin-top: 20px;"></div>
       </div>
       
-      <a href="javascript:void(0)" class="btn btn-back" onclick="showSection('main-menu')">← Volver al menú principal</a>
-      
-      <div class="grid" role="list">
-        <!-- Tarjeta virtual -->
-        <article class="card" role="listitem">
-          <div class="icon">🤳</div>
-          <div class="content">
-            <h2 class="title">Tarjeta Virtual</h2>
-            <p class="desc">Mostrar código QR o compartir link de contacto.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="tarjeta-virtual.html">Abrir</a>
-          </div>
-        </article>
-        
-        <!-- Buscador de códigos -->
-        <article class="card" role="listitem">
-          <div class="icon">🏎️</div>
-          <div class="content">
-            <h2 class="title">Buscador de códigos</h2>
-            <p class="desc">Consulta rápida de DTC y descripciones de averías.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="buscador_averias.html" target="_blank">Abrir</a>
-          </div>
-        </article>
-        
-        <!-- Patentes Chile -->
-        <article class="card" role="listitem">
-          <div class="icon">🔢</div>
-          <div class="content">
-            <h2 class="title">Patentes Chile</h2>
-            <p class="desc">Consulta externa de información por patente.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="https://www.patentechile.com/" target="_blank" rel="noopener">Abrir</a>
-          </div>
-        </article>
+      <div class="footer">
+        © 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.
       </div>
     </div>
-
-    <!-- NUEVO GRUPO INFORMES: Crear informes + Buscar informes -->
-    <div id="grupo-informes" class="frame section-content">
-      <div class="section-header">
-        <div class="icon-large">📄</div>
-        <div class="header-content">
-          <h2>Informes de Diagnóstico</h2>
-          <p>Crear nuevos informes y consultar el historial por patente</p>
-        </div>
-      </div>
-      
-      <a href="javascript:void(0)" class="btn btn-back" onclick="showSection('main-menu')">← Volver al menú principal</a>
-      
-      <div class="grid" role="list">
-        <!-- Crear informes -->
-        <article class="card" role="listitem">
-          <div class="icon">➕</div>
-          <div class="content">
-            <h2 class="title">Crear Informe</h2>
-            <p class="desc">Generar nuevo informe de diagnóstico para un vehículo.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="https://taller-todo.vercel.app/informes.html" target="_blank">Abrir</a>
-          </div>
-        </article>
-        
-        <!-- Buscar informes -->
-        <article class="card" role="listitem">
-          <div class="icon">🔍</div>
-          <div class="content">
-            <h2 class="title">Buscar Informes</h2>
-            <p class="desc">Consultar historial completo por patente de vehículo.</p>
-          </div>
-          <div class="actions">
-            <a class="btn" href="buscar_informes.html">Abrir</a>
-          </div>
-        </article>
-      </div>
-    </div>
-    
-    <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
   </div>
 
   <script>
-    const MIN_SPLASH_MS = 900;
-    (async function(){
-      const splash=document.getElementById('splash');
-      const wrapper=document.querySelector('.wrapper');
-      if(!window.__SHOW_SPLASH__){
-        wrapper.style.opacity='1';
-        splash.style.display='none';
-        return;
-      }
-      const waitForLogo=()=>new Promise(res=>{
-        const img=splash.querySelector('img');
-        if(!img||img.complete)return res();
-        img.addEventListener('load',res,{once:true});
-        img.addEventListener('error',res,{once:true});
-      });
-      const start=performance.now();
-      await waitForLogo();
-      const elapsed=performance.now()-start;
-      setTimeout(()=>{
-        splash.style.opacity='0';
-        wrapper.style.opacity='1';
-        setTimeout(()=>splash.remove(),400);
-        sessionStorage.setItem('splashShownV2','1');
-      },Math.max(0,MIN_SPLASH_MS-elapsed));
-    })();
+    // URL de tu Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbwY0mvLxztZPgiBtcoh_JE5u-z1zhtubQC3bVlj-hyYlBHKKaZyAFaVGSCLz8tbz3p7/exec";
     
-    // Función para cambiar entre secciones
-    function showSection(sectionId) {
-      // Ocultar todas las secciones
-      document.querySelectorAll('.section-content').forEach(section => {
-        section.classList.remove('active');
-      });
+    // Normalizar texto (quitar acentos, mayúsculas)
+    function normalizarTexto(texto) {
+      return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
+    }
+    
+    // Formatear fecha
+    function formatearFecha(fechaStr) {
+      if (!fechaStr) return "Sin fecha";
       
-      // Mostrar la sección solicitada
-      const targetSection = document.getElementById(sectionId);
-      if (targetSection) {
-        targetSection.classList.add('active');
-        
-        // Actualizar el título de la página según la sección
-        let pageTitle = 'Panel Principal';
-        if (sectionId === 'grupo-aceite') {
-          pageTitle = 'Aceite - Panel Principal';
-        } else if (sectionId === 'grupo-clientes') {
-          pageTitle = 'Orden y Clientes - Panel Principal';
-        } else if (sectionId === 'grupo-informacion') {
-          pageTitle = 'Información - Panel Principal';
-        } else if (sectionId === 'grupo-informes') {
-          pageTitle = 'Informes - Panel Principal';
+      try {
+        // Intentar parsear como fecha
+        const fecha = new Date(fechaStr);
+        if (isNaN(fecha.getTime())) {
+          return fechaStr;
         }
-        document.title = pageTitle;
         
-        // Hacer scroll suave al principio de la página
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Actualizar historial
-        history.pushState({section: sectionId}, '', `?section=${sectionId}`);
+        return `${String(fecha.getDate()).padStart(2, "0")}/${String(fecha.getMonth() + 1).padStart(2, "0")}/${fecha.getFullYear()}`;
+      } catch (e) {
+        return fechaStr;
       }
     }
     
-    // Manejar el botón de retroceso del navegador
-    window.addEventListener('popstate', function(event) {
-      if (event.state && event.state.section) {
-        showSection(event.state.section);
-      } else {
-        showSection('main-menu');
+    // Formatear valor (agregar separadores de miles si es número)
+    function formatearValor(valor) {
+      if (valor === null || valor === undefined || valor === "") {
+        return "-";
+      }
+      
+      const valorStr = String(valor);
+      const num = parseFloat(valorStr.replace(/[^0-9.,-]/g, '').replace(',', '.'));
+      if (!isNaN(num) && isFinite(num)) {
+        return "$" + num.toLocaleString("es-CL");
+      }
+      
+      return valorStr;
+    }
+    
+    // Función principal para buscar informes
+    async function buscarInformes() {
+      const patente = document.getElementById('patenteInput').value.trim().toUpperCase();
+      const resultadosDiv = document.getElementById('resultados');
+      
+      if (!patente) {
+        resultadosDiv.innerHTML = '<div class="no-results">Por favor, ingresa una patente</div>';
+        return;
+      }
+      
+      resultadosDiv.innerHTML = '<div class="loading">🔍 Buscando informes...</div>';
+      
+      try {
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const datos = await response.json();
+        
+        let informes = [];
+        if (Array.isArray(datos)) {
+          informes = datos;
+        } else if (datos.informes && Array.isArray(datos.informes)) {
+          informes = datos.informes;
+        } else {
+          throw new Error("Formato de respuesta inesperado");
+        }
+        
+        const patenteNormalizada = normalizarTexto(patente);
+        const informesFiltrados = informes.filter(informe => {
+          const patenteInforme = normalizarTexto(
+            informe.Patente || 
+            informe.patente || 
+            informe["Patente"] || 
+            ""
+          );
+          return patenteInforme.includes(patenteNormalizada);
+        });
+        
+        informesFiltrados.sort((a, b) => {
+          const fechaA = new Date(a.Fecha || a.fecha || 0);
+          const fechaB = new Date(b.Fecha || b.fecha || 0);
+          return fechaB - fechaA;
+        });
+        
+        mostrarResultados(informesFiltrados, patente);
+        
+      } catch (error) {
+        console.error("Error al buscar informes:", error);
+        resultadosDiv.innerHTML = `
+          <div class="no-results">
+            ❌ Error al buscar informes: ${error.message}<br>
+            <button class="btn" onclick="buscarInformes()" style="margin-top: 10px;">Reintentar</button>
+          </div>
+        `;
+      }
+    }
+    
+    // Función para mostrar los resultados
+    function mostrarResultados(informes, patenteBuscada) {
+      const resultadosDiv = document.getElementById('resultados');
+      
+      if (informes.length === 0) {
+        resultadosDiv.innerHTML = `
+          <div class="no-results">
+            No se encontraron informes para la patente: <strong>${patenteBuscada}</strong>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = `
+        <div style="color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 16px; width: 100%;">
+          📊 ${informes.length} informe(s) encontrado(s) para: <span style="color: #00ff8c;">${patenteBuscada}</span>
+        </div>
+      `;
+      
+      informes.forEach((informe, index) => {
+        const esMasReciente = index === 0;
+        
+        const fecha = informe.Fecha || informe.fecha || informe["Fecha"] || "";
+        const marca = informe.Marca || informe.marca || informe["Marca"] || "No especificado";
+        const modelo = informe.Modelo || informe.modelo || informe["Modelo"] || "No especificado";
+        const ano = informe.Año || informe.ano || informe["Año"] || "No especificado";
+        const km = informe.KM || informe.km || informe["KM"] || "No especificado";
+        const codigos = informe.Código || informe.codigo || informe["Códigos"] || "Sin códigos";
+        const detalle = informe.Detalle || informe.detalle || informe["Detalle"] || "Sin detalle";
+        const valorArea = informe["Valor Área"] || informe.Valor_Area || informe.valor_area || "Sin valor";
+        const causas = informe["Posibles Causas"] || informe.Posibles_Causas || informe.causas || "Sin causas especificadas";
+        const recomendaciones = informe.Recomendaciones || informe.recomendaciones || informe["Recomendaciones"] || "Sin recomendaciones";
+        const valorFinal = informe["Valor Final"] || informe.Valor_Final || informe.valor_final || "";
+        
+        html += `
+          <div class="result-block ${esMasReciente ? 'ultimo' : ''}">
+            <div class="result-header">
+              <div style="flex: 1; min-width: 0;">
+                <span class="result-title">Informe #${index + 1}</span>
+                ${esMasReciente ? '<span class="badge">MÁS RECIENTE</span>' : ''}
+              </div>
+              <div class="result-date">📅 ${formatearFecha(fecha)}</div>
+            </div>
+            
+            <div class="data-grid">
+              <div class="data-item">
+                <span class="data-label">Marca</span>
+                <span class="data-value">${marca}</span>
+              </div>
+              
+              <div class="data-item">
+                <span class="data-label">Modelo</span>
+                <span class="data-value">${modelo}</span>
+              </div>
+              
+              <div class="data-item">
+                <span class="data-label">Año</span>
+                <span class="data-value">${ano}</span>
+              </div>
+              
+              <div class="data-item">
+                <span class="data-label">KM</span>
+                <span class="data-value">${km}</span>
+              </div>
+            </div>
+            
+            ${codigos && codigos !== "Sin códigos" && codigos !== "-" ? `
+              <div class="data-item">
+                <span class="data-label">Códigos de error</span>
+                <div class="text-content">${String(codigos).replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
+            
+            ${detalle && detalle !== "Sin detalle" && detalle !== "-" ? `
+              <div class="data-item">
+                <span class="data-label">Detalle del diagnóstico</span>
+                <div class="text-content">${String(detalle).replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
+            
+            ${valorArea && valorArea !== "Sin valor" && valorArea !== "-" ? `
+              <div class="data-item">
+                <span class="data-label">Valor/Productos</span>
+                <div class="text-content">${String(valorArea).replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
+            
+            ${(causas && causas !== "Sin causas especificadas" && causas !== "-") || 
+              (recomendaciones && recomendaciones !== "Sin recomendaciones" && recomendaciones !== "-") ? `
+              <div class="data-grid">
+                ${causas && causas !== "Sin causas especificadas" && causas !== "-" ? `
+                  <div class="data-item">
+                    <span class="data-label">Posibles causas</span>
+                    <div class="text-content" style="font-size: 13px;">${String(causas).replace(/\n/g, '<br>')}</div>
+                  </div>
+                ` : ''}
+                
+                ${recomendaciones && recomendaciones !== "Sin recomendaciones" && recomendaciones !== "-" ? `
+                  <div class="data-item">
+                    <span class="data-label">Recomendaciones</span>
+                    <div class="text-content" style="font-size: 13px;">${String(recomendaciones).replace(/\n/g, '<br>')}</div>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+            
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--card-border); width: 100%;">
+              <div class="data-item">
+                <span class="data-label">Valor final</span>
+                <span class="data-value" style="color: #00ff8c; font-size: 18px; font-weight: 700;">${formatearValor(valorFinal)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      resultadosDiv.innerHTML = html;
+    }
+    
+    document.getElementById('patenteInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        buscarInformes();
       }
     });
     
-    // Inicializar según la URL
-    function initFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const section = urlParams.get('section');
-      const validSections = ['grupo-aceite', 'grupo-clientes', 'grupo-informacion', 'grupo-informes'];
-      if (section && validSections.includes(section)) {
-        showSection(section);
-        history.replaceState({section: section}, '', `?section=${section}`);
-      }
-    }
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        const input = document.getElementById('patenteInput');
+        input.focus();
+        
+        // Para iOS: abrir teclado correctamente
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+          input.addEventListener('touchstart', function() {
+            this.focus();
+          }, { passive: true });
+        }
+      }, 300);
+    });
     
-    // Inicializar cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', initFromURL);
+    // Prevenir zoom en iOS
+    document.addEventListener('gesturestart', function(e) {
+      e.preventDefault();
+    }, { passive: false });
+    
+    // Detectar si estamos en móvil
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      document.body.classList.add('mobile');
+    }
   </script>
 </body>
 </html>
-<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_BrTaK8zsPjXswZZxQwmdBrLnMabY" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
