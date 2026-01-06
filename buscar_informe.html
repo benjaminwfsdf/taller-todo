@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="manifest.json">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Taller">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+
+  <title>Buscar Informes por Patente</title>
+  <style>
+    :root{
+      --brand:#900000;
+      --brand-900:#700000;
+      --ink:#e9ecef;
+      --muted:#b9c0c7;
+      --bg:#0b0b0c;
+      --panel:#0f0f11;
+      --card:#16181b;
+      --card-border:#272a2f;
+      --shadow:0 10px 28px rgba(0,0,0,.45);
+      --shadow-hover:0 14px 40px rgba(0,0,0,.6);
+      --radius:16px;
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+
+    .topbar{
+      background:#000;
+      color:#fff;
+      text-align:center;
+      padding:14px 10px;
+      font-weight:700;
+      letter-spacing:.6px;
+      border-bottom:4px solid var(--brand);
+      box-shadow: 0 6px 16px rgba(0,0,0,.55);
+    }
+
+    .wrapper{max-width:1100px;margin:28px auto 44px;padding:0 16px;}
+    .frame{border:3px solid var(--brand);border-radius:var(--radius);padding:20px;background:var(--panel);box-shadow:var(--shadow);}
+    
+    .search-card{
+      position:relative;
+      background:var(--card);
+      border:1px solid var(--card-border);
+      border-radius:14px;
+      box-shadow:0 6px 18px rgba(0,0,0,.35);
+      padding:20px;
+      margin-bottom:22px;
+    }
+    
+    .search-card::before{
+      content:"";
+      position:absolute;
+      inset:0 auto 0 0;
+      width:8px;
+      border-radius:14px 0 0 14px;
+      background:var(--brand);
+    }
+    
+    label{
+      display:block;
+      margin:8px 0 6px;
+      font-weight:700;
+      color:var(--ink);
+      font-size:16px;
+    }
+    
+    input{
+      width:100%;
+      padding:14px 16px;
+      border:2px solid var(--card-border);
+      border-radius:12px;
+      background:rgba(0,0,0,0.3);
+      color:var(--ink);
+      font-size:16px;
+      text-transform:uppercase;
+      margin-bottom:16px;
+    }
+    
+    .btn{
+      border:2px solid var(--brand);
+      border-radius:12px;
+      padding:12px 24px;
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+      color:#fff;
+      background:#0c0c0e;
+      box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(179,0,0,.25);
+      display:inline-block;
+      width:100%;
+      text-align:center;
+      font-size:16px;
+      margin-top:10px;
+    }
+    
+    .btn:hover{
+      background:var(--brand);
+    }
+    
+    .btn-back{
+      border:2px solid var(--muted);
+      border-radius:12px;
+      padding:10px 16px;
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+      color:var(--muted);
+      background:#0c0c0e;
+      box-shadow:0 2px 0 rgba(0,0,0,.6),inset 0 0 12px rgba(185,192,199,.25);
+      display:inline-block;
+      margin-bottom:20px;
+      margin-top:10px;
+    }
+    
+    .btn-back:hover{
+      background:var(--muted);
+      color:#000;
+    }
+    
+    /* Estilos para resultados */
+    .result-block{
+      margin-top:20px;
+      background:var(--card);
+      border:2px solid var(--card-border);
+      border-radius:12px;
+      padding:20px;
+      color:var(--ink);
+      margin-bottom:16px;
+      position:relative;
+    }
+    
+    .ultimo{
+      border:3px solid #00ff8c !important;
+      box-shadow:0 0 14px rgba(0,255,140,0.3) !important;
+    }
+    
+    .result-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:16px;
+      padding-bottom:12px;
+      border-bottom:1px solid var(--card-border);
+    }
+    
+    .result-title{
+      font-size:18px;
+      font-weight:800;
+      color:#fff;
+      margin:0;
+    }
+    
+    .result-date{
+      color:var(--muted);
+      font-size:14px;
+      background:rgba(0,0,0,0.3);
+      padding:4px 10px;
+      border-radius:8px;
+    }
+    
+    .badge{
+      background:var(--brand);
+      color:#fff;
+      padding:4px 10px;
+      border-radius:8px;
+      font-size:12px;
+      font-weight:700;
+      margin-left:10px;
+    }
+    
+    .data-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    
+    .data-item{
+      margin-bottom:8px;
+    }
+    
+    .data-label{
+      display:block;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:600;
+      margin-bottom:4px;
+    }
+    
+    .data-value{
+      color:var(--ink);
+      font-size:15px;
+      font-weight:500;
+      word-break:break-word;
+    }
+    
+    .text-content{
+      background:rgba(0,0,0,0.2);
+      border-radius:8px;
+      padding:12px;
+      margin-top:12px;
+      white-space:pre-line;
+      font-size:14px;
+      line-height:1.5;
+    }
+    
+    .no-results{
+      text-align:center;
+      padding:40px 20px;
+      color:var(--muted);
+      font-style:italic;
+      background:rgba(0,0,0,0.2);
+      border-radius:12px;
+      border:2px dashed var(--card-border);
+    }
+    
+    .loading{
+      text-align:center;
+      padding:30px;
+      color:var(--muted);
+    }
+    
+    .footer{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-top:30px;
+    }
+    
+    /* Estilos responsivos */
+    @media (max-width: 768px) {
+      .data-grid{
+        grid-template-columns:1fr;
+      }
+      
+      .result-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:8px;
+      }
+    }
+    
+    .section-header{
+      display:flex;
+      align-items:center;
+      gap:15px;
+      margin-bottom:20px;
+      padding:20px;
+      background:var(--brand);
+      color:#fff;
+      border-radius:18px;
+      box-shadow:0 10px 22px rgba(179,0,0,.35);
+    }
+    
+    .section-header .icon-large{
+      flex:0 0 60px;
+      height:60px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:#0c0c0e;
+      border:3px solid #fff;
+      color:#fff;
+      font-size:28px;
+      box-shadow:inset 0 0 16px rgba(179,0,0,.35);
+    }
+    
+    .section-header .header-content{flex:1;}
+    .section-header h2{
+      margin:0 0 5px;
+      font-size:24px;
+      color:#fff;
+      letter-spacing:.5px;
+    }
+    
+    .section-header p{
+      margin:0;
+      color:rgba(255,255,255,0.8);
+      font-size:14.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
+
+  <div class="wrapper">
+    <div class="frame">
+      <div class="section-header">
+        <div class="icon-large">🔍</div>
+        <div class="header-content">
+          <h2>Buscar Informes por Patente</h2>
+          <p>Consulta el historial completo de diagnósticos del vehículo</p>
+        </div>
+      </div>
+
+      <a href="index.html" class="btn-back">← Volver al Panel Principal</a>
+
+      <div class="search-card">
+        <label for="patenteInput">Ingresa la patente del vehículo:</label>
+        <input type="text" id="patenteInput" placeholder="EJ: AB123CD" style="text-transform: uppercase;">
+        
+        <button class="btn" onclick="buscarInformes()">🔍 Buscar Informes</button>
+        
+        <div id="resultados" style="margin-top: 20px;">
+          <!-- Los resultados aparecerán aquí -->
+        </div>
+      </div>
+      
+      <div class="footer">
+        © 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // URL de tu Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbwY0mvLxztZPgiBtcoh_JE5u-z1zhtubQC3bVlj-hyYlBHKKaZyAFaVGSCLz8tbz3p7/exec";
+    
+    // Normalizar texto (quitar acentos, mayúsculas)
+    function normalizarTexto(texto) {
+      return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
+    }
+    
+    // Formatear fecha
+    function formatearFecha(fechaStr) {
+      if (!fechaStr) return "Sin fecha";
+      
+      try {
+        // Intentar parsear como fecha
+        const fecha = new Date(fechaStr);
+        if (isNaN(fecha.getTime())) {
+          return fechaStr;
+        }
+        
+        return `${String(fecha.getDate()).padStart(2, "0")}/${String(fecha.getMonth() + 1).padStart(2, "0")}/${fecha.getFullYear()}`;
+      } catch (e) {
+        return fechaStr;
+      }
+    }
+    
+    // Formatear valor (agregar separadores de miles si es número)
+    function formatearValor(valor) {
+      if (valor === null || valor === undefined || valor === "") {
+        return "-";
+      }
+      
+      const valorStr = String(valor);
+      const num = parseFloat(valorStr.replace(/[^0-9.,-]/g, '').replace(',', '.'));
+      if (!isNaN(num) && isFinite(num)) {
+        return "$" + num.toLocaleString("es-CL");
+      }
+      
+      return valorStr;
+    }
+    
+    // Función principal para buscar informes
+    async function buscarInformes() {
+      const patente = document.getElementById('patenteInput').value.trim().toUpperCase();
+      const resultadosDiv = document.getElementById('resultados');
+      
+      if (!patente) {
+        resultadosDiv.innerHTML = '<div class="no-results">Por favor, ingresa una patente</div>';
+        return;
+      }
+      
+      resultadosDiv.innerHTML = '<div class="loading">🔍 Buscando informes...</div>';
+      
+      try {
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const datos = await response.json();
+        
+        let informes = [];
+        if (Array.isArray(datos)) {
+          informes = datos;
+        } else if (datos.informes && Array.isArray(datos.informes)) {
+          informes = datos.informes;
+        } else {
+          throw new Error("Formato de respuesta inesperado");
+        }
+        
+        const patenteNormalizada = normalizarTexto(patente);
+        const informesFiltrados = informes.filter(informe => {
+          const patenteInforme = normalizarTexto(
+            informe.Patente || 
+            informe.patente || 
+            informe["Patente"] || 
+            ""
+          );
+          return patenteInforme.includes(patenteNormalizada);
+        });
+        
+        informesFiltrados.sort((a, b) => {
+          const fechaA = new Date(a.Fecha || a.fecha || 0);
+          const fechaB = new Date(b.Fecha || b.fecha || 0);
+          return fechaB - fechaA;
+        });
+        
+        mostrarResultados(informesFiltrados, patente);
+        
+      } catch (error) {
+        console.error("Error al buscar informes:", error);
+        resultadosDiv.innerHTML = `
+          <div class="no-results">
+            ❌ Error al buscar informes: ${error.message}<br>
+            <button class="btn" onclick="buscarInformes()" style="margin-top: 10px;">Reintentar</button>
+          </div>
+        `;
+      }
+    }
+    
+    // Función para mostrar los resultados
+    function mostrarResultados(informes, patenteBuscada) {
+      const resultadosDiv = document.getElementById('resultados');
+      
+      if (informes.length === 0) {
+        resultadosDiv.innerHTML = `
+          <div class="no-results">
+            No se encontraron informes para la patente: <strong>${patenteBuscada}</strong>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = `
+        <div style="color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+          📊 ${informes.length} informe(s) encontrado(s) para: <span style="color: #00ff8c;">${patenteBuscada}</span>
+        </div>
+      `;
+      
+      informes.forEach((informe, index) => {
+        const esMasReciente = index === 0;
+        
+        const fecha = informe.Fecha || informe.fecha || informe["Fecha"] || "";
+        const marca = informe.Marca || informe.marca || informe["Marca"] || "No especificado";
+        const modelo = informe.Modelo || informe.modelo || informe["Modelo"] || "No especificado";
+        const ano = informe.Año || informe.ano || informe["Año"] || "No especificado";
+        const km = informe.KM || informe.km || informe["KM"] || "No especificado";
+        const codigos = informe.Código || informe.codigo || informe["Códigos"] || "Sin códigos";
+        const detalle = informe.Detalle || informe.detalle || informe["Detalle"] || "Sin detalle";
+        const valorArea = informe["Valor Área"] || informe.Valor_Area || informe.valor_area || "Sin valor";
+        const causas = informe["Posibles Causas"] || informe.Posibles_Causas || informe.causas || "Sin causas especificadas";
+        const recomendaciones = informe.Recomendaciones || informe.recomendaciones || informe["Recomendaciones"] || "Sin recomendaciones";
+        const valorFinal = informe["Valor Final"] || informe.Valor_Final || informe.valor_final || "";
+        
+        html += `
+          <div class="result-block ${esMasReciente ? 'ultimo' : ''}">
+            <div class="result-header">
+              <div>
+                <span class="result-title">Informe #${index + 1}</span>
+                ${esMasReciente ? '<span class="badge">MÁS RECIENTE</span>' : ''}
+              </div>
+              <div class="result-date">📅 ${formatearFecha(fecha)}</div>
+            </div>
+            
+            <div class="data-grid">
+              <div class="data-item">
+                <span class="data-label">Marca</span>
+                <span class="data-value">${marca}</span>
+              </div>
+              
+              <div class="data-item">
+                <span class="data-label">Modelo</span>
+                <span class="data-value">${modelo}</span>
+              </div>
+              
+              <div class="data-item">
+                <span class="data-label">Año</span>
+                <span class="data-value">${ano}</span>
+              </div>
+              
+              <div class="data-item">
+                <span class="data-label">KM</span>
+                <span class="data-value">${km}</span>
+              </div>
+            </div>
+            
+            ${codigos && codigos !== "Sin códigos" && codigos !== "-" ? `
+              <div class="data-item">
+                <span class="data-label">Códigos de error</span>
+                <div class="text-content">${String(codigos).replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
+            
+            ${detalle && detalle !== "Sin detalle" && detalle !== "-" ? `
+              <div class="data-item">
+                <span class="data-label">Detalle del diagnóstico</span>
+                <div class="text-content">${String(detalle).replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
+            
+            ${valorArea && valorArea !== "Sin valor" && valorArea !== "-" ? `
+              <div class="data-item">
+                <span class="data-label">Valor/Productos</span>
+                <div class="text-content">${String(valorArea).replace(/\n/g, '<br>')}</div>
+              </div>
+            ` : ''}
+            
+            ${(causas && causas !== "Sin causas especificadas" && causas !== "-") || 
+              (recomendaciones && recomendaciones !== "Sin recomendaciones" && recomendaciones !== "-") ? `
+              <div class="data-grid">
+                ${causas && causas !== "Sin causas especificadas" && causas !== "-" ? `
+                  <div class="data-item">
+                    <span class="data-label">Posibles causas</span>
+                    <div class="text-content" style="font-size: 13px;">${String(causas).replace(/\n/g, '<br>')}</div>
+                  </div>
+                ` : ''}
+                
+                ${recomendaciones && recomendaciones !== "Sin recomendaciones" && recomendaciones !== "-" ? `
+                  <div class="data-item">
+                    <span class="data-label">Recomendaciones</span>
+                    <div class="text-content" style="font-size: 13px;">${String(recomendaciones).replace(/\n/g, '<br>')}</div>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+            
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--card-border);">
+              <div class="data-item">
+                <span class="data-label">Valor final</span>
+                <span class="data-value" style="color: #00ff8c; font-size: 18px; font-weight: 700;">${formatearValor(valorFinal)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      resultadosDiv.innerHTML = html;
+    }
+    
+    document.getElementById('patenteInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        buscarInformes();
+      }
+    });
+    
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        document.getElementById('patenteInput').focus();
+      }, 100);
+    });
+  </script>
+</body>
+</html>
