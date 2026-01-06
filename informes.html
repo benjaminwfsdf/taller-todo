@@ -752,7 +752,6 @@ function buscarAplicacion() {
   "U0235": "Fallo de comunicación con el módulo de control de transmisión 36",
   "U0236": "Fallo de comunicación con el módulo de control de transmisión 37",
   "U0237": "Fallo de comunicación con el módulo de control de transmisión 38",
-  "U0238": "Fallo de comunicación con el módulo de control de transmisión 39",
   "U0239": "Fallo de comunicación con el módulo de control de transmisión 40",
   "U0240": "Fallo de comunicación con el módulo de control de transmisión 41",
   "U0241": "Fallo de comunicación con el módulo de control de transmisión 42",
@@ -1000,7 +999,7 @@ function buscarAplicacion() {
     async function guardarEnGoogleSheetsYImprimir() {
       const datos = recogerDatosInforme();
       try {
-        await fetch("https://script.google.com/macros/s/AKfycbzTDTkFKdwIqH8E_jDrOWx3chf42XasN-QI0WcCRav9gS9r7gZJ5tRIVVch1T6E1ukw/exec", {
+        await fetch("https://script.google.com/macros/s/AKfycbwY0mvLxztZPgiBtcoh_JE5u-z1zhtubQC3bVlj-hyYlBHKKaZyAFaVGSCLz8tbz3p7/exec", {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify(datos)
@@ -1043,8 +1042,8 @@ function buscarAplicacion() {
         valor_area: document.getElementById("valor_area").value.trim(),
         causas: document.getElementById("causas").value.trim(),
         recomendaciones: document.getElementById("recomendaciones").value.trim(),
-        valor_final: document.getElementById("valor_final").value.trim(),
-        fecha: document.getElementById("fecha").innerText.trim()
+        valor_final: document.getElementById("valor_final").value.trim()
+        // NOTA: Se quitó 'fecha' porque la API la genera automáticamente
       };
     }
   </script>
