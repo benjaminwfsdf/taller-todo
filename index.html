@@ -107,11 +107,11 @@
     .footer{text-align:center;color:#8c96a3;font-size:12px;margin:20px 0 32px;}
     .footer strong{color:#cfd6de;}
     
-    /* Estilos para las secciones específicas - MANTENIENDO EL MISMO DISEÑO */
+    /* Estilos para las secciones específicas */
     .section-content{display:none;}
     .section-content.active{display:block;}
     
-    /* Header de sección - igual que el original */
+    /* Header de sección */
     .section-header{
       display:flex;
       align-items:center;
@@ -151,7 +151,7 @@
       font-size:14.5px;
     }
     
-    /* Botón de volver - mismo estilo que .btn */
+    /* Botón de volver */
     .btn-back{
       border:2px solid var(--muted);
       border-radius:12px;
@@ -171,7 +171,7 @@
       color:#000;
     }
     
-    /* Indicador de grupo - discreto */
+    /* Indicador de grupo */
     .group-indicator {
       display: inline-flex;
       align-items: center;
@@ -186,9 +186,7 @@
       font-size: 10px;
     }
     
-    /* Ajuste para que los botones sean iguales */
     .btn-options {
-      /* Mismo estilo que .btn */
       min-width: 100px;
       text-align: center;
     }
@@ -257,14 +255,17 @@
           </div>
         </article>
 
-        <!-- 📄 Informes -->
-        <article class="card" role="listitem">
+        <!-- 📄 INFORMES (NUEVO GRUPO) -->
+        <article class="card" role="listitem" onclick="showSection('grupo-informes')">
           <div class="icon">📄</div>
           <div class="content">
             <h2 class="title">Informes de Diagnóstico</h2>
-            <p class="desc">Crear informes. Se abre en una pestaña nueva.</p>
+            <p class="desc">Crear y buscar informes de diagnóstico</p>
+            <div class="group-indicator">Contiene: Crear informes + Buscar informes</div>
           </div>
-          <div class="actions"><a class="btn" href="https://taller-todo.vercel.app/informes.html" target="_blank">Abrir</a></div>
+          <div class="actions">
+            <button class="btn btn-options" onclick="event.stopPropagation();showSection('grupo-informes')">Ver opciones</button>
+          </div>
         </article>
 
         <!-- 👥 ORDEN Y CLIENTES (Grupo) -->
@@ -423,6 +424,45 @@
         </article>
       </div>
     </div>
+
+    <!-- NUEVO GRUPO INFORMES: Crear informes + Buscar informes -->
+    <div id="grupo-informes" class="frame section-content">
+      <div class="section-header">
+        <div class="icon-large">📄</div>
+        <div class="header-content">
+          <h2>Informes de Diagnóstico</h2>
+          <p>Crear nuevos informes y consultar el historial por patente</p>
+        </div>
+      </div>
+      
+      <a href="javascript:void(0)" class="btn btn-back" onclick="showSection('main-menu')">← Volver al menú principal</a>
+      
+      <div class="grid" role="list">
+        <!-- Crear informes -->
+        <article class="card" role="listitem">
+          <div class="icon">➕</div>
+          <div class="content">
+            <h2 class="title">Crear Informe</h2>
+            <p class="desc">Generar nuevo informe de diagnóstico para un vehículo.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="https://taller-todo.vercel.app/informes.html" target="_blank">Abrir</a>
+          </div>
+        </article>
+        
+        <!-- Buscar informes -->
+        <article class="card" role="listitem">
+          <div class="icon">🔍</div>
+          <div class="content">
+            <h2 class="title">Buscar Informes</h2>
+            <p class="desc">Consultar historial completo por patente de vehículo.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="buscar_informe.html">Abrir</a>
+          </div>
+        </article>
+      </div>
+    </div>
     
     <div class="footer">© 2025 <strong>Benjamin González</strong>. Todos los derechos reservados.</div>
   </div>
@@ -474,11 +514,16 @@
           pageTitle = 'Orden y Clientes - Panel Principal';
         } else if (sectionId === 'grupo-informacion') {
           pageTitle = 'Información - Panel Principal';
+        } else if (sectionId === 'grupo-informes') {
+          pageTitle = 'Informes - Panel Principal';
         }
         document.title = pageTitle;
         
         // Hacer scroll suave al principio de la página
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Actualizar historial
+        history.pushState({section: sectionId}, '', `?section=${sectionId}`);
       }
     }
     
@@ -491,14 +536,13 @@
       }
     });
     
-    // También puedes agregar una función para inicializar según la URL
+    // Inicializar según la URL
     function initFromURL() {
       const urlParams = new URLSearchParams(window.location.search);
       const section = urlParams.get('section');
-      const validSections = ['grupo-aceite', 'grupo-clientes', 'grupo-informacion'];
+      const validSections = ['grupo-aceite', 'grupo-clientes', 'grupo-informacion', 'grupo-informes'];
       if (section && validSections.includes(section)) {
         showSection(section);
-        // Actualizar el historial
         history.replaceState({section: section}, '', `?section=${section}`);
       }
     }
