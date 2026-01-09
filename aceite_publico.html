@@ -53,6 +53,29 @@ body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
 
 .note{margin-top:14px;background:#0c0c0e;padding:12px;border-radius:10px;border:1px dashed #444}
 .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
+
+/* Estilos para modo debug */
+.debug-info{
+  background:#1a1a2e;
+  border:1px solid #444;
+  border-radius:8px;
+  padding:10px;
+  margin:10px 0;
+  font-size:12px;
+  color:#8a8aff;
+  display:none;
+}
+.debug-toggle{
+  background:#333;
+  color:#ccc;
+  border:none;
+  padding:5px 10px;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:11px;
+  margin:5px 0;
+}
+.debug-toggle:hover{background:#444}
 </style>
 </head>
 
@@ -67,6 +90,9 @@ body{margin:0;font-family:system-ui;background:var(--bg);color:var(--ink)}
   <h1>🛢️ Registro de Cambio de Aceite</h1>
 </div>
 
+<button class="debug-toggle" onclick="toggleDebug()">🔍 Mostrar info debug</button>
+<div id="debugInfo" class="debug-info"></div>
+
 <div id="contenido" class="card">Cargando registro…</div>
 
 <div class="footer">
@@ -78,36 +104,103 @@ Este registro respalda el servicio realizado.
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxAgXWy1VKHJU5rMFJViA_bWthtZ45ukt-_06iHv0LQ1D1YoQ1WRilTzMCYqKOZkEXZSw/exec";
-const id = new URLSearchParams(location.search).get("id");
+const urlParams = new URLSearchParams(location.search);
+const id = urlParams.get("id");
 
 /* =========================
    UTILIDADES
 ========================= */
 function formatearFecha(v){
   if(!v) return "—";
-  return new Date(v).toLocaleDateString("es-CL");
+  
+  // Intentar parsear la fecha
+  try {
+    const date = new Date(v);
+    // Si la fecha es inválida, devolver el valor original
+    if(isNaN(date.getTime())) return v;
+    return date.toLocaleDateString("es-CL");
+  } catch(e) {
+    return v;
+  }
+}
+
+function formatearCantidadAceite(valor){
+  if(!valor && valor !== 0) return "—";
+  
+  const str = String(valor).trim();
+  
+  // Si es una fecha ISO (contiene T y Z)
+  if(str.includes('T') && str.includes('Z')){
+    try {
+      const date = new Date(str);
+      if(!isNaN(date.getTime())){
+        console.warn("⚠️ El campo aceite_cantidad_litros contiene una fecha:", str);
+        return "— (error en datos)";
+      }
+    } catch(e){
+      // No es una fecha válida
+    }
+  }
+  
+  // Remover cualquier carácter no numérico excepto punto y coma
+  const numeros = str.replace(/[^\d.,]/g, '');
+  
+  if(!numeros) return "—";
+  
+  // Reemplazar coma por punto para decimales
+  const cantidad = parseFloat(numeros.replace(',', '.'));
+  
+  if(isNaN(cantidad)) return "—";
+  
+  return cantidad + " L";
 }
 
 function calcularProximoServicio(kmActual, proximo){
-  if(!kmActual || !proximo) return "—";
+  if(!kmActual && kmActual !== 0) return "—";
+  if(!proximo && proximo !== 0) return "—";
 
   kmActual = Number(kmActual);
   proximo  = Number(proximo);
 
   if(isNaN(kmActual) || isNaN(proximo)) return "—";
 
-  // 👉 si el valor es menor o igual al km actual, se interpreta como intervalo
+  // Si el valor es menor o igual al km actual, se interpreta como intervalo
   if(proximo <= kmActual){
     return (kmActual + proximo) + " km";
   }
 
-  // 👉 si es mayor, es km absoluto
+  // Si es mayor, es km absoluto
   return proximo + " km";
 }
 
 async function apiGet(p){
-  const r = await fetch(API_URL + "?" + new URLSearchParams(p));
-  return r.json();
+  try {
+    const r = await fetch(API_URL + "?" + new URLSearchParams(p));
+    return r.json();
+  } catch(error) {
+    console.error("Error en API:", error);
+    return { error: "Error de conexión" };
+  }
+}
+
+function mostrarDebug(info){
+  const debugDiv = document.getElementById('debugInfo');
+  debugDiv.innerHTML = `<pre>${JSON.stringify(info, null, 2)}</pre>`;
+}
+
+function toggleDebug(){
+  const debugDiv = document.getElementById('debugInfo');
+  debugDiv.style.display = debugDiv.style.display === 'block' ? 'none' : 'block';
+}
+
+function linkFoto(texto, url){
+  if(!url || url === "Sin foto") return "";
+  return `
+    <div class="foto-link">
+      <span>${texto}</span>
+      <a href="${url}" target="_blank">📷 Ver foto</a>
+    </div>
+  `;
 }
 
 /* =========================
@@ -115,22 +208,49 @@ async function apiGet(p){
 ========================= */
 async function cargar(){
   if(!id){
-    contenido.innerText="Registro no válido.";
+    contenido.innerText="❌ Error: No se proporcionó ID de registro.";
     return;
   }
+
+  console.log("🔄 Cargando registro ID:", id);
+  
+  // Mostrar info de debug inicial
+  mostrarDebug({
+    urlParams: Object.fromEntries(urlParams),
+    id_buscado: id,
+    url_completa: window.location.href
+  });
 
   const r = await apiGet({ action:"obtener_servicio", id_servicio:id });
+  
+  // Actualizar info debug con respuesta
+  mostrarDebug({
+    ...JSON.parse(document.getElementById('debugInfo').textContent || '{}'),
+    respuesta_api: r
+  });
+  
+  console.log("📊 Respuesta API completa:", r);
+  
   if(!r || r.error){
-    contenido.innerText="Registro no encontrado.";
+    contenido.innerText=`❌ Error: ${r?.error || "Registro no encontrado"}`;
     return;
   }
 
+  // Debug específico del campo cantidad
+  console.log("🔍 Campo 'aceite_cantidad_litros':", r.aceite_cantidad_litros);
+  console.log("📝 Tipo de dato:", typeof r.aceite_cantidad_litros);
+  console.log("🔢 Valor formateado:", formatearCantidadAceite(r.aceite_cantidad_litros));
+
+  // Generar HTML del registro
   contenido.innerHTML = `
-    <div class="row"><span class="label">Patente</span><span class="value">${r.patente}</span></div>
+    <div class="row"><span class="label">ID Servicio</span><span class="value">${r.id_servicio || "—"}</span></div>
+    <div class="row"><span class="label">Patente</span><span class="value">${r.patente || "—"}</span></div>
     <div class="row"><span class="label">Fecha del servicio</span><span class="value">${formatearFecha(r.fecha_cierre)}</span></div>
     <div class="row"><span class="label">Kilometraje</span><span class="value">${r.km_inicial || "—"} km</span></div>
+    <div class="row"><span class="label">Técnico</span><span class="value">${r.tecnico || "—"}</span></div>
+    <div class="row"><span class="label">Teléfono</span><span class="value">${r.telefono || "—"}</span></div>
     <div class="row"><span class="label">Aceite</span><span class="value">${(r.aceite_tipo||"")} ${(r.aceite_norma||"")}</span></div>
-    <div class="row"><span class="label">Cantidad</span><span class="value">${r.aceite_cantidad_litros || "—"} L</span></div>
+    <div class="row"><span class="label">Cantidad de aceite</span><span class="value">${formatearCantidadAceite(r.aceite_cantidad_litros)}</span></div>
 
     <div class="destacado">
       <div class="row">
@@ -149,24 +269,21 @@ async function cargar(){
       ${linkFoto("Paso 6 · Verificación final / nivel de aceite", r.p6_foto_final_url)}
     </div>
 
-    <div class="note">
-      <strong>Observaciones finales:</strong><br>
-      ${r.observaciones_finales || "SIN OBSERVACIONES"}
-    </div>
+    ${r.observaciones_finales ? `
+      <div class="note">
+        <strong>Observaciones finales:</strong><br>
+        ${r.observaciones_finales}
+      </div>
+    ` : ''}
   `;
 }
 
-function linkFoto(texto, url){
-  if(!url) return "";
-  return `
-    <div class="foto-link">
-      <span>${texto}</span>
-      <a href="${url}" target="_blank">📷 Ver foto</a>
-    </div>
-  `;
+// Iniciar carga cuando el DOM esté listo
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', cargar);
+} else {
+  cargar();
 }
-
-cargar();
 </script>
 
 </body>
