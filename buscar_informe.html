@@ -216,6 +216,18 @@
       margin-left:10px;
     }
     
+    .ot-badge{
+      background:#ff9900;
+      color:#000;
+      padding:4px 10px;
+      border-radius:8px;
+      font-size:13px;
+      font-weight:700;
+      margin-left:10px;
+      font-family: monospace;
+      letter-spacing: 1px;
+    }
+    
     .data-grid{
       display:grid;
       grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
@@ -441,8 +453,8 @@
   </div>
 
   <script>
-    // URL de tu Google Apps Script
-    const API_URL = "https://script.google.com/macros/s/AKfycbwY0mvLxztZPgiBtcoh_JE5u-z1zhtubQC3bVlj-hyYlBHKKaZyAFaVGSCLz8tbz3p7/exec";
+    // URL de tu nueva Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbylWprbcHvUITXljajbJYO1pxGJ_nGtubA8NOjI-dKuoB6GRklwksrqUcS64fX-_N3a/exec";
     
     // Normalizar texto (quitar acentos, mayúsculas)
     function normalizarTexto(texto) {
@@ -485,6 +497,23 @@
       return valorStr;
     }
     
+    // Formatear OT (Orden de Trabajo) - asegura que tenga 6 dígitos
+    function formatearOT(ot) {
+      if (!ot || ot === "" || ot === "-") {
+        return "N/A";
+      }
+      
+      const otStr = String(ot).trim();
+      
+      // Si ya tiene 6 dígitos o más, mostrar los últimos 6
+      if (otStr.length >= 6) {
+        return otStr.padStart(6, "0").slice(-6);
+      }
+      
+      // Si tiene menos de 6 dígitos, rellenar con ceros a la izquierda
+      return otStr.padStart(6, "0");
+    }
+    
     // Función principal para buscar informes
     async function buscarInformes() {
       const patente = document.getElementById('patenteInput').value.trim().toUpperCase();
@@ -498,41 +527,41 @@
       resultadosDiv.innerHTML = '<div class="loading">🔍 Buscando informes...</div>';
       
       try {
-        const response = await fetch(API_URL);
+        // Construir la URL con parámetros para la nueva API
+        const url = `${API_URL}?action=buscarPorPatente&patente=${encodeURIComponent(patente)}`;
+        console.log("Buscando en URL:", url);
+        
+        const response = await fetch(url);
         
         if (!response.ok) {
           throw new Error(`Error HTTP: ${response.status}`);
         }
         
-        const datos = await response.json();
+        const data = await response.json();
+        console.log("Respuesta de la API:", data);
         
         let informes = [];
-        if (Array.isArray(datos)) {
-          informes = datos;
-        } else if (datos.informes && Array.isArray(datos.informes)) {
-          informes = datos.informes;
+        if (data.success && Array.isArray(data.registros)) {
+          informes = data.registros;
+        } else if (Array.isArray(data)) {
+          informes = data;
         } else {
           throw new Error("Formato de respuesta inesperado");
         }
         
-        const patenteNormalizada = normalizarTexto(patente);
-        const informesFiltrados = informes.filter(informe => {
-          const patenteInforme = normalizarTexto(
-            informe.Patente || 
-            informe.patente || 
-            informe["Patente"] || 
-            ""
-          );
-          return patenteInforme.includes(patenteNormalizada);
-        });
+        // Filtrar solo los informes de diagnóstico (Fuente: DatosInforme)
+        const informesDiagnostico = informes.filter(informe => 
+          informe.Fuente === "DatosInforme"
+        );
         
-        informesFiltrados.sort((a, b) => {
+        // Ordenar por fecha descendente (más reciente primero)
+        informesDiagnostico.sort((a, b) => {
           const fechaA = new Date(a.Fecha || a.fecha || 0);
           const fechaB = new Date(b.Fecha || b.fecha || 0);
           return fechaB - fechaA;
         });
         
-        mostrarResultados(informesFiltrados, patente);
+        mostrarResultados(informesDiagnostico, patente);
         
       } catch (error) {
         console.error("Error al buscar informes:", error);
@@ -552,7 +581,7 @@
       if (informes.length === 0) {
         resultadosDiv.innerHTML = `
           <div class="no-results">
-            No se encontraron informes para la patente: <strong>${patenteBuscada}</strong>
+            No se encontraron informes de diagnóstico para la patente: <strong>${patenteBuscada}</strong>
           </div>
         `;
         return;
@@ -560,36 +589,49 @@
       
       let html = `
         <div style="color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 16px; width: 100%;">
-          📊 ${informes.length} informe(s) encontrado(s) para: <span style="color: #00ff8c;">${patenteBuscada}</span>
+          📊 ${informes.length} informe(s) de diagnóstico encontrado(s) para: <span style="color: #00ff8c;">${patenteBuscada}</span>
         </div>
       `;
       
       informes.forEach((informe, index) => {
         const esMasReciente = index === 0;
         
-        const fecha = informe.Fecha || informe.fecha || informe["Fecha"] || "";
-        const marca = informe.Marca || informe.marca || informe["Marca"] || "No especificado";
-        const modelo = informe.Modelo || informe.modelo || informe["Modelo"] || "No especificado";
-        const ano = informe.Año || informe.ano || informe["Año"] || "No especificado";
-        const km = informe.KM || informe.km || informe["KM"] || "No especificado";
-        const codigos = informe.Código || informe.codigo || informe["Códigos"] || "Sin códigos";
-        const detalle = informe.Detalle || informe.detalle || informe["Detalle"] || "Sin detalle";
-        const valorArea = informe["Valor Área"] || informe.Valor_Area || informe.valor_area || "Sin valor";
-        const causas = informe["Posibles Causas"] || informe.Posibles_Causas || informe.causas || "Sin causas especificadas";
-        const recomendaciones = informe.Recomendaciones || informe.recomendaciones || informe["Recomendaciones"] || "Sin recomendaciones";
-        const valorFinal = informe["Valor Final"] || informe.Valor_Final || informe.valor_final || "";
+        // Extraer datos del informe
+        const fecha = informe.Fecha || informe.fecha || "";
+        const ot = informe.OT || informe.ot || "";
+        const patente = informe.Patente || informe.patente || patenteBuscada;
+        const marca = informe.Marca || informe.marca || "No especificado";
+        const modelo = informe.Modelo || informe.modelo || "No especificado";
+        const ano = informe.Ano || informe.ano || "No especificado";
+        const km = informe.Kilometraje || informe.km || informe.KM || "No especificado";
+        const motor = informe.Motor || informe.motor || "No especificado";
+        const codigos = informe.Codigo || informe.codigo || "Sin códigos";
+        const detalle = informe.Detalle || informe.detalle || "Sin detalle";
+        const valorArea = informe.Valor_Area || informe.valor_area || "Sin valor";
+        const causas = informe.Posibles_Causas || informe.causas || "Sin causas especificadas";
+        const recomendaciones = informe.Recomendaciones || informe.recomendaciones || "Sin recomendaciones";
+        const valorFinal = informe.Valor_Final || informe.valor_final || "";
+        
+        // Formatear OT
+        const otFormateada = formatearOT(ot);
         
         html += `
           <div class="result-block ${esMasReciente ? 'ultimo' : ''}">
             <div class="result-header">
-              <div style="flex: 1; min-width: 0;">
-                <span class="result-title">Informe #${index + 1}</span>
+              <div style="flex: 1; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span class="result-title">Informe de Diagnóstico</span>
+                ${otFormateada !== "N/A" ? `<span class="ot-badge" title="Orden de Trabajo">OT: ${otFormateada}</span>` : ''}
                 ${esMasReciente ? '<span class="badge">MÁS RECIENTE</span>' : ''}
               </div>
               <div class="result-date">📅 ${formatearFecha(fecha)}</div>
             </div>
             
             <div class="data-grid">
+              <div class="data-item">
+                <span class="data-label">Patente</span>
+                <span class="data-value" style="font-weight: 700; color: #00ff8c;">${patente}</span>
+              </div>
+              
               <div class="data-item">
                 <span class="data-label">Marca</span>
                 <span class="data-value">${marca}</span>
@@ -609,40 +651,47 @@
                 <span class="data-label">KM</span>
                 <span class="data-value">${km}</span>
               </div>
+              
+              ${motor && motor !== "No especificado" ? `
+                <div class="data-item">
+                  <span class="data-label">Motor</span>
+                  <span class="data-value">${motor}</span>
+                </div>
+              ` : ''}
             </div>
             
-            ${codigos && codigos !== "Sin códigos" && codigos !== "-" ? `
+            ${codigos && codigos !== "Sin códigos" && codigos !== "-" && codigos.trim() !== "" ? `
               <div class="data-item">
                 <span class="data-label">Códigos de error</span>
-                <div class="text-content">${String(codigos).replace(/\n/g, '<br>')}</div>
+                <div class="text-content" style="font-family: monospace; font-size: 13px;">${String(codigos).replace(/\n/g, '<br>')}</div>
               </div>
             ` : ''}
             
-            ${detalle && detalle !== "Sin detalle" && detalle !== "-" ? `
+            ${detalle && detalle !== "Sin detalle" && detalle !== "-" && detalle.trim() !== "" ? `
               <div class="data-item">
                 <span class="data-label">Detalle del diagnóstico</span>
                 <div class="text-content">${String(detalle).replace(/\n/g, '<br>')}</div>
               </div>
             ` : ''}
             
-            ${valorArea && valorArea !== "Sin valor" && valorArea !== "-" ? `
+            ${valorArea && valorArea !== "Sin valor" && valorArea !== "-" && valorArea.trim() !== "" ? `
               <div class="data-item">
                 <span class="data-label">Valor/Productos</span>
                 <div class="text-content">${String(valorArea).replace(/\n/g, '<br>')}</div>
               </div>
             ` : ''}
             
-            ${(causas && causas !== "Sin causas especificadas" && causas !== "-") || 
-              (recomendaciones && recomendaciones !== "Sin recomendaciones" && recomendaciones !== "-") ? `
+            ${(causas && causas !== "Sin causas especificadas" && causas !== "-" && causas.trim() !== "") || 
+              (recomendaciones && recomendaciones !== "Sin recomendaciones" && recomendaciones !== "-" && recomendaciones.trim() !== "") ? `
               <div class="data-grid">
-                ${causas && causas !== "Sin causas especificadas" && causas !== "-" ? `
+                ${causas && causas !== "Sin causas especificadas" && causas !== "-" && causas.trim() !== "" ? `
                   <div class="data-item">
                     <span class="data-label">Posibles causas</span>
                     <div class="text-content" style="font-size: 13px;">${String(causas).replace(/\n/g, '<br>')}</div>
                   </div>
                 ` : ''}
                 
-                ${recomendaciones && recomendaciones !== "Sin recomendaciones" && recomendaciones !== "-" ? `
+                ${recomendaciones && recomendaciones !== "Sin recomendaciones" && recomendaciones !== "-" && recomendaciones.trim() !== "" ? `
                   <div class="data-item">
                     <span class="data-label">Recomendaciones</span>
                     <div class="text-content" style="font-size: 13px;">${String(recomendaciones).replace(/\n/g, '<br>')}</div>
@@ -653,7 +702,7 @@
             
             <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--card-border); width: 100%;">
               <div class="data-item">
-                <span class="data-label">Valor final</span>
+                <span class="data-label">Valor final del diagnóstico</span>
                 <span class="data-value" style="color: #00ff8c; font-size: 18px; font-weight: 700;">${formatearValor(valorFinal)}</span>
               </div>
             </div>
@@ -664,12 +713,14 @@
       resultadosDiv.innerHTML = html;
     }
     
+    // Permitir buscar con la tecla Enter
     document.getElementById('patenteInput').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
         buscarInformes();
       }
     });
     
+    // Enfocar el campo de entrada al cargar la página
     window.addEventListener('load', function() {
       setTimeout(() => {
         document.getElementById('patenteInput').focus();
