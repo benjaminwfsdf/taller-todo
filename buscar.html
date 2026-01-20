@@ -74,13 +74,43 @@
 
   <script>
     // ====== CONFIG ======
-    const API_URL = "https://script.google.com/macros/s/AKfycbwxpj3-u99NZiHjiRQY-srOG6Xd0uazLd9dVaEL-MS3H77BvwOrSwHZPGKaH-vlMnlkSQ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbylWprbcHvUITXljajbJYO1pxGJ_nGtubA8NOjI-dKuoB6GRklwksrqUcS64fX-_N3a/exec";
 
     // Utils
     const norm = s => String(s ?? '')
       .normalize('NFD').replace(/\p{Diacritic}/gu,'')  // quita tildes
       .replace(/\s+/g,' ').trim().toUpperCase();
     const digits = s => String(s ?? '').replace(/\D+/g,'');
+    
+    // Formatear fecha
+    function formatearFecha(f){
+      if(!f) return "-";
+      const d = new Date(f);
+      return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+    }
+    
+    // Formatear OT (asegura 6 dígitos)
+    function formatearOT(ot) {
+      if (!ot || ot === "" || ot === "-") {
+        return "N/A";
+      }
+      
+      const otStr = String(ot).trim();
+      
+      // Si ya tiene 6 dígitos o más, mostrar los últimos 6
+      if (otStr.length >= 6) {
+        return otStr.padStart(6, "0").slice(-6);
+      }
+      
+      // Si tiene menos de 6 dígitos, rellenar con ceros a la izquierda
+      return otStr.padStart(6, "0");
+    }
+    
+    // Formatear KM
+    function formatearKM(v){
+      if(!v) return "-";
+      return String(v).replace(/\B(?=(\d{3})+(?!\d))/g,".");
+    }
 
     const tipo = new URLSearchParams(location.search).get('tipo') || 'patente';
     const $et = document.getElementById('etiqueta');
@@ -104,88 +134,142 @@
       }
     })();
 
-    // Busca una clave en el objeto (tolerante a tildes/variantes)
-    function keyOf(row, guess, aliases=[]){
-      const want = norm(guess);
-      const keys = Object.keys(row);
-      for (const k of keys){ if (norm(k) === want) return k; }
-      for (const a of aliases){
-        const w = norm(a);
-        for (const k of keys){ if (norm(k) === w) return k; }
-      }
-      for (const k of keys){ if (norm(k).includes(want)) return k; }
-      return null;
-    }
-
     async function buscar(){
       let v = $in.value.trim();
       if (!v) { alert('Ingresa un dato para buscar'); return; }
 
       // Normaliza input según tipo
       let needle;
-      if (tipo === 'telefono') needle = digits(v);        // solo dígitos
-      else if (tipo === 'nombre') needle = norm(v);       // sin tildes/espacios
-      else needle = norm(v.replace(/[^A-Z0-9]/gi,''));    // patente sin guiones/espacios
+      if (tipo === 'telefono') needle = digits(v);
+      else if (tipo === 'nombre') needle = norm(v);
+      else needle = norm(v.replace(/[^A-Z0-9]/gi,''));
+
+      $out.style.display = 'block';
+      $out.innerHTML = '🔍 Buscando...';
 
       try {
-        const res = await fetch(API_URL, { cache:'no-store' });
-        const rows = await res.json();
-        if (!Array.isArray(rows) || rows.length === 0) throw new Error('Sin datos');
-
-        // Mapear columnas por nombre (tolerante)
-        const K = {
-          NOMBRE   : keyOf(rows[0], 'Nombre',   ['Cliente','Dueño']),
-          TELEFONO : keyOf(rows[0], 'Teléfono', ['Telefono','Celular','Fono','Whatsapp']),
-          DIRECCION: keyOf(rows[0], 'Dirección',['Direccion']),
-          MARCA    : keyOf(rows[0], 'Marca'),
-          MODELO   : keyOf(rows[0], 'Modelo'),
-          PATENTE  : keyOf(rows[0], 'Patente',  ['Placa'])
-        };
-
-        let match = null;
-        for (const r of rows){
-          const nombre  = K.NOMBRE   ? r[K.NOMBRE]   : '';
-          const fono    = K.TELEFONO ? r[K.TELEFONO] : '';
-          const patente = K.PATENTE  ? r[K.PATENTE]  : '';
-
-          if (tipo === 'nombre'){
-            if (norm(nombre).includes(needle)) { match = r; break; }           // parcial
-          } else if (tipo === 'telefono'){
-            const d = digits(fono);
-            if (d === needle || d.endsWith(needle)) { match = r; break; }      // acepta últimos 8
-          } else { // patente
-            const p = norm(String(patente).replace(/\s|-/g,''));
-            if (p === needle) { match = r; break; }                            // exacta normalizada
-          }
-        }
-
-        $out.style.display = 'block';
-        if (!match){
-          $out.innerHTML = `<strong>No se encontró ningún resultado con ese dato.</strong>`;
+        // SOLO funciona para patente con la API actual
+        if (tipo !== 'patente') {
+          $out.innerHTML = '<strong>⚠️ Esta función solo está disponible para búsqueda por patente.</strong>';
           return;
         }
 
-        // Solo los campos pedidos
-        const nombre = K.NOMBRE    ? (match[K.NOMBRE]    ?? '-') : '-';
-        const tel    = K.TELEFONO  ? (match[K.TELEFONO]  ?? '-') : '-';
-        const dir    = K.DIRECCION ? (match[K.DIRECCION] ?? '-') : '-';
-        const marca  = K.MARCA     ? (match[K.MARCA]     ?? '-') : '-';
-        const modelo = K.MODELO    ? (match[K.MODELO]    ?? '-') : '-';
-        const pat    = K.PATENTE   ? (match[K.PATENTE]   ?? '-') : '-';
+        // Buscar en la API unificada
+        const response = await fetch(`${API_URL}?action=buscarPorPatente&patente=${encodeURIComponent(needle)}&t=${Date.now()}`);
+        
+        if (!response.ok) {
+          throw new Error('Error al conectarse a la base de datos');
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success || !data.registros || data.registros.length === 0) {
+          $out.innerHTML = `<strong>No se encontraron registros para la patente ${needle}.</strong>`;
+          return;
+        }
 
-        $out.innerHTML = `
-          <strong>Nombre:</strong> ${nombre}<br>
-          <strong>Teléfono:</strong> ${tel}<br>
-          <strong>Dirección:</strong> ${dir}<br>
-          <strong>Marca:</strong> ${marca}<br>
-          <strong>Modelo:</strong> ${modelo}<br>
-          <strong>Patente:</strong> ${pat}
+        // SOLO tomar registros de Hoja1 (reparaciones)
+        const registrosHoja1 = data.registros.filter(r => r.Fuente === "Hoja1");
+        
+        if (registrosHoja1.length === 0) {
+          $out.innerHTML = `<strong>No se encontraron reparaciones para la patente ${needle}.</strong>`;
+          return;
+        }
+
+        // Ordenar por fecha descendente
+        registrosHoja1.sort((a,b) => new Date(b.Fecha || 0) - new Date(a.Fecha || 0));
+        
+        // Tomar información del vehículo del primer registro
+        const primerRegistro = registrosHoja1[0];
+        const patente = primerRegistro.Patente || primerRegistro.patente || needle;
+        
+        let html = `
+          <div style="margin-bottom: 15px; border-bottom: 1px solid #2b2f35; padding-bottom: 10px;">
+            <strong style="color: #00ff8c; font-size: 18px;">Historial de reparaciones de ${patente}</strong><br>
+            <span style="color: #b9c0c7; font-size: 14px;">${registrosHoja1.length} reparación(es) encontrada(s)</span>
+          </div>
         `;
+
+        // Mostrar información del dueño si está disponible
+        const registroConDatos = registrosHoja1.find(r => r.Nombre || r.Telefono || r.Direccion);
+        if (registroConDatos) {
+          const nombre = registroConDatos.Nombre || '-';
+          const telefono = registroConDatos.Telefono || registroConDatos.Teléfono || '-';
+          const direccion = registroConDatos.Direccion || registroConDatos.Dirección || '-';
+          const marca = registroConDatos.Marca || '-';
+          const modelo = registroConDatos.Modelo || '-';
+          
+          html += `
+            <div style="margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+              <strong>👤 Información del Dueño:</strong><br>
+              <strong>Nombre:</strong> ${nombre}<br>
+              <strong>Teléfono:</strong> ${telefono}<br>
+              <strong>Dirección:</strong> ${direccion}<br>
+              <strong>Marca:</strong> ${marca}<br>
+              <strong>Modelo:</strong> ${modelo}
+            </div>
+          `;
+        }
+
+        // Mostrar todas las reparaciones
+        registrosHoja1.forEach((r, i) => {
+          const esMasReciente = i === 0;
+          
+          const ot = r.OT || r.OrdenTrabajo || '';
+          const fecha = formatearFecha(r.Fecha);
+          const otFormateada = formatearOT(ot);
+          const km = r.Kilometraje || r.KM || r.km || '-';
+          const detalle = r.Detalle_Estado || r.Detalle || 'Sin detalle';
+          const estado = r.Estado || '-';
+          
+          html += `
+            <div style="margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; border-left: 3px solid #00ff8c; ${esMasReciente ? 'border: 2px solid #00ff8c;' : ''}">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div>
+                  <strong style="color: #00ff8c;">🔧 REPARACIÓN</strong>
+                  ${otFormateada !== "N/A" ? `
+                    <span style="background: #ff9900; color: #000; padding: 3px 8px; border-radius: 4px; font-family: monospace; font-weight: bold; margin-left: 10px;">
+                      OT: ${otFormateada}
+                    </span>
+                  ` : ''}
+                </div>
+                <span style="font-size: 13px; color: #b9c0c7;">${fecha}</span>
+              </div>
+              
+              <table style="width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px;">
+                <tr>
+                  <td style="padding: 4px 0; width: 100px;"><strong>KM:</strong></td>
+                  <td style="padding: 4px 0;">${formatearKM(km)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; width: 100px;"><strong>Estado:</strong></td>
+                  <td style="padding: 4px 0;">${estado}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 0; width: 100px; vertical-align: top;"><strong>Detalle:</strong></td>
+                  <td style="padding: 4px 0;">${detalle}</td>
+                </tr>
+              </table>
+              
+              ${esMasReciente ? `<div style="margin-top: 8px; text-align: right; font-size: 12px; color: #00ff8c;">⭐ MÁS RECIENTE</div>` : ''}
+            </div>
+          `;
+        });
+
+        $out.innerHTML = html;
+
       } catch (e) {
         console.error(e);
-        alert('❌ Error al conectarse a la base de datos.');
+        $out.innerHTML = `<strong>❌ Error al conectarse a la base de datos: ${e.message}</strong>`;
       }
     }
+    
+    // Permitir buscar con Enter
+    document.getElementById('valor').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        buscar();
+      }
+    });
   </script>
 
   <script>
@@ -261,3 +345,4 @@
 
 </body>
 </html>
+<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_72hM1MA6xAHEHquPVqnDvPt5SpHp" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
