@@ -13,7 +13,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Informe de Diagnóstico</title>
 
-
   <style>
     #auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(2px)}
     #auth-card{background:#fff;width:min(92vw,380px);border:1px solid #000;border-radius:10px;padding:18px;box-shadow:0 4px 0 #000;font-family:Arial,sans-serif}
@@ -24,6 +23,161 @@
     #auth-error{color:#b30000;font-size:12px;height:16px;margin-top:6px;font-weight:bold}
     .shake{animation:shake .2s linear 2}
     @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+    /* Modal de coincidencias OT */
+    #modal-coincidencias{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.8);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:99998;
+    }
+    #modal-coincidencias .modal-card{
+      background:#fff;
+      padding:24px;
+      border-radius:10px;
+      width:550px;
+      max-width:90vw;
+      border:2px solid #000;
+      max-height:85vh;
+      overflow-y:auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    #modal-coincidencias h3{
+      margin-top:0;
+      color:#1d3053;
+      font-size:22px;
+      margin-bottom: 12px;
+    }
+    #modal-coincidencias p {
+      font-size:16px;
+      margin-bottom: 20px;
+      color: #444;
+    }
+    .coincidencia-item{
+      border:2px solid #ccc;
+      padding:16px;
+      margin-bottom:12px;
+      border-radius:8px;
+      cursor:pointer;
+      transition:all 0.2s;
+    }
+    .coincidencia-item:hover{
+      background-color:#f0f7ff;
+      border-color:#1d3053;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(29, 48, 83, 0.1);
+    }
+    .coincidencia-item .fuente{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:4px;
+      font-size:14px;
+      margin-left:8px;
+      background:#e4e4e4;
+      font-weight: bold;
+    }
+    .coincidencia-item .fuente-hoja1{ background:#d4edda; color:#155724; }
+    .coincidencia-item .fuente-informe{ background:#d1ecf1; color:#0c5460; }
+    .botones-modal{
+      display:flex;
+      gap:12px;
+      margin-top:20px;
+    }
+    .botones-modal button{
+      flex:1;
+      padding:12px;
+      border:2px solid #000;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:16px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    .botones-modal button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .boton-crear-nuevo{
+      background:#28a745;
+      color:white;
+      border-color:#28a745 !important;
+    }
+    .boton-crear-nuevo:hover {
+      background:#218838;
+      border-color:#1e7e34 !important;
+    }
+    
+    #lista-coincidencias {
+      list-style:none; 
+      padding:0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .cargando {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #1d3053;
+      font-weight: bold;
+    }
+    
+    .cargando-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1d3053;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .mensaje-exito {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: none;
+      font-weight: bold;
+    }
+    
+    .detalle-copiado {
+      background-color: #d4edda !important;
+      border-color: #155724 !important;
+      border-left: 6px solid #155724 !important;
+    }
+    
+    /* Header para OT */
+    .header-ot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #000;
+    }
+    
+    .ot-info {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .ot-info span {
+      margin-right: 15px;
+    }
   </style>
 
   <style>
@@ -31,6 +185,7 @@
       @page { size: letter; margin: 6mm 20mm; }
       body { margin: 0; padding: 0; box-shadow: none; border: none; }
       .fab { display: none !important; }
+      #modal-coincidencias { display: none !important; }
     }
 
     body { font-family: Arial, sans-serif; margin: 0; background: #f2f2f2; }
@@ -125,11 +280,32 @@
       border-color: #ff9900 !important;
     }
     
+    .boton-ots-anteriores {
+      background: #1d3053 !important;
+      color: white !important;
+      border-color: #1d3053 !important;
+    }
+    
     /* Efecto hover para todos los botones */
     .fab button:hover {
       opacity: 0.9;
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
     }
   </style>
 </head>
@@ -148,8 +324,39 @@
     </div>
   </div>
 
+  <!-- MODAL DE COINCIDENCIAS OT -->
+  <div id="modal-coincidencias">
+    <div class="modal-card">
+      <h3>OTs anteriores de esta patente</h3>
+      <p>Seleccione una OT para cargar sus datos.</p>
+      
+      <div id="cargando-ots" class="cargando">
+        <div class="cargando-spinner"></div>
+        <p>Buscando OTs anteriores...</p>
+      </div>
+      
+      <ul id="lista-coincidencias"></ul>
+      
+      <div class="botones-modal">
+        <button onclick="cerrarModalCoincidencias()">Cancelar</button>
+        <button class="boton-crear-nuevo" onclick="crearNuevaOTDesdeModal()">Crear Nueva OT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje de éxito -->
+  <div class="mensaje-exito" id="mensajeExito"></div>
+
   <!-- ===== CONTENIDO DEL INFORME (exportaremos #paper a PDF) ===== -->
   <div id="paper">
+    <!-- Header con OT y Fecha -->
+    <div class="header-ot">
+      <div class="ot-info">
+        <span>OT: <strong id="otNumero"></strong></span>
+        <span>FECHA: <span id="fechaHoy"></span></span>
+      </div>
+    </div>
+
     <div class="titulo">INFORME DE DIAGNOSTICO</div>
 
     <div class="contacto-wrap">
@@ -163,21 +370,21 @@
         SCANNER ORIGINAL TODAS LAS MARCAS<br />
         LIMPIEZA INYECTORES – SISTEMAS DPF - GASES LLAVES CON CHIP – PROGRAMACION
       </div>
-      <img src="img/qr-whatsapp.png" alt="QR whatsapp" loading="eager" crossorigin="anonymous" />
+      <img src="img/qr-whatsapp2.png" alt="QR whatsapp" loading="eager" crossorigin="anonymous" />
     </div>
 
     <table class="form-grid">
       <tr>
-        <td><div class="inline"><label>MARCA:</label><input type="text" name="marca" style="text-transform: uppercase;"></div></td>
-        <td><div class="inline"><label>MODELO:</label><input type="text" name="modelo" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>MARCA:</label><input type="text" name="marca" id="marca" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>MODELO:</label><input type="text" name="modelo" id="modelo" style="text-transform: uppercase;"></div></td>
       </tr>
       <tr>
-        <td><div class="inline"><label>PATENTE:</label><input type="text" name="patente" style="text-transform: uppercase;"></div></td>
-        <td><div class="inline"><label>AÑO:</label><input type="text" name="ano" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>PATENTE:</label><input type="text" name="patente" id="patente" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>AÑO:</label><input type="text" name="ano" id="ano" style="text-transform: uppercase;"></div></td>
       </tr>
       <tr>
-        <td><div class="inline"><label>KM:</label><input type="text" name="km" style="text-transform: uppercase;"></div></td>
-        <td><div class="inline"><label>MOTOR:</label><input type="text" name="motor" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>KM:</label><input type="text" name="km" id="km" style="text-transform: uppercase;"></div></td>
+        <td><div class="inline"><label>MOTOR:</label><input type="text" name="motor" id="motor" style="text-transform: uppercase;"></div></td>
       </tr>
     </table>
 
@@ -282,18 +489,636 @@
     })();
   </script>
 
+  <!-- ====== Script principal con funcionalidad OT ====== -->
+  <script>
+    // URL de la API de Google Apps Script (la misma que usamos en el primer formulario)
+    const API_URL = "https://script.google.com/macros/s/AKfycbylWprbcHvUITXljajbJYO1pxGJ_nGtubA8NOjI-dKuoB6GRklwksrqUcS64fX-_N3a/exec";
+
+    // Variables globales para manejo de OTs
+    let registroSeleccionado = null;
+    let modoNuevoRegistro = true;
+    let ultimaOTCalculada = "";
+    let ultimaPatenteBuscada = "";
+    let modalAbierto = false;
+    let coincidenciasEncontradas = [];
+    let datosFormularioActual = {};
+
+    // Función para normalizar patente
+    function normalizarPatente(p){
+      return (p||"").toUpperCase().replace(/\s+/g,"").replace(/[^A-Z0-9]/g,"");
+    }
+
+    // Inicialización
+    function setFechaHoy(){
+      const hoy = new Date();
+      const fechaFormateada = hoy.toLocaleDateString("es-CL");
+      document.getElementById("fechaHoy").textContent = fechaFormateada;
+      document.getElementById("fecha").textContent = fechaFormateada;
+    }
+
+    // Obtener la siguiente OT
+    async function cargarSiguienteOT(){
+      try{
+        const timestamp = new Date().getTime();
+        const response = await fetch(`${API_URL}?action=obtenerSiguienteOT&t=${timestamp}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.nextOT) {
+            document.getElementById("otNumero").textContent = data.nextOT;
+            ultimaOTCalculada = data.nextOT;
+            return data.nextOT;
+          }
+        }
+        
+        // Si falla, usar un valor por defecto
+        document.getElementById("otNumero").textContent = "000001";
+        return "000001";
+        
+      }catch(e){
+        console.error("Error cargando OT:", e);
+        document.getElementById("otNumero").textContent = "000001";
+        return "000001";
+      }
+    }
+
+    // Buscar patente automáticamente
+    async function buscarPorPatente(){
+      const patenteInput = document.getElementById("patente");
+      const pat = normalizarPatente(patenteInput.value);
+      
+      if(!pat || pat.length < 3) {
+        modoNuevoRegistro = true;
+        registroSeleccionado = null;
+        return;
+      }
+      
+      if (pat === ultimaPatenteBuscada && registroSeleccionado) {
+        return;
+      }
+      
+      if (modalAbierto) {
+        return;
+      }
+      
+      try{
+        const timestamp = new Date().getTime();
+        const response = await fetch(`${API_URL}?action=buscarPorPatente&patente=${encodeURIComponent(pat)}&t=${timestamp}`);
+        const data = await response.json();
+
+        if(!data.success || !data.registros || data.registros.length === 0) {
+          modoNuevoRegistro = true;
+          registroSeleccionado = null;
+          ultimaPatenteBuscada = pat;
+          limpiarDetallesInforme();
+          await cargarSiguienteOT();
+          return;
+        }
+
+        ultimaPatenteBuscada = pat;
+        
+        if(data.registros.length === 1){
+          cargarDatosDesdeRegistro(data.registros[0], false);
+          return;
+        }
+        
+        coincidenciasEncontradas = data.registros;
+        guardarDatosFormularioActual();
+        mostrarModalCoincidencias(data.registros);
+        
+      }catch(error){
+        console.error("Error buscando patente:", error);
+      }
+    }
+
+    // Guardar datos actuales del formulario
+    function guardarDatosFormularioActual(){
+      datosFormularioActual = {
+        marca: document.getElementById("marca").value,
+        modelo: document.getElementById("modelo").value,
+        patente: document.getElementById("patente").value,
+        ano: document.getElementById("ano").value,
+        km: document.getElementById("km").value,
+        motor: document.getElementById("motor").value
+      };
+    }
+
+    // Limpiar detalles del informe
+    function limpiarDetallesInforme(){
+      if(modoNuevoRegistro){
+        document.getElementById("codigo_area").value = "";
+        document.getElementById("detalle_area").value = "";
+        document.getElementById("valor_area").value = "";
+        document.getElementById("causas").value = "";
+        document.getElementById("recomendaciones").value = "";
+        document.getElementById("valor_final").value = "";
+      }
+    }
+
+    // Función para ordenar registros por fecha descendente
+    function ordenarRegistrosPorFechaDesc(registros) {
+      return registros.sort((a, b) => {
+        const fechaA = obtenerFechaComparable(a.Fecha);
+        const fechaB = obtenerFechaComparable(b.Fecha);
+        return fechaB - fechaA;
+      });
+    }
+
+    // Función para convertir fecha a formato comparable
+    function obtenerFechaComparable(fechaStr) {
+      if (!fechaStr) return 0;
+      
+      try {
+        const fecha = new Date(fechaStr);
+        if (!isNaN(fecha.getTime())) {
+          return fecha.getTime();
+        }
+        
+        const partes = fechaStr.split(/[/ -]/);
+        if (partes.length === 3) {
+          const dia = parseInt(partes[0]);
+          const mes = parseInt(partes[1]) - 1;
+          const año = parseInt(partes[2]);
+          
+          if (!isNaN(dia) && !isNaN(mes) && !isNaN(año)) {
+            const fechaAlternativa = new Date(año, mes, dia);
+            if (!isNaN(fechaAlternativa.getTime())) {
+              return fechaAlternativa.getTime();
+            }
+          }
+        }
+        
+        return 0;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    // Función para cargar datos desde un registro seleccionado
+    function cargarDatosDesdeRegistro(registro, desdeModal = false){
+      registroSeleccionado = registro;
+      modoNuevoRegistro = false;
+      
+      console.log("Cargando registro para informe:", registro);
+      
+      // Campos básicos del vehículo
+      document.getElementById("marca").value = registro.Marca || "";
+      document.getElementById("modelo").value = registro.Modelo || "";
+      document.getElementById("patente").value = registro.Patente || registro.patente || "";
+      document.getElementById("km").value = registro.Kilometraje || registro.KM || registro.km || "";
+      
+      // Año y motor solo si están en el registro
+      if (registro.Ano || registro.year) {
+        document.getElementById("ano").value = registro.Ano || registro.year || "";
+      }
+      
+      if (registro.Motor) {
+        document.getElementById("motor").value = registro.Motor || "";
+      }
+      
+      // Obtener OT del registro
+      let otRegistro = "";
+      
+      if(registro.Fuente === "DatosInforme"){
+        otRegistro = registro.OT || "";
+        
+        // Para informes anteriores, cargar los detalles específicos
+        document.getElementById("codigo_area").value = registro.Codigo || "";
+        document.getElementById("detalle_area").value = registro.Detalle || "";
+        document.getElementById("valor_area").value = registro.Valor_Area || "";
+        document.getElementById("causas").value = registro.Posibles_Causas || "";
+        document.getElementById("recomendaciones").value = registro.Recomendaciones || "";
+        document.getElementById("valor_final").value = registro.Valor_Final || "";
+        
+        // Mostrar mensaje si se cargaron datos
+        if (desdeModal) {
+          mostrarMensajeExito("✅ Datos del informe anterior cargados");
+        }
+        
+      }else if(registro.Fuente === "Hoja1"){
+        otRegistro = registro.OT || registro.OrdenTrabajo || "";
+        
+        // Para Hoja1 (reparaciones), solo cargar datos básicos
+        // Los campos de diagnóstico se dejan vacíos o con valores por defecto
+        document.getElementById("codigo_area").value = "";
+        document.getElementById("detalle_area").value = registro.Detalle_Estado || "";
+        document.getElementById("valor_area").value = "";
+        document.getElementById("causas").value = "";
+        document.getElementById("recomendaciones").value = "";
+        document.getElementById("valor_final").value = "";
+        
+        if (desdeModal) {
+          mostrarMensajeExito("✅ Datos del vehículo cargados. Complete el diagnóstico.");
+        }
+      }
+      
+      // Establecer la OT si la patente coincide
+      const patenteActual = normalizarPatente(document.getElementById("patente").value);
+      const patenteRegistro = normalizarPatente(registro.Patente || registro.patente || "");
+      
+      if(patenteActual === patenteRegistro && otRegistro){
+        const otFormateada = String(otRegistro).padStart(6, "0");
+        document.getElementById("otNumero").textContent = otFormateada;
+        console.log("OT establecida desde registro:", otFormateada);
+      }
+      
+      cerrarModalCoincidencias();
+      
+      // Ajustar altura de textareas
+      setTimeout(() => {
+        ['codigo_area', 'detalle_area'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.height = 'auto';
+            el.style.height = (el.scrollHeight + 2) + 'px';
+          }
+        });
+      }, 100);
+    }
+
+    // Función para mostrar OTs anteriores
+    async function mostrarOTsAnteriores() {
+      const patenteInput = document.getElementById("patente");
+      const pat = normalizarPatente(patenteInput.value);
+      
+      if(!pat || pat.length < 3) {
+        alert("Por favor ingrese una patente para buscar OTs anteriores");
+        patenteInput.focus();
+        return;
+      }
+      
+      const cargandoElement = document.getElementById("cargando-ots");
+      const listaElement = document.getElementById("lista-coincidencias");
+      
+      document.getElementById("modal-coincidencias").style.display = "flex";
+      modalAbierto = true;
+      cargandoElement.style.display = "block";
+      listaElement.innerHTML = "";
+      
+      try {
+        setTimeout(async () => {
+          try {
+            const timestamp = new Date().getTime();
+            const response = await fetch(`${API_URL}?action=buscarPorPatente&patente=${encodeURIComponent(pat)}&t=${timestamp}`);
+            const data = await response.json();
+
+            cargandoElement.style.display = "none";
+
+            if(!data.success || !data.registros || data.registros.length === 0) {
+              listaElement.innerHTML = `<li style="text-align: center; padding: 20px; color: #666;">No se encontraron OTs anteriores para la patente ${pat}</li>`;
+              return;
+            }
+
+            const registrosOrdenados = ordenarRegistrosPorFechaDesc(data.registros);
+            coincidenciasEncontradas = registrosOrdenados;
+            mostrarRegistrosEnModal(registrosOrdenados);
+            
+          } catch(error) {
+            console.error("Error buscando OTs anteriores:", error);
+            cargandoElement.style.display = "none";
+            listaElement.innerHTML = `<li style="text-align: center; padding: 20px; color: #dc3545;">Error al buscar OTs anteriores. Intente nuevamente.</li>`;
+          }
+        }, 0);
+        
+      } catch(error) {
+        console.error("Error inicial:", error);
+        cargandoElement.style.display = "none";
+        listaElement.innerHTML = `<li style="text-align: center; padding: 20px; color: #dc3545;">Error al buscar OTs anteriores. Intente nuevamente.</li>`;
+      }
+    }
+
+    // Función para mostrar registros en el modal
+    function mostrarRegistrosEnModal(registros) {
+      const lista = document.getElementById("lista-coincidencias");
+      lista.innerHTML = "";
+      
+      registros.forEach((registro, index) => {
+        const li = document.createElement("li");
+        
+        const fecha = registro.Fecha ? 
+          (typeof registro.Fecha === 'string' ? registro.Fecha.split(' ')[0] : registro.Fecha) : 
+          'Sin fecha';
+        
+        const ot = registro.OT || registro.OrdenTrabajo || 'N/A';
+        const otFormateada = ot !== 'N/A' ? String(ot).padStart(6, "0") : 'N/A';
+        const fuente = registro.Fuente === "Hoja1" ? "Hoja 1 (Reparación)" : "Informe";
+        const claseFuente = registro.Fuente === "Hoja1" ? "fuente-hoja1" : "fuente-informe";
+        
+        li.className = "coincidencia-item";
+        
+        li.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <strong style="font-size: 16px;">OT: ${otFormateada}</strong> 
+            <span class="fuente ${claseFuente}">${fuente}</span>
+          </div>
+          <div style="font-size: 14px; margin-top: 4px; color: #444;">
+            <strong>Fecha:</strong> ${fecha}
+          </div>
+          <div style="font-size: 15px; margin-top: 6px; font-weight: bold;">
+            ${registro.Marca || ''} ${registro.Modelo || ''}
+          </div>
+          <div style="font-size: 14px; margin-top: 4px; color: #444;">
+            <strong>Patente:</strong> ${registro.Patente || registro.patente || ''}
+          </div>
+          ${registro.Fuente === "DatosInforme" ? `
+          <div style="font-size: 13px; color: #555; margin-top: 8px; padding: 8px; background: #f0f8f0; border-radius: 4px; border-left: 4px solid #28a745;">
+            <strong style="display: block; margin-bottom: 3px; color: #155724;">Informe de diagnóstico anterior</strong>
+            ${registro.Codigo ? `<div><strong>Códigos:</strong> ${registro.Codigo.substring(0, 50)}${registro.Codigo.length > 50 ? '...' : ''}</div>` : ''}
+          </div>
+          ` : `
+          <div style="font-size: 13px; color: #999; margin-top: 8px; padding: 8px; background: #f9f9f9; border-radius: 4px; border-left: 4px solid #ccc;">
+            <strong style="display: block; margin-bottom: 3px; color: #666;">Reparación anterior</strong>
+            ${registro.Detalle_Estado ? `<div>${registro.Detalle_Estado.substring(0, 50)}${registro.Detalle_Estado.length > 50 ? '...' : ''}</div>` : 'Sin detalles'}
+          </div>
+          `}
+          <div style="margin-top: 8px; padding: 6px; background: #e8f4f8; border-radius: 4px; font-size: 12px; color: #0c5460;">
+            <strong>📋 Al hacer clic:</strong> Se cargarán todos los datos disponibles
+          </div>
+        `;
+        
+        li.onclick = () => cargarDatosDesdeRegistro(registro, true);
+        lista.appendChild(li);
+      });
+      
+      const botonCrearNuevo = document.querySelector('.boton-crear-nuevo');
+      if (botonCrearNuevo) {
+        botonCrearNuevo.textContent = `Crear Nueva OT (${registros.length} existentes)`;
+      }
+    }
+
+    // Función para mostrar modal con coincidencias
+    function mostrarModalCoincidencias(registros){
+      const registrosOrdenados = ordenarRegistrosPorFechaDesc(registros);
+      const lista = document.getElementById("lista-coincidencias");
+      lista.innerHTML = "";
+      
+      document.getElementById("cargando-ots").style.display = "none";
+      mostrarRegistrosEnModal(registrosOrdenados);
+      
+      document.getElementById("modal-coincidencias").style.display = "flex";
+      modalAbierto = true;
+    }
+
+    // Cerrar modal
+    function cerrarModalCoincidencias(){
+      document.getElementById("modal-coincidencias").style.display = "none";
+      modalAbierto = false;
+      coincidenciasEncontradas = [];
+    }
+
+    // Crear nueva OT desde el modal
+    function crearNuevaOTDesdeModal(){
+      const datosVehiculo = obtenerDatosVehiculoDesdeCoincidencias();
+      const patenteActual = document.getElementById("patente").value.trim();
+      
+      document.getElementById("marca").value = datosVehiculo.marca || "";
+      document.getElementById("modelo").value = datosVehiculo.modelo || "";
+      
+      if (datosVehiculo.patente && !patenteActual) {
+        document.getElementById("patente").value = datosVehiculo.patente;
+      }
+      
+      // Limpiar otros campos específicos del diagnóstico
+      document.getElementById("ano").value = "";
+      document.getElementById("km").value = "";
+      document.getElementById("motor").value = "";
+      document.getElementById("codigo_area").value = "";
+      document.getElementById("detalle_area").value = "";
+      document.getElementById("valor_area").value = "";
+      document.getElementById("causas").value = "";
+      document.getElementById("recomendaciones").value = "";
+      document.getElementById("valor_final").value = "";
+      
+      modoNuevoRegistro = true;
+      registroSeleccionado = null;
+      
+      cargarSiguienteOT();
+      
+      mostrarMensajeExito("✅ Nueva OT creada. Complete el diagnóstico.");
+      
+      cerrarModalCoincidencias();
+      
+      setTimeout(() => {
+        document.getElementById("ano").focus();
+      }, 300);
+    }
+
+    // Obtener datos del vehículo desde coincidencias
+    function obtenerDatosVehiculoDesdeCoincidencias() {
+      if (!coincidenciasEncontradas || coincidenciasEncontradas.length === 0) {
+        return { marca: "", modelo: "", patente: "" };
+      }
+      
+      const primerRegistro = coincidenciasEncontradas[0];
+      
+      return {
+        marca: primerRegistro.Marca || "",
+        modelo: primerRegistro.Modelo || "",
+        patente: primerRegistro.Patente || primerRegistro.patente || ""
+      };
+    }
+
+    // Función para mostrar mensaje de éxito
+    function mostrarMensajeExito(mensaje, tipo = "success") {
+      const mensajeElement = document.getElementById("mensajeExito");
+      mensajeElement.textContent = mensaje;
+      
+      if (tipo === "warning") {
+        mensajeElement.style.background = "#ffc107";
+        mensajeElement.style.color = "#212529";
+      } else {
+        mensajeElement.style.background = "#28a745";
+        mensajeElement.style.color = "white";
+      }
+      
+      mensajeElement.style.display = "block";
+      
+      setTimeout(() => {
+        mensajeElement.style.display = "none";
+      }, 3000);
+    }
+
+    // Recolectar datos para guardar en la nueva estructura
+    function recogerDatosInforme(){
+      const otActual = document.getElementById("otNumero").textContent.trim();
+      const patente = normalizarPatente(document.getElementById("patente").value);
+      
+      return {
+        funcion: "guardar_informe",
+        OT: otActual,
+        patente: patente,
+        codigo: document.getElementById("codigo_area").value.trim(),
+        detalle: document.getElementById("detalle_area").value.trim(),
+        marca: document.getElementById("marca").value.trim().toUpperCase(),
+        modelo: document.getElementById("modelo").value.trim().toUpperCase(),
+        ano: document.getElementById("ano").value.trim(),
+        km: document.getElementById("km").value.trim(),
+        motor: document.getElementById("motor").value.trim(),
+        valor_area: document.getElementById("valor_area").value.trim(),
+        posibles_causas: document.getElementById("causas").value.trim(),
+        recomendaciones: document.getElementById("recomendaciones").value.trim(),
+        valor_final: document.getElementById("valor_final").value.trim()
+        // Nota: La fecha se genera automáticamente en el backend
+      };
+    }
+
+    // Función para guardar en Google Sheets con la nueva estructura
+    async function guardarEnGoogleSheetsYImprimir() {
+      const datos = recogerDatosInforme();
+      
+      if(!datos.patente || datos.patente.length < 3){
+        alert("Por favor ingrese una patente válida");
+        return;
+      }
+      
+      if(!datos.codigo.trim() && !datos.detalle.trim()){
+        if(!confirm("No ha ingresado códigos ni detalles del diagnóstico. ¿Desea continuar de todos modos?")){
+          return;
+        }
+      }
+      
+      try{
+        const formData = new URLSearchParams();
+        for (const key in datos) {
+          formData.append(key, datos[key]);
+        }
+        
+        const response = await fetch(API_URL, {
+          method: "POST",
+          mode: 'no-cors',
+          headers: { 
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: formData.toString()
+        });
+        
+        alert(`✅ Informe de diagnóstico guardado\n\nOT: ${datos.OT}\nPatente: ${datos.patente}\nMarca: ${datos.marca}\nModelo: ${datos.modelo}\n\nEl informe se ha guardado en DatosInforme.`);
+        
+        // Generar nueva OT para el siguiente informe
+        setTimeout(async () => {
+          await cargarSiguienteOT();
+        }, 1000);
+        
+        // Imprimir el formulario
+        setTimeout(() => {
+          window.print();
+        }, 500);
+        
+        modoNuevoRegistro = true;
+        registroSeleccionado = null;
+        ultimaPatenteBuscada = "";
+        
+        // No limpiar automáticamente para permitir correcciones
+        // El usuario puede usar el botón "Borrar todo" si lo desea
+        
+      }catch(error){
+        console.error("Error guardando:", error);
+        alert("⚠️ Se produjo un error al guardar, pero puede imprimir el informe.");
+        window.print();
+      }
+    }
+
+    // Borrar todo el formulario
+    function borrarTodo(){
+      if(!confirm("¿Está seguro de borrar todos los datos del formulario?")) return;
+      
+      const campos = [
+        "marca", "modelo", "patente", "ano", 
+        "km", "motor", "codigo_area", "detalle_area", 
+        "valor_area", "causas", "recomendaciones", "valor_final"
+      ];
+      
+      campos.forEach(id => {
+        const element = document.getElementById(id);
+        if(element) element.value = "";
+      });
+      
+      modoNuevoRegistro = true;
+      registroSeleccionado = null;
+      ultimaPatenteBuscada = "";
+      
+      cargarSiguienteOT();
+      setFechaHoy();
+      
+      console.log("Formulario borrado, modo nuevo registro activado");
+      
+      // Resetear altura de textareas
+      setTimeout(() => {
+        ['codigo_area', 'detalle_area'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.height = '220px';
+          }
+        });
+      }, 100);
+    }
+
+    // Verificar y actualizar OT automáticamente
+    function verificarYActualizarOT(){
+      const patente = document.getElementById("patente").value.trim();
+      if(modoNuevoRegistro && (!patente || patente.length < 3)){
+        cargarSiguienteOT();
+      }
+    }
+
+    // Event listeners para búsqueda automática
+    let timeoutBusqueda = null;
+
+    document.getElementById("patente").addEventListener("input", function(){
+      if (timeoutBusqueda) {
+        clearTimeout(timeoutBusqueda);
+      }
+      
+      timeoutBusqueda = setTimeout(() => {
+        if(this.value.trim().length >= 3){
+          modoNuevoRegistro = true;
+          registroSeleccionado = null;
+          buscarPorPatente();
+        }
+      }, 500);
+    });
+
+    document.getElementById("patente").addEventListener("blur", function(){
+      if(this.value.trim().length >= 3){
+        buscarPorPatente();
+      }
+    });
+
+    // Evento para actualizar fecha cada minuto
+    setInterval(() => {
+      setFechaHoy();
+    }, 60000);
+
+    // Verificar OT periódicamente
+    setInterval(() => {
+      if(modoNuevoRegistro){
+        verificarYActualizarOT();
+      }
+    }, 30000);
+
+    // Inicializar al cargar
+    window.onload = () => {
+      setFechaHoy();
+      cargarSiguienteOT();
+      console.log("Página de diagnóstico cargada, modo nuevo registro activado");
+      
+      setTimeout(() => {
+        verificarYActualizarOT();
+      }, 1000);
+    };
+  </script>
+
   <!-- ====== Función para buscar aplicación ====== -->
   <script>
-function buscarAplicacion() {
-  guardarInformeLocal();
-  sessionStorage.setItem('viene_de_busqueda', 'true');
+    function buscarAplicacion() {
+      guardarInformeLocal();
+      sessionStorage.setItem('viene_de_busqueda', 'true');
 
-  // URL ABSOLUTA (igual que el index)
-  const url = "https://taller-todo.vercel.app/buscar_aplicacion.html";
+      // URL ABSOLUTA (igual que el index)
+      const url = "https://taller-todo.vercel.app/buscar_aplicacion.html";
 
-  window.open(url, "_blank", "noopener");
-}
-
+      window.open(url, "_blank", "noopener");
+    }
 
     function guardarInformeLocal() {
       // Guardar todos los datos del informe en localStorage
@@ -313,16 +1138,16 @@ function buscarAplicacion() {
           
           // Solo cargar si tiene menos de 2 horas
           if (horasTranscurridas < 2) {
-            document.querySelector('input[name="marca"]').value = datos.marca || '';
-            document.querySelector('input[name="modelo"]').value = datos.modelo || '';
-            document.querySelector('input[name="patente"]').value = datos.patente || '';
-            document.querySelector('input[name="ano"]').value = datos.ano || '';
-            document.querySelector('input[name="km"]').value = datos.km || '';
-            document.querySelector('input[name="motor"]').value = datos.motor || '';
+            document.getElementById("marca").value = datos.marca || '';
+            document.getElementById("modelo").value = datos.modelo || '';
+            document.getElementById("patente").value = datos.patente || '';
+            document.getElementById("ano").value = datos.ano || '';
+            document.getElementById("km").value = datos.km || '';
+            document.getElementById("motor").value = datos.motor || '';
             document.getElementById("codigo_area").value = datos.codigo || '';
             document.getElementById("detalle_area").value = datos.detalle || '';
             document.getElementById("valor_area").value = datos.valor_area || '';
-            document.getElementById("causas").value = datos.causas || '';
+            document.getElementById("causas").value = datos.posibles_causas || '';
             document.getElementById("recomendaciones").value = datos.recomendaciones || '';
             document.getElementById("valor_final").value = datos.valor_final || '';
           }
@@ -385,590 +1210,135 @@ function buscarAplicacion() {
   <!-- ====== Autorrelleno de DETALLE por códigos ====== -->
   <script>
     const CODIGOS_BASE = {
-   
-       "P252F": "Nivel de aceite muy alto",
-       "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
-  "P0171": "Sistema demasiado pobre (Banco 1)",
-  "P0300": "Falla de encendido aleatoria o múltiple",
-  "P0113": "Sensor de temperatura del aire de admisión - entrada alta",
-  "P0340": "Circuito del sensor de posición del árbol de levas - mal funcionamiento",
-  "P0335": "Sensor de posición del cigüeñal - circuito defectuoso",
-  "P0128": "Termostato del refrigerante - temperatura de funcionamiento por debajo del regulado",
-  "P0172": "Sistema demasiado rico (Banco 1)",
-  "P0011": "Posición del árbol de levas A - tiempo adelantado o rendimiento del sistema (Banco 1)",
-  "P0016": "Sensor de posición del cigüeñal - correlación con el árbol de levas (Banco 1)",
-  "P0102": "Sensor MAF - entrada baja",
-  "P0135": "Sensor de oxígeno (Banco 1 Sensor 1) - calentador - mal funcionamiento del circuito",
-  "P0299": "Presión del turbo/sobrealimentador por debajo del límite",
-  "P0301": "Fallo de encendido del cilindro 1",
-  "P0401": "Flujo insuficiente en el sistema EGR",
-  "P0430": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 2)",
-  "P0087": "Presión de combustible/raíl - demasiado baja",
-  "P0101": "Sensor MAF - rango/rendimiento",
-  "P0141": "Sensor de oxígeno (Banco 1 Sensor 2) - calentador - mal funcionamiento del circuito",
-  
-  "P0100": "Mal funcionamiento del circuito de sensor MAF o volumen de air.",
-  "P0101": "Rango o rendimiento del sensor MAF fuera de especificación.",
-  "P0102": "Sensor MAF – señal baja de entrada.",
-  "P0106": "Sensor MAP/ABS – rango o rendimiento fuera de especificación.",
-  "P0107": "Sensor MAP/ABS – señal baja.",
-  "P0108": "Sensor MAP/ABS – señal alta.",
-  "P0110": "Mal funcionamiento del circuito del sensor de temperatura del aire de admisión.",
-  "P0113": "Sensor de temperatura del aire de admisión – señal alta de entrada.",
-  "P0118": "Sensor de temperatura del refrigerante del motor – señal alta de entrada.",
-  "P0120": "Sensor de posición del acelerador A – mal funcionamiento de circuito.",
-  "P0121": "Sensor de posición del acelerador A – rango/rendimiento fuera de especificación.",
-  "P0122": "Sensor de posición del acelerador A – señal baja.",
-  "P0123": "Sensor de posición del acelerador A – señal alta.",
-  "P0128": "La temperatura del refrigerante está por debajo del rango regulado por el termostato.",
-  "P0130": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 1).",
-  "P0131": "Sensor de O₂ Banco 1, sensor 1 – bajo voltage.",
-  "P0132": "Sensor de O₂ Banco 1, sensor 1 – alto voltage.",
-  "P0134": "Sensor de O₂ Banco 1, sensor 1 – sin actividad.",
-  "P0135": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 1).",
-  "P0136": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 2).",
-  "P0137": "Sensor de O₂ Banco 1, sensor 2 – bajo voltage.",
-  "P0138": "Sensor de O₂ Banco 1, sensor 2 – alto voltage.",
-  "P0141": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 2).",
-  "P0171": "Sistema demasiado pobre (Banco 1).",
-  "P0172": "Sistema demasiado rico (Banco 1).",
-  "P0174": "Sistema demasiado pobre (Banco 2).",
-  "P0200": "Mal funcionamiento del circuito del inyector de combustible (rango 0200-0299).",
-  "P0234": "Turbo/sobrealimentador – presión excesiva detectada.",
-  "P0299": "Turbo/sobrealimentador – rendimiento/nivel bajo.",
-  "P0300": "Fallo de encendido aleatorio/múltiple cilindros detectado.",
-  "P0301": "Fallo de encendido en el cilindro 1.",
-  "P0302": "Fallo de encendido en el cilindro 2.",
-  "P0303": "Fallo de encendido en el cilindro 3.",
-  "P0304": "Fallo de encendido en el cilindro 4.",
-  "P0305": "Fallo de encendido en el cilindro 5.",
-  "P0306": "Fallo de encendido en el cilindro 6.",
-  "P0307": "Fallo de encendido en el cilindro 7.",
-  "P0308": "Fallo de encendido en el cilindro 8.",
-  "P0321": "Sensor knock – rango/rendimiento fuera de especificación.",
-  "P0325": "Sensor knock – mal funcionamiento del circuito (Banco 1).",
-  "P0328": "Sensor knock – señal alta (Banco 1 o sensor único).",
-  "P0335": "Mal funcionamiento del circuito del sensor de posición del cigüeñal (CKP).",
-  "P0340": "Mal funcionamiento del circuito del sensor de posición del árbol de levas (CMP).",
-  "P0341": "Anomalía en comparación CKP/CMP detectada.",
-  "P0400": "Mal funcionamiento del sistema de recirculación de gases de escape (EGR) – flujo insuficiente.",
-  "P0401": "Flujo EGR insuficiente detectado.",
-  "P0402": "Flujo EGR excesivo detectado.",
-  "P0403": "Mal funcionamiento del circuito del sensor EGR.",
-  "P0440": "Mal funcionamiento del sistema de control de emisiones evaporativas (EVAP).",
-  "P0441": "Fuga del sistema EVAP detectada (fuga pequeña o intermedia).",
-  "P0442": "Fuga pequeña del sistema EVAP detectada.",
-  "P0443": "Circuito de control EVAP-VSV mal funcionando.",
-  "P0444": "Circuito del sensor EVAP mal funcionamiento.",
-  "P0446": "Mal funcionamiento del control del sistema EVAP.",
-  "P0449": "Circuito VSV EVAP intermitente o rango/rendimiento fuera especificación.",
-  "P0480": "Mal funcionamiento del circuito del controlador de ventilador de refrigeración.",
-  "P0496": "Eficiencia del sistema de ventilador de refrigeración por debajo del umbral.",
-  "P0500": "Sensor de velocidad del vehículo – mal funcionamiento del circuito.",
-  "P0501": "Rango/rendimiento del sensor de velocidad del vehículo fuera de especificación.",
-  "P0504": "Mal funcionamiento del circuito del sensor de corte del ralentí.",
-  "P0505": "Relación rantalí – fuera de rango.",
-  "P0507": "Vacío excesivo en el rantalí detectado.",
-  "P0521": "Mal funcionamiento del circuito del sensor de presión de aceite.",
-  "P0562": "Voltaje del sistema insuficiente (ECU principal).",
-  "P0606": "Mal funcionamiento del microprocesador de ECM.",
-  "P0700": "Mal funcionamiento genérico del control de la transmisión (TCM).",
-  "P0705": "Interruptor de neutro/seguridad – mal funcionamiento del circuito.",
-  "P0715": "Sensor de velocidad de entrada (transmisión) – circuito intermitente o mal funcionamiento.",
-  "P0718": "Sensor de velocidad/turbina – circuito intermitente.",
-  "P0720": "Sensor de velocidad de salida – mal funcionamiento del circuito.",
-  "P0722": "Sensor de velocidad de salida – señal baja o rango fuera especificación.",
-  "P0741": "Control de presión del convertidor (presión de torque) – rendimiento fuera de rango.",
-  "P0753": "Interruptor/conjunto del cambio de la transmisión – posición intermitente o rango fuera especificación.",
-  "P0046": "Mal funcionamiento del sistema de sobrealimentación / presión residual del turbo.",
-  "P0093": "Fuga grande del sistema de combustible detectada.",
-  "P0087": "Presión de rail de combustible  señal baja.",
-  "P0088": "Presión de rail de combustible  señal alta.",
-  "P0090": "Sensor de presión de combustible  mal funcionamiento del circuito.",
-  "P0098": "Sensor de temperatura de aire de admisión 2  señal alta.",
-  "P0110": "Mal funcionamiento del circuito del sensor de temperatura de aire de admisión.",
-  "P0115": "Mal funcionamiento del circuito del sensor de temperatura del refrigerante del motor.",
-  "P0117": "Sensor de temperatura del refrigerante  señal baja.",
-  "P0191": "Sensor de presión de combustión  rango/performance fuera especificación.",
-  "P0201-P0204": "Circuito del inyector de combustible  mal funcionamiento en cilindros 1 y4.",
-  "P0222": "Sensor de posición del acelerador B  señal baja.",
-  "P0223": "Sensor de posición del acelerador B – señal alta.",
-  "P0238": "Sensor de presión turbo – rango/performance fuera especificación.",
-  "P0315": "Valores del sistema de posición del cigüeñal no almacenados.",
-  "P0320": "Mal funcionamiento en la señal de velocidad del distribuidor/encendido.",
-  "P0336": "Sensor knock – bajo voltage (Banco 2).",
-  "P0342": "Sensor CMP – señal baja o rango fuera especificación.",
-  "P0351-P0354": "Bobina de encendido – mal funcionamiento del circuito (cilindros 1-4).",
-  "P0380": "Circuito del calentador del sensor de posición del cigüeñal (CKP).",
-  "P0410": "Sistema de aire secundario – mal funcionamiento.",
-  "P0463": "Sensor de temperatura de combustible – señal fuera de rango.",
-  "P0481": "Circuito de controlador del ventilador de refrigeración – intermitente.",
-  "P0506": "Control de rantalí – rango fuera especificación.",
-  "P0522": "Sensor de presión de aceite – rango/performance fuera especificación.",
-  "P0603": "Mal funcionamiento en el circuito de memoria ECM.",
-  "P0607": "Mal funcionamiento del circuito de ECT (temperatura de refrigerante).",
-  "P0641": "Voltaje del sensor/calibración – línea baja.",
-  "P0670": "Circuito del sensor de bujía incandescente – mal funcionamiento.",
-  "P0683": "Circuito del relé de encendido (ECM/PCM) – mal funcionamiento.",
-  "P0717": "Sensor de velocidad de entrada – rango/performance fuera especificación.",
-  "P0722": "Sensor de velocidad de salida – señal baja/performance fuera especificación.",
-  "P0730": "Relación de engranaje incorrecta.",
-  "P0740": "Solenoide de control de torque – mal funcionamiento del circuito.",
-  "P0753": "Switch cambio/transmisión mal intermitente.",
-  "P0990": "Circuito del sistema de infoentretenimiento/diagnóstico extendido (vehicle-specific).",
-   "U0001": "Red de alta velocidad CAN C personalizada 1",
-  "U0002": "Red de alta velocidad CAN C personalizada 2",
-  "U0003": "Red de alta velocidad CAN C personalizada 3",
-  "U0004": "Red de alta velocidad CAN C personalizada 4",
-  "U0005": "Red de alta velocidad CAN C personalizada 5",
-  "U0006": "Red de alta velocidad CAN C personalizada 6",
-  "U0007": "Red de alta velocidad CAN C personalizada 7",
-  "U0008": "Red de alta velocidad CAN C personalizada 8",
-  "U0009": "Red de alta velocidad CAN C personalizada 9",
-  "U0010": "Red de alta velocidad CAN C personalizada 10",
-  "U0011": "Red de alta velocidad CAN C personalizada 11",
-  "U0012": "Red de alta velocidad CAN C personalizada 12",
-  "U0013": "Red de alta velocidad CAN C personalizada 13",
-  "U0014": "Red de alta velocidad CAN C personalizada 14",
-  "U0015": "Red de alta velocidad CAN C personalizada 15",
-  "U0016": "Red de alta velocidad CAN C personalizada 16",
-  "U0017": "Red de alta velocidad CAN C personalizada 17",
-  "U0018": "Red de alta velocidad CAN C personalizada 18",
-  "U0019": "Red de alta velocidad CAN C personalizada 19",
-  "U0020": "Red de alta velocidad CAN C personalizada 20",
-  "U0021": "Red de alta velocidad CAN C personalizada 21",
-  "U0022": "Red de alta velocidad CAN C personalizada 22",
-  "U0023": "Red de alta velocidad CAN C personalizada 23",
-  "U0024": "Red de alta velocidad CAN C personalizada 24",
-  "U0025": "Red de alta velocidad CAN C personalizada 25",
-  "U0026": "Red de alta velocidad CAN C personalizada 26",
-  "U0027": "Red de alta velocidad CAN C personalizada 27",
-  "U0028": "Red de alta velocidad CAN C personalizada 28",
-  "U0029": "Red de alta velocidad CAN C personalizada 29",
-  "U0030": "Red de alta velocidad CAN C personalizada 30",
-  "U0031": "Comunicación con el módulo de control del motor 1",
-  "U0032": "Comunicación con el módulo de control del motor 2",
-  "U0033": "Comunicación con el módulo de control del motor 3",
-  "U0034": "Comunicación con el módulo de control del motor 4",
-  "U0035": "Comunicación con el módulo de control del motor 5",
-  "U0036": "Comunicación con el módulo de control del motor 6",
-  "U0037": "Comunicación con el módulo de control del motor 7",
-  "U0038": "Comunicación con el módulo de control del motor 8",
-  "U0039": "Comunicación con el módulo de control del motor 9",
-  "U0040": "Comunicación con el módulo de control del motor 10",
-  "U0041": "Comunicación con el módulo de control del motor 11",
-  "U0042": "Comunicación con el módulo de control del motor 12",
-  "U0043": "Comunicación con el módulo de control del motor 13",
-  "U0044": "Comunicación con el módulo de control del motor 14",
-  "U0045": "Comunicación con el módulo de control del motor 15",
-  "U0046": "Comunicación con el módulo de control del motor 16",
-  "U0047": "Comunicación con el módulo de control del motor 17",
-  "U0048": "Comunicación con el módulo de control del motor 18",
-  "U0049": "Comunicación con el módulo de control del motor 19",
-  "U0050": "Comunicación con el módulo de control del motor 20",
-  "U0051": "Comunicación con el módulo de control del motor 21",
-  "U0052": "Comunicación con el módulo de control del motor 22",
-  "U0053": "Comunicación con el módulo de control del motor 23",
-  "U0054": "Comunicación con el módulo de control del motor 24",
-  "U0055": "Comunicación con el módulo de control del motor 25",
-  "U0056": "Comunicación con el módulo de control del motor 26",
-  "U0057": "Comunicación con el módulo de control del motor 27",
-  "U0058": "Comunicación con el módulo de control del motor 28",
-  "U0059": "Comunicación con el módulo de control del motor 29",
-  "U0060": "Comunicación con el módulo de control del motor 30",
-  "U0061": "Error de comunicación con el módulo de control del motor 1",
-  "U0062": "Error de comunicación con el módulo de control del motor 2",
-  "U0063": "Error de comunicación con el módulo de control del motor 3",
-  "U0064": "Error de comunicación con el módulo de control del motor 4",
-  "U0065": "Error de comunicación con el módulo de control del motor 5",
-  "U0066": "Error de comunicación con el módulo de control del motor 6",
-  "U0067": "Error de comunicación con el módulo de control del motor 7",
-  "U0068": "Error de comunicación con el módulo de control del motor 8",
-  "U0069": "Error de comunicación con el módulo de control del motor 9",
-  "U0070": "Error de comunicación con el módulo de control del motor 10",
-  "U0071": "Error de comunicación con el módulo de control del motor 11",
-  "U0072": "Error de comunicación con el módulo de control del motor 12",
-  "U0073": "Error de comunicación con el módulo de control del motor 13",
-  "U0074": "Error de comunicación con el módulo de control del motor 14",
-  "U0075": "Error de comunicación con el módulo de control del motor 15",
-  "U0076": "Error de comunicación con el módulo de control del motor 16",
-  "U0077": "Error de comunicación con el módulo de control del motor 17",
-  "U0078": "Error de comunicación con el módulo de control del motor 18",
-  "U0079": "Error de comunicación con el módulo de control del motor 19",
-  "U0080": "Error de comunicación con el módulo de control del motor 20",
-  "U0081": "Error de comunicación con el módulo de control del motor 21",
-  "U0082": "Error de comunicación con el módulo de control del motor 22",
-  "U0083": "Error de comunicación con el módulo de control del motor 23",
-  "U0084": "Error de comunicación con el módulo de control del motor 24",
-  "U0085": "Error de comunicación con el módulo de control del motor 25",
-  "U0086": "Error de comunicación con el módulo de control del motor 26",
-  "U0087": "Error de comunicación con el módulo de control del motor 27",
-  "U0088": "Error de comunicación con el módulo de control del motor 28",
-  "U0089": "Error de comunicación con el módulo de control del motor 29",
-  "U0090": "Error de comunicación con el módulo de control del motor 30",
-  "U0091": "Error de comunicación con el módulo de control del motor 31",
-  "U0092": "Error de comunicación con el módulo de control del motor 32",
-  "U0093": "Error de comunicación con el módulo de control del motor 33",
-  "U0094": "Error de comunicación con el módulo de control del motor 34",
-  "U0095": "Error de comunicación con el módulo de control del motor 35",
-  "U0096": "Error de comunicación con el módulo de control del motor 36",
-  "U0097": "Error de comunicación con el módulo de control del motor 37",
-  "U0098": "Error de comunicación con el módulo de control del motor 38",
-  "U0099": "Error de comunicación con el módulo de control del motor 39",
-  "U0100": "Fallo de comunicación con el módulo de control de la transmisión 1",
-  "U0101": "Fallo de comunicación con el módulo de control de la transmisión 2",
-  "U0102": "Fallo de comunicación con el módulo de control de la transmisión 3",
-  "U0103": "Fallo de comunicación con el módulo de control de la transmisión 4",
-  "U0104": "Fallo de comunicación con el módulo de control de la transmisión 5",
-  "U0106": "Fallo de comunicación con el módulo de control de la transmisión 7",
-  "U0107": "Fallo de comunicación con el módulo de control de la transmisión 8",
-  "U0108": "Fallo de comunicación con el módulo de control de la transmisión 9",
-  "U0109": "Fallo de comunicación con el módulo de control de la transmisión 10",
-  "U0110": "Fallo de comunicación con el módulo de control de la transmisión 11",
-  "U0111": "Fallo de comunicación con el módulo de control de la transmisión 12",
-  "U0112": "Fallo de comunicación con el módulo de control de la transmisión 13",
-  "U0113": "Fallo de comunicación con el módulo de control de la transmisión 14",
-  "U0114": "Fallo de comunicación con el módulo de control de la transmisión 15",
-  "U0115": "Fallo de comunicación con el módulo de control de la transmisión 16",
-  "U0116": "Fallo de comunicación con el módulo de control de la transmisión 17",
-  "U0117": "Fallo de comunicación con el módulo de control de la transmisión 18",
-  "U0118": "Fallo de comunicación con el módulo de control de la transmisión 19",
-  "U0119": "Fallo de comunicación con el módulo de control de la transmisión 20",
-  "U0120": "Fallo de comunicación con el módulo de control de la transmisión 21",
-  "U0121": "Fallo de comunicación con el módulo de control de la transmisión 22",
-  "U0122": "Fallo de comunicación con el módulo de control de la transmisión 23",
-  "U0123": "Fallo de comunicación con el módulo de control de la transmisión 24",
-  "U0124": "Fallo de comunicación con el módulo de control de la transmisión 25",
-  "U0125": "Fallo de comunicación con el módulo de control de la transmisión 26",
-  "U0126": "Fallo de comunicación con el módulo de control de la transmisión 27",
-  "U0127": "Fallo de comunicación con el módulo de control de la transmisión 28",
-  "U0128": "Fallo de comunicación con el módulo de control de la transmisión 29",
-  "U0129": "Fallo de comunicación con el módulo de control de la transmisión 30",
-  "U0130": "Fallo de comunicación con el módulo de control de la transmisión 31",
-  "U0131": "Fallo de comunicación con el módulo de control de la transmisión 32",
-  "U0132": "Fallo de comunicación con el módulo de control de la transmisión 33",
-  "U0133": "Fallo de comunicación con el módulo de control de la transmisión 34",
-  "U0134": "Fallo de comunicación con el módulo de control de la transmisión 35",
-  "U0135": "Fallo de comunicación con el módulo de control de la transmisión 36",
-  "U0136": "Fallo de comunicación con el módulo de control de la transmisión 37",
-  "U0137": "Fallo de comunicación con el módulo de control de la transmisión 38",
-  "U0138": "Fallo de comunicación con el módulo de control de la transmisión 39",
-  "U0139": "Fallo de comunicación con el módulo de control de la transmisión 40",
-  "U0140": "Fallo de comunicación con el módulo de control de la transmisión 41",
-  "U0141": "Fallo de comunicación con el módulo de control de la transmisión 42",
-  "U0142": "Fallo de comunicación con el módulo de control de la transmisión 43",
-  "U0143": "Fallo de comunicación con el módulo de control de la transmisión 44",
-  "U0144": "Fallo de comunicación con el módulo de control de la transmisión 45",
-  "U0145": "Fallo de comunicación con el módulo de control de la transmisión 46",
-  "U0146": "Fallo de comunicación con el módulo de control de la transmisión 47",
-  "U0147": "Fallo de comunicación con el módulo de control de la transmisión 48",
-  "U0148": "Fallo de comunicación con el módulo de control de la transmisión 49",
-  "U0149": "Fallo de comunicación con el módulo de control de la transmisión 50",
-  "U0150": "Fallo de comunicación con el módulo de control de la transmisión 51",
-  "U0151": "Fallo de comunicación con el módulo de control de la transmisión 52",
-  "U0152": "Fallo de comunicación con el módulo de control de la transmisión 53",
-  "U0153": "Fallo de comunicación con el módulo de control de la transmisión 54",
-  "U0154": "Fallo de comunicación con el módulo de control de la transmisión 55",
-  "U0155": "Fallo de comunicación con el módulo de control de la transmisión 56",
-  "U0156": "Fallo de comunicación con el módulo de control de la transmisión 57",
-  "U0157": "Fallo de comunicación con el módulo de control de la transmisión 58",
-  "U0158": "Fallo de comunicación con el módulo de control de la transmisión 59",
-  "U0159": "Fallo de comunicación con el módulo de control de la transmisión 60",
-  "U0160": "Fallo de comunicación con el módulo de control de la transmisión 61",
-  "U0161": "Fallo de comunicación con el módulo de control de la transmisión 62",
-  "U0162": "Fallo de comunicación con el módulo de control de la transmisión 63",
-  "U0163": "Fallo de comunicación con el módulo de control de la transmisión 64",
-  "U0164": "Fallo de comunicación con el módulo de control de la transmisión 65",
-  "U0165": "Fallo de comunicación con el módulo de control de la transmisión 66",
-  "U0166": "Fallo de comunicación con el módulo de control de la transmisión 67",
-  "U0167": "Fallo de comunicación con el módulo de control de la transmisión 68",
-  "U0168": "Fallo de comunicación con el módulo de control de la transmisión 69",
-  "U0169": "Fallo de comunicación con el módulo de control de la transmisión 70",
-  "U0170": "Fallo de comunicación con el módulo de control de la transmisión 71",
-  "U0171": "Fallo de comunicación con el módulo de control de la transmisión 72",
-  "U0172": "Fallo de comunicación con el módulo de control de la transmisión 73",
-  "U0173": "Fallo de comunicación con el módulo de control de la transmisión 74",
-  "U0174": "Fallo de comunicación con el módulo de control de la transmisión 75",
-  "U0175": "Fallo de comunicación con el módulo de control de la transmisión 76",
-  "U0176": "Fallo de comunicación con el módulo de control de la transmisión 77",
-  "U0177": "Fallo de comunicación con el módulo de control de la transmisión 78",
-  "U0178": "Fallo de comunicación con el módulo de control de la transmisión 79",
-  "U0179": "Fallo de comunicación con el módulo de control de la transmisión 80",
-  "U0180": "Fallo de comunicación con el módulo de control de la transmisión 81",
-  "U0181": "Fallo de comunicación con el módulo de control de la transmisión 82",
-  "U0182": "Fallo de comunicación con el módulo de control de la transmisión 83",
-  "U0183": "Fallo de comunicación con el módulo de control de la transmisión 84",
-  "U0184": "Fallo de comunicación con el módulo de control de la transmisión 85",
-  "U0185": "Fallo de comunicación con el módulo de control de la transmisión 86",
-  "U0186": "Fallo de comunicación con el módulo de control de la transmisión 87",
-  "U0187": "Fallo de comunicación con el módulo de control de la transmisión 88",
-  "U0188": "Fallo de comunicación con el módulo de control de la transmisión 89",
-  "U0189": "Fallo de comunicación con el módulo de control de la transmisión 90",
-  "U0190": "Fallo de comunicación con el módulo de control de la transmisión 91",
-  "U0191": "Fallo de comunicación con el módulo de control de la transmisión 92",
-  "U0192": "Fallo de comunicación con el módulo de control de la transmisión 93",
-  "U0193": "Fallo de comunicación con el módulo de control de la transmisión 94",
-  "U0194": "Fallo de comunicación con el módulo de control de la transmisión 95",
-  "U0195": "Fallo de comunicación con el módulo de control de la transmisión 96",
-  "U0196": "Fallo de comunicación con el módulo de control de la transmisión 97",
-  "U0197": "Fallo de comunicación con el módulo de control de la transmisión 98",
-  "U0198": "Fallo de comunicación con el módulo de control de la transmisión 99",
-  "U0199": "Fallo de comunicación con el módulo de control de la transmisión 100",
-  "U0200": "Fallo de comunicación con el módulo de control de transmisión 1",
-  "U0201": "Fallo de comunicación con el módulo de control de transmisión 2",
-  "U0202": "Fallo de comunicación con el módulo de control de transmisión 3",
-  "U0203": "Fallo de comunicación con el módulo de control de transmisión 4",
-  "U0204": "Fallo de comunicación con el módulo de control de transmisión 5",
-  "U0205": "Fallo de comunicación con el módulo de control de transmisión 6",
-  "U0206": "Fallo de comunicación con el módulo de control de transmisión 7",
-  "U0207": "Fallo de comunicación con el módulo de control de transmisión 8",
-  "U0208": "Fallo de comunicación con el módulo de control de transmisión 9",
-  "U0209": "Fallo de comunicación con el módulo de control de transmisión 10",
-  "U0210": "Fallo de comunicación con el módulo de control de transmisión 11",
-  "U0211": "Fallo de comunicación con el módulo de control de transmisión 12",
-  "U0212": "Fallo de comunicación con el módulo de control de transmisión 13",
-  "U0213": "Fallo de comunicación con el módulo de control de transmisión 14",
-  "U0214": "Fallo de comunicación con el módulo de control de transmisión 15",
-  "U0215": "Fallo de comunicación con el módulo de control de transmisión 16",
-  "U0216": "Fallo de comunicación con el módulo de control de transmisión 17",
-  "U0217": "Fallo de comunicación con el módulo de control de transmisión 18",
-  "U0218": "Fallo de comunicación con el módulo de control de transmisión 19",
-  "U0219": "Fallo de comunicación con el módulo de control de transmisión 20",
-  "U0220": "Fallo de comunicación con el módulo de control de transmisión 21",
-  "U0221": "Fallo de comunicación con el módulo de control de transmisión 22",
-  "U0222": "Fallo de comunicación con el módulo de control de transmisión 23",
-  "U0223": "Fallo de comunicación con el módulo de control de transmisión 24",
-  "U0224": "Fallo de comunicación con el módulo de control de transmisión 25",
-  "U0225": "Fallo de comunicación con el módulo de control de transmisión 26",
-  "U0226": "Fallo de comunicación con el módulo de control de transmisión 27",
-  "U0227": "Fallo de comunicación con el módulo de control de transmisión 28",
-  "U0228": "Fallo de comunicación con el módulo de control de transmisión 29",
-  "U0229": "Fallo de comunicación con el módulo de control de transmisión 30",
-  "U0230": "Fallo de comunicación con el módulo de control de transmisión 31",
-  "U0231": "Fallo de comunicación con el módulo de control de transmisión 32",
-  "U0232": "Fallo de comunicación con el módulo de control de transmisión 33",
-  "U0233": "Fallo de comunicación con el módulo de control de transmisión 34",
-  "U0234": "Fallo de comunicación con el módulo de control de transmisión 35",
-  "U0235": "Fallo de comunicación con el módulo de control de transmisión 36",
-  "U0236": "Fallo de comunicación con el módulo de control de transmisión 37",
-  "U0237": "Fallo de comunicación con el módulo de control de transmisión 38",
-  "U0239": "Fallo de comunicación con el módulo de control de transmisión 40",
-  "U0240": "Fallo de comunicación con el módulo de control de transmisión 41",
-  "U0241": "Fallo de comunicación con el módulo de control de transmisión 42",
-  "U0242": "Fallo de comunicación con el módulo de control de transmisión 43",
-  "U0243": "Fallo de comunicación con el módulo de control de transmisión 44",
-  "U0244": "Fallo de comunicación con el módulo de control de transmisión 45",
-  "U0245": "Fallo de comunicación con el módulo de control de transmisión 46",
-  "U0246": "Fallo de comunicación con el módulo de control de transmisión 47",
-  "U0247": "Fallo de comunicación con el módulo de control de transmisión 48",
-  "U0248": "Fallo de comunicación con el módulo de control de transmisión 49",
-  "U0249": "Fallo de comunicación con el módulo de control de transmisión 50",
-  "U0250": "Fallo de comunicación con el módulo de control de transmisión 51",
-  "U0251": "Fallo de comunicación con el módulo de control de transmisión 52",
-  "U0252": "Fallo de comunicación con el módulo de control de transmisión 53",
-  "U0253": "Fallo de comunicación con el módulo de control de transmisión 54",
-  "U0254": "Fallo de comunicación con el módulo de control de transmisión 55",
-  "U0255": "Fallo de comunicación con el módulo de control de transmisión 56",
-  "U0256": "Fallo de comunicación con el módulo de control de transmisión 57",
-  "U0257": "Fallo de comunicación con el módulo de control de transmisión 58",
-  "U0258": "Fallo de comunicación con el módulo de control de transmisión 59",
-  "U0259": "Fallo de comunicación con el módulo de control de transmisión 60",
-  "U0260": "Fallo de comunicación con el módulo de control de transmisión 61",
-  "U0261": "Fallo de comunicación con el módulo de control de transmisión 62",
-  "U0262": "Fallo de comunicación con el módulo de control de transmisión 63",
-  "U0263": "Fallo de comunicación con el módulo de control de transmisión 64",
-  "U0264": "Fallo de comunicación con el módulo de control de transmisión 65",
-  "U0265": "Fallo de comunicación con el módulo de control de transmisión 66",
-  "U0266": "Fallo de comunicación con el módulo de control de transmisión 67",
-  "U0267": "Fallo de comunicación con el módulo de control de transmisión 68",
-  "U0268": "Fallo de comunicación con el módulo de control de transmisión 69",
-  "U0269": "Fallo de comunicación con el módulo de control de transmisión 70",
-  "U0270": "Fallo de comunicación con el módulo de control de transmisión 71",
-  "U0271": "Fallo de comunicación con el módulo de control de transmisión 72",
-  "U0272": "Fallo de comunicación con el módulo de control de transmisión 73",
-  "U0273": "Fallo de comunicación con el módulo de control de transmisión 74",
-  "U0274": "Fallo de comunicación con el módulo de control de transmisión 75",
-  "U0275": "Fallo de comunicación con el módulo de control de transmisión 76",
-  "U0276": "Fallo de comunicación con el módulo de control de transmisión 77",
-  "U0277": "Fallo de comunicación con el módulo de control de transmisión 78",
-  "U0278": "Fallo de comunicación con el módulo de control de transmisión 79",
-  "U0279": "Fallo de comunicación con el módulo de control de transmisión 80",
-  "U0280": "Fallo de comunicación con el módulo de control de transmisión 81",
-  "U0281": "Fallo de comunicación con el módulo de control de transmisión 82",
-  "U0282": "Fallo de comunicación con el módulo de control de transmisión 83",
-  "U0283": "Fallo de comunicación con el módulo de control de transmisión 84",
-  "U0284": "Fallo de comunicación con el módulo de control de transmisión 85",
-  "U0285": "Fallo de comunicación con el módulo de control de transmisión 86",
-  "U0286": "Fallo de comunicación con el módulo de control de transmisión 87",
-  "U0287": "Fallo de comunicación con el módulo de control de transmisión 88",
-  "U0288": "Fallo de comunicación con el módulo de control de transmisión 89",
-  "U0289": "Fallo de comunicación con el módulo de control de transmisión 90",
-  "U0290": "Fallo de comunicación con el módulo de control de transmisión 91",
-  "U0291": "Fallo de comunicación con el módulo de control de transmisión 92",
-  "U0292": "Fallo de comunicación con el módulo de control de transmisión 93",
-  "U0293": "Fallo de comunicación con el módulo de control de transmisión 94",
-  "U0294": "Fallo de comunicación con el módulo de control de transmisión 95",
-  "U0295": "Fallo de comunicación con el módulo de control de transmisión 96",
-  "U0296": "Fallo de comunicación con el módulo de control de transmisión 97",
-  "U0297": "Fallo de comunicación con el módulo de control de transmisión 98",
-  "U0298": "Fallo de comunicación con el módulo de control de transmisión 99",
-  "U0299": "Fallo de comunicación con el módulo de control de transmisión 100",
-  "U0300": "Fallo en la comunicación con el módulo de control general 1",
-  "U0301": "Fallo en la comunicación con el módulo de control general 2",
-  "U0302": "Fallo en la comunicación con el módulo de control general 3",
-  "U0303": "Fallo en la comunicación con el módulo de control general 4",
-  "U0304": "Fallo en la comunicación con el módulo de control general 5",
-  "U0306": "Fallo en la comunicación con el módulo de control general 6",
-  "U0307": "Fallo en la comunicación con el módulo de control general 7",
-  "U0308": "Fallo en la comunicación con el módulo de control general 8",
-  "U0309": "Fallo en la comunicación con el módulo de control general 9",
-  "U0310": "Fallo en la comunicación con el módulo de control general 10",
-  "U0311": "Fallo en la comunicación con el módulo de control general 11",
-  "U0312": "Fallo en la comunicación con el módulo de control general 12",
-  "U0313": "Fallo en la comunicación con el módulo de control general 13",
-  "U0314": "Fallo en la comunicación con el módulo de control general 14",
-  "U0315": "Fallo en la comunicación con el módulo de control general 15",
-  "U0316": "Fallo en la comunicación con el módulo de control general 16",
-  "U0317": "Fallo en la comunicación con el módulo de control general 17",
-  "U0318": "Fallo en la comunicación con el módulo de control general 18",
-  "U0319": "Fallo en la comunicación con el módulo de control general 19",
-  "U0320": "Fallo en la comunicación con el módulo de control general 20",
-  "U0321": "Fallo en la comunicación con el módulo de control general 21",
-  "U0322": "Fallo en la comunicación con el módulo de control general 22",
-  "U0323": "Fallo en la comunicación con el módulo de control general 23",
-  "U0324": "Fallo en la comunicación con el módulo de control general 24",
-  "U0325": "Fallo en la comunicación con el módulo de control general 25",
-  "U0326": "Fallo en la comunicación con el módulo de control general 26",
-  "U0327": "Fallo en la comunicación con el módulo de control general 27",
-  "U0328": "Fallo en la comunicación con el módulo de control general 28",
-  "U0329": "Fallo en la comunicación con el módulo de control general 29",
-  "U0330": "Fallo en la comunicación con el módulo de control general 30",
-  "U0400": "Fallo de comunicación con el módulo de control de tracción 1",
-  "U0401": "Fallo de comunicación con el módulo de control de tracción 2",
-  "U0402": "Fallo de comunicación con el módulo de control de tracción 3",
-  "U0403": "Fallo de comunicación con el módulo de control de tracción 4",
-  "U0404": "Fallo de comunicación con el módulo de control de tracción 5",
-  "U0405": "Fallo de comunicación con el módulo de control de tracción 6",
-  "U0406": "Fallo de comunicación con el módulo de control de tracción 7",
-  "U0407": "Fallo de comunicación con el módulo de control de tracción 8",
-  "U0408": "Fallo de comunicación con el módulo de control de tracción 9",
-  "U0409": "Fallo de comunicación con el módulo de control de tracción 10",
-  "U0410": "Fallo de comunicación con el módulo de control de tracción 11",
-  "U0411": "Fallo de comunicación con el módulo de control de tracción 12",
-  "U0412": "Fallo de comunicación con el módulo de control de tracción 13",
-  "U0413": "Fallo de comunicación con el módulo de control de tracción 14",
-  "U0414": "Fallo de comunicación con el módulo de control de tracción 15",
-  "U0415": "Fallo de comunicación con el módulo de control de tracción 16",
-  "U0416": "Fallo de comunicación con el módulo de control de tracción 17",
-  "U0418": "Fallo de comunicación con el módulo de control de tracción 18",
-  "U0419": "Fallo de comunicación con el módulo de control de tracción 19",
-  "U0420": "Fallo de comunicación con el módulo de control de tracción 20",
-  "U0421": "Fallo de comunicación con el módulo de control de tracción 21",
-  "U0422": "Fallo de comunicación con el módulo de control de tracción 22",
-  "U0423": "Fallo de comunicación con el módulo de control de tracción 23",
-  "U0424": "Fallo de comunicación con el módulo de control de tracción 24",
-  "U0425": "Fallo de comunicación con el módulo de control de tracción 25",
-  "U0426": "Fallo de comunicación con el módulo de control de tracción 26",
-  "U0427": "Fallo de comunicación con el módulo de control de tracción 27",
-  "U0428": "Fallo de comunicación con el módulo de control de tracción 28",
-  "U0429": "Fallo de comunicación con el módulo de control de tracción 29",
-  "U0430": "Fallo de comunicación con el módulo de control de tracción 30",
-  "U0431": "Fallo de comunicación con el módulo de control de tracción 31",
-   "C0050": "Circuito del sensor de velocidad del vehículo",
-  "C0110": "Circuito de tensión de la batería bajo",
-  "C0131": "Circuito de freno de estacionamiento",
-  "C0182": "Circuito del sensor de posición del árbol de levas B 147",
-  "C0226": "Circuito del sensor de posición del árbol de levas B 191",
-  "C0281": "Circuito de freno de servicio",
-  "C0300": "Fallo de encendido aleatorio detectado",
-  "C0455": "Sistema de control de tracción (TCS) desactivado",
-  "C0561": "Control de velocidad no permitido por el ECM",
-  "C0896": "Relé de interruptor de circuito de velocidad de crucero",
-  "C0111": "Sensor de nivel de aceite bajo",
-  "C0121": "Circuito del interruptor de luz de freno",
-  "C0161": "Circuito del sensor de posición del árbol de levas B 126",
-  "C0222": "Circuito del sensor de posición del árbol de levas B 187",
-  "C0223": "Circuito del sensor de posición del árbol de levas B 188",
-  "C0224": "Circuito del sensor de posición del árbol de levas B 189",
-  "C0225": "Circuito del sensor de posición del árbol de levas B 190",
-  "C0231": "Módulo de control del ABS de la rueda delantera izquierda",
-  "C0232": "Módulo de control del ABS de la rueda delantera derecha",
-  "C0233": "Módulo de control del ABS de la rueda trasera izquierda",
-  "C0234": "Módulo de control del ABS de la rueda trasera derecha",
-  "C0235": "Error de dirección asistida",
-  "C0241": "Error de velocidad de la bomba de dirección asistida",
-  "C0242": "Mal funcionamiento de la válvula solenoide de cambio en frío",
-  "C0251": "Control de la posición de la válvula solenoide",
-  "C0252": "Solenoide de control de la válvula de purga del evaporador",
-  "C0253": "Mal funcionamiento del solenoide de la válvula de purga",
-  "C0254": "Mal funcionamiento de la válvula de ventilación del tanque de combustible",
-  "C0255": "Circuito de la válvula de ventilación del tanque de combustible",
-  "C0261": "Circuito del actuador de embrague hidráulico",
-  "C0262": "Mal funcionamiento del actuador de embrague hidráulico",
-  "C0162": "Circuito del sensor de posición del árbol de levas B 127",
-  "C0163": "Circuito del sensor de posición del árbol de levas B 128",
-  "C0164": "Circuito del sensor de posición del árbol de levas B 129",
-  "C0165": "Circuito del sensor de posición del árbol de levas B 130",
-  "C0166": "Circuito del sensor de posición del árbol de levas B 131",
-  "C0167": "Circuito del sensor de posición del árbol de levas B 132",
-  "C0168": "Circuito del sensor de posición del árbol de levas B 133",
-  "C0169": "Circuito del sensor de posición del árbol de levas B 134",
-  "C0170": "Circuito del sensor de posición del árbol de levas B 135",
-  "C0171": "Circuito del sensor de posición del árbol de levas B 136",
-  "C0172": "Circuito del sensor de posición del árbol de levas B 137",
-  "C0173": "Circuito del sensor de posición del árbol de levas B 138",
-  "C0174": "Circuito del sensor de posición del árbol de levas B 139",
-  "C0175": "Circuito del sensor de posición del árbol de levas B 140",
-  "C0176": "Circuito del sensor de posición del árbol de levas B 141",
-  "C0177": "Circuito del sensor de posición del árbol de levas B 142",
-  "C0178": "Circuito del sensor de posición del árbol de levas B 143",
-  "C0179": "Circuito del sensor de posición del árbol de levas B 144",
-  "C0180": "Circuito del sensor de posición del árbol de levas B 145",
-  "C0181": "Circuito del sensor de posición del árbol de levas B 146",
-  "C0183": "Circuito del sensor de posición del árbol de levas B 148",
-  "C0184": "Circuito del sensor de posición del árbol de levas B 149",
-  "C0185": "Circuito del sensor de posición del árbol de levas B 150",
-  "C0186": "Circuito del sensor de posición del árbol de levas B 151",
-  "C0187": "Circuito del sensor de posición del árbol de levas B 152",
-  "C0188": "Circuito del sensor de posición del árbol de levas B 153",
-  "C0189": "Circuito del sensor de posición del árbol de levas B 154",
-  "C0190": "Circuito del sensor de posición del árbol de levas B 155",
-  "C0191": "Circuito del sensor de posición del árbol de levas B 156",
-  "C0192": "Circuito del sensor de posición del árbol de levas B 157",
-  "C0193": "Circuito del sensor de posición del árbol de levas B 158",
-  "C0194": "Circuito del sensor de posición del árbol de levas B 159",
-  "C0195": "Circuito del sensor de posición del árbol de levas B 160",
-  "C0196": "Circuito del sensor de posición del árbol de levas B 161",
-  "C0197": "Circuito del sensor de posición del árbol de levas B 162",
-  "C0198": "Circuito del sensor de posición del árbol de levas B 163",
-  "C0199": "Circuito del sensor de posición del árbol de levas B 164",
-  "C0200": "Circuito del sensor de posición del árbol de levas B 165",
-  "C0201": "Circuito del sensor de posición del árbol de levas B 166",
-  "C0202": "Circuito del sensor de posición del árbol de levas B 167",
-  "C0203": "Circuito del sensor de posición del árbol de levas B 168",
-  "C0204": "Circuito del sensor de posición del árbol de levas B 169",
-  "C0205": "Circuito del sensor de posición del árbol de levas B 170",
-  "C0206": "Circuito del sensor de posición del árbol de levas B 171",
-  "C0207": "Circuito del sensor de posición del árbol de levas B 172",
-  "C0208": "Circuito del sensor de posición del árbol de levas B 173",
-  "C0209": "Circuito del sensor de posición del árbol de levas B 174",
-  "C0210": "Circuito del sensor de posición del árbol de levas B 175",
-  "C0211": "Circuito del sensor de posición del árbol de levas B 176",
-  "C0212": "Circuito del sensor de posición del árbol de levas B 177",
-  "C0213": "Circuito del sensor de posición del árbol de levas B 178",
-  "C0214": "Circuito del sensor de posición del árbol de levas B 179",
-  "C0215": "Circuito del sensor de posición del árbol de levas B 180",
-  "C0216": "Circuito del sensor de posición del árbol de levas B 181",
-  "C0217": "Circuito del sensor de posición del árbol de levas B 182",
-  "C0218": "Circuito del sensor de posición del árbol de levas B 183",
-  "C0219": "Circuito del sensor de posición del árbol de levas B 184",
-  "C0220": "Circuito del sensor de posición del árbol de levas B 185",
-  "C0221": "Circuito del sensor de posición del árbol de levas B 186",
-  "C0227": "Circuito del sensor de posición del árbol de levas B 192",
-  "C0228": "Circuito del sensor de posición del árbol de levas B 193",
-  "C0229": "Circuito del sensor de posición del árbol de levas B 194",
-  "C0230": "Circuito del sensor de posición del árbol de levas B 195",
-  "C0040": "Fallo en el circuito de velocidad de la rueda delantera derecha"
+      "P252F": "Nivel de aceite muy alto",
+      "P0420": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 1)",
+      "P0171": "Sistema demasiado pobre (Banco 1)",
+      "P0300": "Falla de encendido aleatoria o múltiple",
+      "P0113": "Sensor de temperatura del aire de admisión - entrada alta",
+      "P0340": "Circuito del sensor de posición del árbol de levas - mal funcionamiento",
+      "P0335": "Sensor de posición del cigüeñal - circuito defectuoso",
+      "P0128": "Termostato del refrigerante - temperatura de funcionamiento por debajo del regulado",
+      "P0172": "Sistema demasiado rico (Banco 1)",
+      "P0011": "Posición del árbol de levas A - tiempo adelantado o rendimiento del sistema (Banco 1)",
+      "P0016": "Sensor de posición del cigüeñal - correlación con el árbol de levas (Banco 1)",
+      "P0102": "Sensor MAF - entrada baja",
+      "P0135": "Sensor de oxígeno (Banco 1 Sensor 1) - calentador - mal funcionamiento del circuito",
+      "P0299": "Presión del turbo/sobrealimentador por debajo del límite",
+      "P0301": "Fallo de encendido del cilindro 1",
+      "P0401": "Flujo insuficiente en el sistema EGR",
+      "P0430": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 2)",
+      "P0087": "Presión de combustible/raíl - demasiado baja",
+      "P0101": "Sensor MAF - rango/rendimiento",
+      "P0141": "Sensor de oxígeno (Banco 1 Sensor 2) - calentador - mal funcionamiento del circuito",
+      "P0100": "Mal funcionamiento del circuito de sensor MAF o volumen de air.",
+      "P0101": "Rango o rendimiento del sensor MAF fuera de especificación.",
+      "P0102": "Sensor MAF – señal baja de entrada.",
+      "P0106": "Sensor MAP/ABS – rango o rendimiento fuera de especificación.",
+      "P0107": "Sensor MAP/ABS – señal baja.",
+      "P0108": "Sensor MAP/ABS – señal alta.",
+      "P0110": "Mal funcionamiento del circuito del sensor de temperatura del aire de admisión.",
+      "P0113": "Sensor de temperatura del aire de admisión – señal alta de entrada.",
+      "P0118": "Sensor de temperatura del refrigerante del motor – señal alta de entrada.",
+      "P0120": "Sensor de posición del acelerador A – mal funcionamiento de circuito.",
+      "P0121": "Sensor de posición del acelerador A – rango/rendimiento fuera de especificación.",
+      "P0122": "Sensor de posición del acelerador A – señal baja.",
+      "P0123": "Sensor de posición del acelerador A – señal alta.",
+      "P0128": "La temperatura del refrigerante está por debajo del rango regulado por el termostato.",
+      "P0130": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 1).",
+      "P0131": "Sensor de O₂ Banco 1, sensor 1 – bajo voltage.",
+      "P0132": "Sensor de O₂ Banco 1, sensor 1 – alto voltage.",
+      "P0134": "Sensor de O₂ Banco 1, sensor 1 – sin actividad.",
+      "P0135": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 1).",
+      "P0136": "Mal funcionamiento del circuito del sensor de O₂ (Banco 1, sensor 2).",
+      "P0137": "Sensor de O₂ Banco 1, sensor 2 – bajo voltage.",
+      "P0138": "Sensor de O₂ Banco 1, sensor 2 – alto voltage.",
+      "P0141": "Mal funcionamiento del calentador del sensor de O₂ (Banco 1, sensor 2).",
+      "P0171": "Sistema demasiado pobre (Banco 1).",
+      "P0172": "Sistema demasiado rico (Banco 1).",
+      "P0174": "Sistema demasiado pobre (Banco 2).",
+      "P0200": "Mal funcionamiento del circuito del inyector de combustible (rango 0200-0299).",
+      "P0234": "Turbo/sobrealimentador – presión excesiva detectada.",
+      "P0299": "Turbo/sobrealimentador – rendimiento/nivel bajo.",
+      "P0300": "Fallo de encendido aleatorio/múltiple cilindros detectado.",
+      "P0301": "Fallo de encendido en el cilindro 1.",
+      "P0302": "Fallo de encendido en el cilindro 2.",
+      "P0303": "Fallo de encendido en el cilindro 3.",
+      "P0304": "Fallo de encendido en el cilindro 4.",
+      "P0305": "Fallo de encendido en el cilindro 5.",
+      "P0306": "Fallo de encendido en el cilindro 6.",
+      "P0307": "Fallo de encendido en el cilindro 7.",
+      "P0308": "Fallo de encendido en el cilindro 8.",
+      "P0321": "Sensor knock – rango/rendimiento fuera de especificación.",
+      "P0325": "Sensor knock – mal funcionamiento del circuito (Banco 1).",
+      "P0328": "Sensor knock – señal alta (Banco 1 o sensor único).",
+      "P0335": "Mal funcionamiento del circuito del sensor de posición del cigüeñal (CKP).",
+      "P0340": "Mal funcionamiento del circuito del sensor de posición del árbol de levas (CMP).",
+      "P0341": "Anomalía en comparación CKP/CMP detectada.",
+      "P0400": "Mal funcionamiento del sistema de recirculación de gases de escape (EGR) – flujo insuficiente.",
+      "P0401": "Flujo EGR insuficiente detectado.",
+      "P0402": "Flujo EGR excesivo detectado.",
+      "P0403": "Mal funcionamiento del circuito del sensor EGR.",
+      "P0440": "Mal funcionamiento del sistema de control de emisiones evaporativas (EVAP).",
+      "P0441": "Fuga del sistema EVAP detectada (fuga pequeña o intermedia).",
+      "P0442": "Fuga pequeña del sistema EVAP detectada.",
+      "P0443": "Circuito de control EVAP-VSV mal funcionando.",
+      "P0444": "Circuito del sensor EVAP mal funcionamiento.",
+      "P0446": "Mal funcionamiento del control del sistema EVAP.",
+      "P0449": "Circuito VSV EVAP intermitente o rango/rendimiento fuera especificación.",
+      "P0480": "Mal funcionamiento del circuito del controlador de ventilador de refrigeración.",
+      "P0496": "Eficiencia del sistema de ventilador de refrigeración por debajo del umbral.",
+      "P0500": "Sensor de velocidad del vehículo – mal funcionamiento del circuito.",
+      "P0501": "Rango/rendimiento del sensor de velocidad del vehículo fuera de especificación.",
+      "P0504": "Mal funcionamiento del circuito del sensor de corte del ralentí.",
+      "P0505": "Relación rantalí – fuera de rango.",
+      "P0507": "Vacío excesivo en el rantalí detectado.",
+      "P0521": "Mal funcionamiento del circuito del sensor de presión de aceite.",
+      "P0562": "Voltaje del sistema insuficiente (ECU principal).",
+      "P0606": "Mal funcionamiento del microprocesador de ECM.",
+      "P0700": "Mal funcionamiento genérico del control de la transmisión (TCM).",
+      "P0705": "Interruptor de neutro/seguridad – mal funcionamiento del circuito.",
+      "P0715": "Sensor de velocidad de entrada (transmisión) – circuito intermitente o mal funcionamiento.",
+      "P0718": "Sensor de velocidad/turbina – circuito intermitente.",
+      "P0720": "Sensor de velocidad de salida – mal funcionamiento del circuito.",
+      "P0722": "Sensor de velocidad de salida – señal baja o rango fuera especificación.",
+      "P0741": "Control de presión del convertidor (presión de torque) – rendimiento fuera de rango.",
+      "P0753": "Interruptor/conjunto del cambio de la transmisión – posición intermitente o rango fuera especificación.",
+      "P0046": "Mal funcionamiento del sistema de sobrealimentación / presión residual del turbo.",
+      "P0093": "Fuga grande del sistema de combustible detectada.",
+      "P0087": "Presión de rail de combustible señal baja.",
+      "P0088": "Presión de rail de combustible señal alta.",
+      "P0090": "Sensor de presión de combustible mal funcionamiento del circuito.",
+      "P0098": "Sensor de temperatura de aire de admisión 2 señal alta.",
+      "P0110": "Mal funcionamiento del circuito del sensor de temperatura de aire de admisión.",
+      "P0115": "Mal funcionamiento del circuito del sensor de temperatura del refrigerante del motor.",
+      "P0117": "Sensor de temperatura del refrigerante señal baja.",
+      "P0191": "Sensor de presión de combustión rango/performance fuera especificación.",
+      "P0201-P0204": "Circuito del inyector de combustible mal funcionamiento en cilindros 1 y4.",
+      "P0222": "Sensor de posición del acelerador B señal baja.",
+      "P0223": "Sensor de posición del acelerador B – señal alta.",
+      "P0238": "Sensor de presión turbo – rango/performance fuera especificación.",
+      "P0315": "Valores del sistema de posición del cigüeñal no almacenados.",
+      "P0320": "Mal funcionamiento en la señal de velocidad del distribuidor/encendido.",
+      "P0336": "Sensor knock – bajo voltage (Banco 2).",
+      "P0342": "Sensor CMP – señal baja o rango fuera especificación.",
+      "P0351-P0354": "Bobina de encendido – mal funcionamiento del circuito (cilindros 1-4).",
+      "P0380": "Circuito del calentador del sensor de posición del cigüeñal (CKP).",
+      "P0410": "Sistema de aire secundario – mal funcionamiento.",
+      "P0463": "Sensor de temperatura de combustible – señal fuera de rango.",
+      "P0481": "Circuito de controlador del ventilador de refrigeración – intermitente.",
+      "P0506": "Control de rantalí – rango fuera especificación.",
+      "P0522": "Sensor de presión de aceite – rango/performance fuera especificación.",
+      "P0603": "Mal funcionamiento en el circuito de memoria ECM.",
+      "P0607": "Mal funcionamiento del circuito de ECT (temperatura de refrigerante).",
+      "P0641": "Voltaje del sensor/calibración – línea baja.",
+      "P0670": "Circuito del sensor de bujía incandescente – mal funcionamiento.",
+      "P0683": "Circuito del relé de encendido (ECM/PCM) – mal funcionamiento.",
+      "P0717": "Sensor de velocidad de entrada – rango/performance fuera especificación.",
+      "P0722": "Sensor de velocidad de salida – señal baja/performance fuera especificación.",
+      "P0730": "Relación de engranaje incorrecta.",
+      "P0740": "Solenoide de control de torque – mal funcionamiento del circuito.",
+      "P0753": "Switch cambio/transmisión mal intermitente.",
+      "P0990": "Circuito del sistema de infoentretenimiento/diagnóstico extendido (vehicle-specific)."
     };
 
     const txtCodigos = document.getElementById("codigo_area");
@@ -994,60 +1364,6 @@ function buscarAplicacion() {
     });
   </script>
 
-  <!-- ====== Guardar en Sheets + Borrar + Atajos + Auto-grow + Recolectar datos ====== -->
-  <script>
-    async function guardarEnGoogleSheetsYImprimir() {
-      const datos = recogerDatosInforme();
-      try {
-        await fetch("https://script.google.com/macros/s/AKfycbwY0mvLxztZPgiBtcoh_JE5u-z1zhtubQC3bVlj-hyYlBHKKaZyAFaVGSCLz8tbz3p7/exec", {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(datos)
-        });
-        window.print();
-      } catch (e) {
-        alert("⚠️ No se pudo guardar en Google Sheets. Se abrirá la impresión de todos modos.");
-        window.print();
-      }
-    }
-
-    function borrarTodo() {
-      if (!confirm("¿Seguro que quieres borrar todo el contenido del informe?")) return;
-      document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
-      mezclarDetalleSoloDescripcion();
-    }
-
-    document.addEventListener("keydown", (ev) => {
-      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'S' || ev.key === 's')) { ev.preventDefault(); guardarEnGoogleSheetsYImprimir(); }
-      if (ev.ctrlKey && ev.shiftKey && (ev.key === 'D' || ev.key === 'd')) { ev.preventDefault(); borrarTodo(); }
-      if (ev.ctrlKey && (ev.key === 'l' || ev.key === 'L')) { ev.preventDefault(); localStorage.removeItem('auth_until_ts'); sessionStorage.removeItem('auth_until_ts'); location.reload(); }
-    });
-
-    (function(){ ['codigo_area','detalle_area'].forEach(id=>{
-      const el = document.getElementById(id);
-      function fit(){ el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
-      if(el){ fit(); el.addEventListener('input', fit); }
-    }); })();
-
-    function recogerDatosInforme(){
-      return {
-        marca: document.querySelector('input[name="marca"]').value.trim(),
-        modelo: document.querySelector('input[name="modelo"]').value.trim(),
-        patente: document.querySelector('input[name="patente"]').value.trim().toUpperCase(),
-        ano: document.querySelector('input[name="ano"]').value.trim(),
-        km: document.querySelector('input[name="km"]').value.trim(),
-        motor: document.querySelector('input[name="motor"]').value.trim(),
-        codigo: document.getElementById("codigo_area").value.trim(),
-        detalle: document.getElementById("detalle_area").value.trim(),
-        valor_area: document.getElementById("valor_area").value.trim(),
-        causas: document.getElementById("causas").value.trim(),
-        recomendaciones: document.getElementById("recomendaciones").value.trim(),
-        valor_final: document.getElementById("valor_final").value.trim()
-        // NOTA: Se quitó 'fecha' porque la API la genera automáticamente
-      };
-    }
-  </script>
-
   <!-- ====== Librerías: QR / compresión / PDF local ====== -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js" referrerpolicy="no-referrer"></script>
@@ -1068,6 +1384,7 @@ function buscarAplicacion() {
 
   <!-- ====== Botonera flotante ====== -->
   <div class="fab">
+    <button onclick="mostrarOTsAnteriores()" class="boton-ots-anteriores">📋 OTs anteriores</button>
     <button onclick="guardarEnGoogleSheetsYImprimir()" class="boton-imprimir">🖨️ Imprimir y Guardar</button>
     <button onclick="descargarPDFLocal()" class="boton-pdf">📄 Descargar PDF</button>
     <button onclick="generarQRDeDescargaPDF()" class="boton-qr">📲 Mostrar QR</button>
@@ -1109,10 +1426,10 @@ function buscarAplicacion() {
       const prev = fab.style.display; fab.style.display = 'none'; // no exportar botones
       await waitImagesLoaded(paper);
 
-      const patente = (document.querySelector('input[name="patente"]').value || 'SIN_PATENTE')
+      const patente = (document.getElementById('patente').value || 'SIN_PATENTE')
                       .toUpperCase().replace(/\s+/g,'');
       const opt = {
-        filename: `Informe_${patente}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`,
+        filename: `Informe_Diagnostico_${patente}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`,
         margin: 0,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
