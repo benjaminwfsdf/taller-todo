@@ -181,14 +181,152 @@
   </style>
 
   <style>
+    /* ============================================
+       MEDIA PRINT - TAMAÑO CARTA
+    ============================================ */
     @media print {
-      @page { size: letter; margin: 6mm 20mm; }
-      body { margin: 0; padding: 0; box-shadow: none; border: none; }
-      .fab { display: none !important; }
-      #modal-coincidencias { display: none !important; }
-      #auth-overlay { display: none !important; }
+      @page { 
+        size: letter; 
+        margin: 5mm 10mm; /* Margen reducido para aprovechar espacio */
+      }
+      
+      body { 
+        margin: 0; 
+        padding: 0; 
+        background: white !important;
+        font-size: 11px !important;
+      }
+      
+      #paper {
+        width: 100% !important;
+        min-height: auto !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+      
+      /* Ajustar tamaño de fuentes para impresión */
+      .titulo {
+        font-size: 18px !important;
+        padding: 8px 0 !important;
+        margin: 0 0 12px 0 !important;
+      }
+      
+      .contacto {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+      }
+      
+      .contacto-wrap img {
+        max-height: 120px !important;
+        max-width: 110px !important;
+      }
+      
+      .form-grid {
+        margin-bottom: 12px !important;
+      }
+      
+      .form-grid td {
+        padding: 4px !important;
+        font-size: 11px !important;
+      }
+      
+      .form-grid input[type="text"] {
+        font-size: 11px !important;
+        padding: 4px 6px !important;
+      }
+      
+      .seccion-titulo {
+        font-size: 11px !important;
+        padding: 6px !important;
+        margin-top: 15px !important;
+        margin-bottom: 4px !important;
+      }
+      
+      .tabla-codigos {
+        margin-bottom: 12px !important;
+      }
+      
+      .tabla-codigos th, 
+      .tabla-codigos td {
+        padding: 5px !important;
+        font-size: 10px !important;
+      }
+      
+      .tabla-codigos textarea {
+        height: 150px !important;
+        font-size: 11px !important;
+        padding: 4px !important;
+      }
+      
+      textarea {
+        font-size: 11px !important;
+        padding: 6px !important;
+        min-height: 60px !important;
+      }
+      
+      .valor-final {
+        margin-top: 15px !important;
+        padding-top: 10px !important;
+        font-size: 12px !important;
+      }
+      
+      .fecha-final, 
+      .ot-final {
+        padding: 5px 10px !important;
+        font-size: 11px !important;
+      }
+      
+      .valor-final input {
+        font-size: 14px !important;
+        padding: 6px 12px !important;
+        width: 140px !important;
+      }
+      
+      .nota-footer {
+        font-size: 9px !important;
+        margin-top: 8px !important;
+        padding: 4px !important;
+        border: 1px solid #ccc !important;
+        background: #fff !important;
+        color: #000 !important;
+        font-weight: bold !important;
+      }
+      
+      /* Ocultar elementos no deseados */
+      .fab, 
+      #auth-overlay, 
+      #modal-coincidencias, 
+      .mensaje-exito,
+      .update-indicator,
+      #qr-modal {
+        display: none !important;
+      }
+      
+      /* Ajustes específicos para el texto "válido para 2 scanner" */
+      .contacto-wrap {
+        margin-bottom: 15px !important;
+      }
+      
+      /* Asegurar que el contenido quepa en una página */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Prevenir cortes de página dentro de elementos importantes */
+      .tabla-codigos,
+      .valor-final {
+        page-break-inside: avoid;
+      }
     }
 
+    /* ============================================
+       ESTILOS PARA PANTALLA
+    ============================================ */
     body { 
       font-family: Arial, sans-serif; 
       margin: 0; 
@@ -196,16 +334,16 @@
       padding-bottom: 100px;
     }
 
-    /* Contenedor exportable (la "hoja") */
+    /* Contenedor exportable (la "hoja") - Tamaño carta */
     #paper {
-      width: 21cm; 
-      min-height: 29.7cm;
+      width: 21.6cm; /* 8.5 pulgadas en cm para carta */
+      min-height: 27.9cm; /* 11 pulgadas en cm */
       margin: 20px auto; 
-      padding: 35px 40px; 
+      padding: 25px 30px; /* Padding reducido para aprovechar espacio */
       background: #fff;
       border: 1px solid #000; 
       box-sizing: border-box; 
-      font-size: 13px;
+      font-size: 12px; /* Tamaño de fuente base reducido */
       position: relative;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
@@ -215,11 +353,11 @@
       background: #b30000; 
       color: #fff; 
       font-weight: bold;
-      font-size: 24px; 
-      padding: 12px 0; 
+      font-size: 20px; /* Reducido de 24px */
+      padding: 10px 0; /* Reducido de 12px */
       text-align: center; 
       box-sizing: border-box; 
-      margin: 0 0 20px 0;
+      margin: 0 0 15px 0; /* Reducido de 20px */
       border-radius: 4px;
     }
 
@@ -227,49 +365,49 @@
       display:flex; 
       justify-content:space-between; 
       align-items:center; 
-      margin-bottom:20px; 
-      gap:12px; 
+      margin-bottom:15px; /* Reducido de 20px */
+      gap:10px; /* Reducido de 12px */
     }
     .contacto { 
       text-align:center; 
-      font-size:14px; 
-      line-height:1.4; 
+      font-size:12px; /* Reducido de 14px */
+      line-height:1.3; /* Ajustado */
       flex:1; 
       font-weight:bold; 
     }
     .contacto-wrap img { 
-      max-height:170px; 
+      max-height:150px; /* Reducido de 170px */
       object-fit:contain; 
-      max-width: 150px;
+      max-width: 130px; /* Reducido de 150px */
     }
 
     .form-grid { 
       width:100%; 
       border-collapse:collapse; 
-      margin-bottom:20px; 
+      margin-bottom:15px; /* Reducido de 20px */
     }
     .form-grid td { 
-      padding:6px; 
+      padding:5px; /* Reducido de 6px */
       border:1px solid #000; 
       vertical-align:middle; 
     }
     .form-grid label { 
       font-weight:bold; 
-      margin-right:6px; 
-      min-width:60px; 
-      font-size:14px; 
+      margin-right:4px; /* Reducido de 6px */
+      min-width:50px; /* Reducido de 60px */
+      font-size:12px; /* Reducido de 14px */
     }
     .inline { 
       display:flex; 
       align-items:center; 
-      gap:6px; 
+      gap:4px; /* Reducido de 6px */
     }
     .form-grid input[type="text"] { 
       width:100%; 
-      padding:6px 8px; 
+      padding:5px 6px; /* Reducido de 6px 8px */
       box-sizing:border-box; 
       border:1px solid #ccc; 
-      font-size:15px; 
+      font-size:13px; /* Reducido de 15px */
       border-radius: 3px;
       transition: border 0.2s;
     }
@@ -281,51 +419,53 @@
 
     .seccion-titulo { 
       font-weight:bold; 
-      margin-top:20px; 
-      margin-bottom:5px; 
+      margin-top:15px; /* Reducido de 20px */
+      margin-bottom:4px; /* Reducido de 5px */
       text-transform:uppercase; 
       background:#f0f0f0; 
-      padding:8px; 
+      padding:6px; /* Reducido de 8px */
       border:1px solid #000; 
       border-radius: 3px;
+      font-size: 12px; /* Añadido */
     }
 
     .tabla-codigos { 
       width:100%; 
       border-collapse:collapse; 
-      margin-bottom:20px; 
+      margin-bottom:15px; /* Reducido de 20px */
       table-layout:fixed; 
     }
     .tabla-codigos th, .tabla-codigos td { 
       border:1px solid #000; 
-      padding:8px; 
+      padding:6px; /* Reducido de 8px */
       vertical-align:top; 
     }
     .tabla-codigos th { 
       background:#d9d9d9; 
       font-weight:bold; 
       text-align:left; 
+      font-size: 12px; /* Añadido */
     }
     .tabla-codigos textarea { 
       width:100%; 
-      height:220px; 
+      height:180px; /* Reducido de 220px */
       border:none; 
       resize:vertical; 
-      font-size:15px; 
+      font-size:13px; /* Reducido de 15px */
       box-sizing:border-box; 
-      padding:8px; 
+      padding:6px; /* Reducido de 8px */
       font-family: Arial, sans-serif;
       line-height: 1.4;
     }
 
     textarea { 
       width:100%; 
-      min-height:100px; 
-      margin-top:5px; 
-      padding:8px; 
+      min-height:80px; /* Reducido de 100px */
+      margin-top:4px; /* Reducido de 5px */
+      padding:6px; /* Reducido de 8px */
       border:1px solid #000; 
       box-sizing:border-box; 
-      font-size:15px; 
+      font-size:13px; /* Reducido de 15px */
       font-family: Arial, sans-serif;
       line-height: 1.4;
       resize: vertical;
@@ -333,38 +473,38 @@
 
     /* VALOR FINAL CORREGIDO - OT EN EL MEDIO */
     .valor-final { 
-      margin-top:25px; 
+      margin-top:20px; /* Reducido de 25px */
       font-weight:bold; 
-      font-size:16px; 
+      font-size:14px; /* Reducido de 16px */
       display:flex; 
       justify-content:space-between; 
       align-items:center; 
-      gap:10px; 
+      gap:8px; /* Reducido de 10px */
       flex-wrap:wrap; 
       border-top: 2px solid #000;
-      padding-top: 15px;
+      padding-top: 12px; /* Reducido de 15px */
       position: relative;
     }
     
     .fecha-final { 
       border:1px solid #000; 
-      padding:8px 15px; 
-      font-size:14px; 
+      padding:6px 12px; /* Reducido de 8px 15px */
+      font-size:12px; /* Reducido de 14px */
       color:#000; 
       background: #f9f9f9;
       border-radius: 4px;
-      min-width: 120px;
+      min-width: 110px; /* Reducido de 120px */
       text-align: center;
     }
     
     .ot-final {
       font-weight: bold;
-      font-size: 16px;
-      padding: 8px 15px;
+      font-size: 14px; /* Reducido de 16px */
+      padding: 6px 12px; /* Reducido de 8px 15px */
       background: #f0f0f0;
       border: 1px solid #000;
       border-radius: 4px;
-      min-width: 120px;
+      min-width: 110px; /* Reducido de 120px */
       text-align: center;
       position: relative;
     }
@@ -377,32 +517,38 @@
     .precio-final {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px; /* Reducido de 10px */
     }
     
     .precio-final label {
       font-weight: bold;
-      font-size: 16px;
+      font-size: 14px; /* Reducido de 16px */
     }
     
     .valor-final input { 
-      padding:10px 16px; 
+      padding:8px 14px; /* Reducido de 10px 16px */
       border:2px solid #000; 
-      font-size:18px; 
+      font-size:16px; /* Reducido de 18px */
       font-weight:bold; 
-      width:180px; 
+      width:160px; /* Reducido de 180px */
       text-align:right; 
       border-radius: 4px;
     }
 
+    /* NOTA FOOTER - TEXTOS ARREGLADOS */
     .nota-footer { 
       font-size:10px; 
       text-align:center; 
-      margin-top:15px; 
+      margin-top:12px; /* Reducido de 15px */
       font-weight:bold; 
       padding: 5px;
       background: #f0f0f0;
       border-radius: 3px;
+      border: 1px solid #ccc;
+    }
+    
+    .nota-footer strong {
+      color: #b30000;
     }
 
     /* Botonera: SIEMPRE visible (móvil) */
@@ -440,12 +586,12 @@
     /* Auto-grow SOLO códigos/detalle - CORREGIDO */
     #codigo_area, #detalle_area, #valor_area {
       width:100%; 
-      min-height:220px; 
+      min-height:180px; /* Reducido de 220px */
       height: auto;
       border:none; 
-      font-size:15px;
+      font-size:13px; /* Reducido de 15px */
       box-sizing:border-box; 
-      padding:8px; 
+      padding:6px; /* Reducido de 8px */
       resize:vertical; 
       overflow-y: auto;
       font-family: Arial, sans-serif;
@@ -668,8 +814,9 @@
       </div>
     </div>
 
+    <!-- NOTA FOOTER CON TEXTO CORREGIDO -->
     <div class="nota-footer">
-      <strong>NOTA: COMPROBANTE VALIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
+      <strong>NOTA: COMPROBANTE VÁLIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
     </div>
   </div>
 
@@ -1731,7 +1878,7 @@
         ['codigo_area', 'detalle_area', 'valor_area'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
-            el.style.height = '220px';
+            el.style.height = '180px';
           }
         });
       }, 100);
@@ -1970,7 +2117,7 @@
       "P0700": "Mal funcionamiento genérico del control de la transmisión (TCM).",
       "P0705": "Interruptor de neutro/seguridad – mal funcionamiento del circuito.",
       "P0715": "Sensor de velocidad de entrada (transmisión) – circuito intermitente o mal funcionamiento.",
-      "P0718": "Sensor de velocidad/turbina – circuito intermitente.",
+      "P0718": "Sensor de velocidad/turbine – circuito intermitente.",
       "P0720": "Sensor de velocidad de salida – mal funcionamiento del circuito.",
       "P0722": "Sensor de velocidad de salida – señal baja o rango fuera especificación.",
       "P0741": "Control de presión del convertidor (presión de torque) – rendimiento fuera de rango.",
