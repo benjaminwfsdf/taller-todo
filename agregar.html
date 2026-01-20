@@ -3,19 +3,19 @@
 <head>
   <base target="_self">
 
-   <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/manifest.json">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Taller">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Taller">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<meta name="theme-color" content="#000000">
-
+  <meta name="theme-color" content="#000000">
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="img/scanner.png">
   <title>Agregar Vehículo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <style>
     :root{
       --brand:#900000; --brand-900:#700000;
@@ -45,10 +45,65 @@
     .back{display:block;margin-top:18px;text-align:center;text-decoration:none;padding:12px;border-radius:12px;border:2px solid var(--brand);background:#15171b;color:#fff;font-weight:800}
     .back:hover{background:var(--brand)}
     .footer{text-align:center;color:#8c96a3;font-size:12px;margin:14px 0 0}
+    
+    /* Estilos para OT */
+    .ot-section {
+      margin: 20px 0 15px;
+      padding: 12px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 10px;
+      border: 1px solid var(--brand);
+      text-align: center;
+    }
+    
+    .ot-label {
+      display: block;
+      color: #ffcc00;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+    
+    .ot-field {
+      background: rgba(0,0,0,0.5) !important;
+      border: 2px solid var(--brand) !important;
+      color: #ffcc00 !important;
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: 2px;
+      text-align: center;
+      padding: 12px !important;
+      cursor: not-allowed;
+      width: 200px !important;
+      margin: 0 auto !important;
+      display: block !important;
+    }
+    
+    .cache-status {
+      font-size: 11px;
+      color: #90ee90;
+      text-align: center;
+      margin-top: 5px;
+      font-style: italic;
+    }
+    
+    .ot-message {
+      font-size: 12px;
+      color: #b9c0c7;
+      text-align: center;
+      margin-top: 8px;
+    }
+    
+    .auto-complete-msg {
+      font-size: 13px;
+      text-align: center;
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.2);
+    }
   </style>
 </head>
-
-
 
 <body>
   <div class="topbar">WWW.ELSEÑORDELOSESCANER.CL</div>
@@ -80,6 +135,17 @@
             </tr>
           </tbody>
         </table>
+        
+        <!-- Mensaje de autocompletado -->
+        <div id="autoCompleteMsg" class="auto-complete-msg"></div>
+        
+        <!-- Sección OT -->
+        <div class="ot-section">
+          <div class="ot-label">Orden de Trabajo asignada:</div>
+          <input type="text" id="ot_asignada" class="ot-field" readonly>
+          <div id="cacheStatus" class="cache-status"></div>
+          <div class="ot-message">Esta OT se asignará automáticamente al guardar</div>
+        </div>
 
         <button class="btn" onclick="guardarVehiculo()">Guardar Vehículo</button>
         <a href="gestion_autos.html" class="back">← Volver al Menú Principal</a>
@@ -90,120 +156,344 @@
   </div>
 
   <script>
+    // URL de la API de Google Apps Script (la misma que usas en el otro formulario)
+    const API_URL = "https://script.google.com/macros/s/AKfycbylWprbcHvUITXljajbJYO1pxGJ_nGtubA8NOjI-dKuoB6GRklwksrqUcS64fX-_N3a/exec";
+    const CACHE_KEY = 'ultima_ot_cache_vehiculos';
+    const CACHE_TIMEOUT = 5 * 60 * 1000; // 5 minutos
+    
+    let siguienteOT = "";
+    let otCache = null;
+    let VISITAS = [];
+
+    /* ============================
+       FORMATEOS
+    ============================ */
     function formatearTelefono(input) {
       const valor = input.value;
-      if (!valor.startsWith("+56 9 ")) { input.value = "+56 9 "; return; }
+      if (!valor.startsWith("+56 9 ")) { 
+        input.value = "+56 9 "; 
+        return; 
+      }
       let resto = valor.slice(6).replace(/\D/g, '').slice(0, 8);
       input.value = "+56 9 " + resto;
     }
 
-    function guardarVehiculo() {
-      const datos = {
-        nombre: document.getElementById('nombre').value.toUpperCase(),
-        telefono: "'" + document.getElementById('telefono').value, // evita #ERROR en Sheets
-        direccion: document.getElementById('direccion').value.toUpperCase(),
-        marca: document.getElementById('marca').value.toUpperCase(),
-        modelo: document.getElementById('modelo').value.toUpperCase(),
-        patente: document.getElementById('patente').value.toUpperCase(),
-      };
+    /* ============================
+       SISTEMA DE CACHÉ LOCAL
+    ============================ */
+    function cargarCacheOT() {
+      try {
+        const cacheData = localStorage.getItem(CACHE_KEY);
+        if (cacheData) {
+          const cache = JSON.parse(cacheData);
+          const ahora = Date.now();
+          
+          // Si la caché es reciente (menos de 5 minutos)
+          if (ahora - cache.timestamp < CACHE_TIMEOUT) {
+            otCache = cache;
+            return cache.nextOT;
+          }
+        }
+      } catch (e) {
+        console.log('Error cargando caché:', e);
+      }
+      return null;
+    }
 
-      for (const campo in datos) {
-        if (!datos[campo]) { alert("⚠️ Debes completar todos los campos antes de guardar."); return; }
+    function guardarCacheOT(ultimaOTReal) {
+      const nextOT = String(ultimaOTReal).padStart(6, "0");
+      otCache = {
+        lastOT: ultimaOTReal,
+        timestamp: Date.now(),
+        nextOT: nextOT
+      };
+      localStorage.setItem(CACHE_KEY, JSON.stringify(otCache));
+      return nextOT;
+    }
+
+    /* ============================
+       OBTENER OT DEL SERVIDOR
+    ============================ */
+    async function obtenerSiguienteOT() {
+      document.getElementById('cacheStatus').textContent = "⏳ Obteniendo OT...";
+      
+      try {
+        // Obtener OT del servidor
+        const response = await fetch(`${API_URL}?action=obtenerSiguienteOT_Hoja1&_=${Date.now()}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.nextOT) {
+            // Usar la OT que devuelve el servidor
+            siguienteOT = data.nextOT;
+            document.getElementById('ot_asignada').value = siguienteOT;
+            
+            // Guardar en caché
+            const otNumber = parseInt(siguienteOT.replace(/\D/g, ''), 10);
+            guardarCacheOT(otNumber);
+            
+            document.getElementById('cacheStatus').textContent = "✓ OT obtenida del servidor";
+            setTimeout(() => {
+              document.getElementById('cacheStatus').textContent = "";
+            }, 3000);
+          }
+        } else {
+          throw new Error('Respuesta no OK');
+        }
+      } catch (error) {
+        console.log('Error obteniendo OT del servidor:', error);
+        
+        // Intento con caché local
+        const cacheOT = cargarCacheOT();
+        if (cacheOT) {
+          siguienteOT = cacheOT;
+          document.getElementById('ot_asignada').value = siguienteOT;
+          document.getElementById('cacheStatus').textContent = "⚠️ Usando OT local (sin conexión)";
+        } else {
+          siguienteOT = "000001";
+          document.getElementById('ot_asignada').value = siguienteOT;
+          document.getElementById('cacheStatus').textContent = "⚠️ Error, usando OT por defecto";
+        }
+      }
+    }
+
+    /* ============================
+       AUTOCOMPLETAR POR PATENTE
+    ============================ */
+    async function cargarDatos() {
+      try {
+        const response = await fetch(API_URL);
+        if (response.ok) {
+          VISITAS = await response.json();
+          console.log(`✅ Datos cargados: ${VISITAS.length} registros`);
+        }
+      } catch(e) { 
+        console.log('⚠️ Error cargando datos:', e);
+      }
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    // Autocompletar por patente
+    document.getElementById("patente").addEventListener("input", debounce(() => {
+      const pat = document.getElementById("patente").value.trim().toUpperCase();
+      const msgDiv = document.getElementById("autoCompleteMsg");
+      
+      if (pat.length < 4) {
+        msgDiv.textContent = "";
+        return;
       }
 
-      if (!/^\+56 9 \d{8}$/.test(datos.telefono.slice(1))) {
+      const match = VISITAS.find(r => {
+        const patenteRegistro = String(r["Patente"] || r["patente"] || "").toUpperCase();
+        return patenteRegistro === pat;
+      });
+
+      if (match) {
+        document.getElementById('nombre').value = (match["Nombre"] || "").toUpperCase();
+        
+        const telefonoOriginal = match["Teléfono"] || match["Telefono"] || "";
+        let telefonoFormateado = "+56 9 ";
+        if (telefonoOriginal) {
+          const numeros = telefonoOriginal.replace(/\D/g, '');
+          if (numeros.length >= 8) {
+            telefonoFormateado += numeros.slice(-8);
+          }
+        }
+        document.getElementById('telefono').value = telefonoFormateado;
+        
+        document.getElementById('direccion').value = (match["Dirección"] || match["Direccion"] || "").toUpperCase();
+        document.getElementById('marca').value = (match["Marca"] || "").toUpperCase();
+        document.getElementById('modelo').value = (match["Modelo"] || "").toUpperCase();
+        
+        msgDiv.textContent = `✓ Vehículo encontrado. Puedes editar los datos si es necesario.`;
+        msgDiv.style.color = "#90ee90";
+        
+      } else {
+        msgDiv.textContent = "No se encontraron registros para esta patente";
+        msgDiv.style.color = "#ffcc00";
+      }
+    }, 500));
+
+    /* ============================
+       GUARDAR VEHÍCULO
+    ============================ */
+    async function guardarVehiculo() {
+      const nombre = document.getElementById('nombre').value.trim().toUpperCase();
+      const telefono = document.getElementById('telefono').value;
+      const direccion = document.getElementById('direccion').value.trim().toUpperCase();
+      const marca = document.getElementById('marca').value.trim().toUpperCase();
+      const modelo = document.getElementById('modelo').value.trim().toUpperCase();
+      const patente = document.getElementById('patente').value.trim().toUpperCase();
+
+      // Validar campos obligatorios
+      if (!nombre) { alert("⚠️ Ingresa el nombre del dueño"); return; }
+      if (!telefono) { alert("⚠️ Ingresa el teléfono"); return; }
+      if (!direccion) { alert("⚠️ Ingresa la dirección"); return; }
+      if (!marca) { alert("⚠️ Ingresa la marca"); return; }
+      if (!modelo) { alert("⚠️ Ingresa el modelo"); return; }
+      if (!patente) { alert("⚠️ Ingresa la patente"); return; }
+
+      // Validar formato de teléfono
+      if (!/^\+56 9 \d{8}$/.test(telefono)) {
         alert("⚠️ El número de teléfono debe tener exactamente 8 dígitos después de +56 9");
         return;
       }
 
-      fetch("https://script.google.com/macros/s/AKfycbxSOr2Sswu1Xu8XQUYaVVM2O32Xg3UjX_ZR4K4ebpR8u4WbWv9dib3Ljy5Q1gpxlQ-DEg/exec", {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos)
-      }).then(() => {
-        alert("✅ Vehículo guardado con éxito.");
-        document.getElementById('nombre').value = "";
-        document.getElementById('telefono').value = "+56 9 ";
-        document.getElementById('direccion').value = "";
-        document.getElementById('marca').value = "";
-        document.getElementById('modelo').value = "";
-        document.getElementById('patente').value = "";
+      // Usar la OT que ya tenemos
+      const otParaGuardar = siguienteOT || "000001";
+      
+      // Limpiar teléfono para guardar (quitar el apóstrofe que tenías antes)
+      const telefonoParaGuardar = telefono.replace(/\D/g, '');
+      
+      const datos = {
+        nombre: nombre,
+        telefono: telefonoParaGuardar,
+        direccion: direccion,
+        marca: marca,
+        modelo: modelo,
+        patente: patente,
+        OT: otParaGuardar  // Agregar OT a los datos
+      };
+
+      const confirmar = confirm(`¿Guardar vehículo con OT ${otParaGuardar}?\n\nPatente: ${datos.patente}\nNombre: ${datos.nombre}\nTeléfono: ${telefono}\nOT: ${otParaGuardar}`);
+      
+      if (!confirmar) return;
+
+      try {
+        // Enviar datos a la API
+        const response = await fetch(API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datos)
+        });
+
+        // Invalidar caché para que se actualice en el próximo uso
+        localStorage.removeItem(CACHE_KEY);
+        
+        alert(`✅ Vehículo guardado con éxito.\nOT asignada: ${otParaGuardar}`);
+        
+        // Limpiar formulario
+        setTimeout(() => {
+          document.getElementById('nombre').value = "";
+          document.getElementById('telefono').value = "+56 9 ";
+          document.getElementById('direccion').value = "";
+          document.getElementById('marca').value = "";
+          document.getElementById('modelo').value = "";
+          document.getElementById('patente').value = "";
+          document.getElementById('autoCompleteMsg').textContent = "";
+          
+          // Obtener NUEVA OT para el próximo registro
+          obtenerSiguienteOT();
+        }, 500);
+
+      } catch (error) {
+        console.error('Error guardando vehículo:', error);
+        
+        alert(`⚠️ Error de conexión\n\nVehículo listo para guardar:\nOT: ${otParaGuardar}\nPatente: ${datos.patente}\n\nPor favor, inténtalo nuevamente.`);
+        
+        // Guardar pendiente en localStorage
+        const pendientes = JSON.parse(localStorage.getItem('pendientes_guardar_vehiculos') || '[]');
+        pendientes.push({
+          datos: datos,
+          ot: otParaGuardar,
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('pendientes_guardar_vehiculos', JSON.stringify(pendientes));
+      }
+    }
+
+    /* ============================
+       INICIALIZACIÓN
+    ============================ */
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Cargar OT del servidor
+      obtenerSiguienteOT();
+      
+      // 2. Cargar datos para autocompletar
+      cargarDatos();
+      
+      // 3. Intentar reenviar pendientes si los hay
+      setTimeout(() => {
+        const pendientes = JSON.parse(localStorage.getItem('pendientes_guardar_vehiculos') || '[]');
+        if (pendientes.length > 0) {
+          console.log(`Hay ${pendientes.length} registros pendientes de guardar`);
+          if (confirm(`Tienes ${pendientes.length} vehículo(s) pendientes de guardar. ¿Quieres intentar enviarlos ahora?`)) {
+            // Aquí podrías implementar una función para reenviar pendientes
+          }
+        }
+      }, 2000);
+    });
+    
+    // Script para manejar enlaces en PWA
+    (function () {
+      const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+      if (!isStandalone) return;
+
+      const EXTERN = new Set([
+        'https://www.patentechile.com/',
+        'https://taller-todo.vercel.app/informes.html',
+        'https://taller-todo.vercel.app/buscador_averias.html'
+      ]);
+
+      const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
+      const sameOrigin = (u) => u && u.origin === location.origin;
+      const fileName = (u) => u ? u.pathname.split('/').pop() : '';
+      const go = (u) => location.assign(u.pathname + u.search + u.hash);
+
+      // 1) Enlaces <a>: internos -> misma ventana
+      document.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href]'); if (!a) return;
+        if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
+        const u = toURL(a.getAttribute('href')); if (!u) return;
+
+        const isExternalWhitelisted = EXTERN.has(u.href) || EXTERN.has(fileName(u));
+
+        if (sameOrigin(u) && !isExternalWhitelisted) {
+          e.preventDefault();
+          go(u);
+        }
+      }, true);
+
+      // 2) window.open internos -> misma ventana
+      const _open = window.open;
+      window.open = function (url, target, features) {
+        const u = toURL(url);
+        const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+        if (sameOrigin(u) && !isExternalWhitelisted) {
+          go(u);
+          return null;
+        }
+        return _open.call(window, url, target, features);
+      };
+
+      // 3) Formularios internos -> _self
+      document.addEventListener('submit', (e) => {
+        const f = e.target;
+        if (!(f && f.tagName === 'FORM')) return;
+        const u = toURL(f.getAttribute('action') || location.href);
+        if (sameOrigin(u)) f.target = '_self';
+      }, true);
+
+      // 4) Limpieza: quitar _blank internos
+      document.querySelectorAll('a[target="_blank"]').forEach((a) => {
+        const u = toURL(a.getAttribute('href'));
+        const isExternalWhitelisted = EXTERN.has(u?.href) || EXTERN.has(fileName(u));
+        if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
       });
-    }
+    })();
   </script>
-  
-<script>
-(function () {
-  // Actúa solo en la app instalada (PWA)
-  const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if (!isStandalone) return;
-
-  // ✅ Edita esta lista:
-  // - deja SOLO externos reales (dominios de fuera)
-  // - si de verdad quieres que "informes.html" o "buscador_averias.html" salgan a Safari,
-  //   añádelos aquí también.
-  const EXTERN = new Set([
-    'https://www.patentechile.com/',
-    'https://taller-todo.vercel.app/informes.html',
-    'https://taller-todo.vercel.app/buscador_averias.html'
-
-    // 'informes.html',
-    // 'buscador_averias.html'
-  ]);
-
-  const toURL = (h) => { try { return new URL(h, location.href); } catch { return null; } };
-  const sameOrigin = (u) => u && u.origin === location.origin;
-  const fileName = (u) => u ? u.pathname.split('/').pop() : '';
-  const go = (u) => location.assign(u.pathname + u.search + u.hash);
-
-  // 1) Enlaces <a>: internos -> misma ventana (evita la vista con "Listo")
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href]'); if (!a) return;
-    if (a.hasAttribute('download') || a.href.startsWith('mailto:') || a.href.startsWith('tel:')) return;
-    const u = toURL(a.getAttribute('href')); if (!u) return;
-
-    const isExternalWhitelisted =
-      EXTERN.has(u.href) || EXTERN.has(fileName(u));
-
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      e.preventDefault();
-      go(u);
-    }
-    // Externos o whitelisted: respetamos su comportamiento (podrán abrir Safari).
-  }, true); // captura para adelantarnos a handlers que modifiquen target
-
-  // 2) window.open internos -> misma ventana (salvo EXTERN)
-  const _open = window.open;
-  window.open = function (url, target, features) {
-    const u = toURL(url);
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-    if (sameOrigin(u) && !isExternalWhitelisted) {
-      go(u);
-      return null;
-    }
-    return _open.call(window, url, target, features);
-  };
-
-  // 3) Formularios internos -> _self
-  document.addEventListener('submit', (e) => {
-    const f = e.target;
-    if (!(f && f.tagName === 'FORM')) return;
-    const u = toURL(f.getAttribute('action') || location.href);
-    if (sameOrigin(u)) f.target = '_self';
-  }, true);
-
-  // 4) Limpieza: si quedó algún _blank interno por error, quítalo
-  document.querySelectorAll('a[target="_blank"]').forEach((a) => {
-    const u = toURL(a.getAttribute('href'));
-    const isExternalWhitelisted =
-      EXTERN.has(u?.href) || EXTERN.has(fileName(u));
-    if (sameOrigin(u) && !isExternalWhitelisted) a.removeAttribute('target');
-  });
-})();
-</script>
-
-
 </body>
 </html>
+<script async data-explicit-opt-in="true" data-cookie-opt-in="true" data-deployment-id="dpl_7tTT1aVeHkTeKR6zomh4j7C3hxFK" src="https://vercel.live/_next-live/feedback/feedback.js"></script>
