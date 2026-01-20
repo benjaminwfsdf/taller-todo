@@ -604,7 +604,6 @@
         const modelo = informe.Modelo || informe.modelo || "No especificado";
         const ano = informe.Ano || informe.ano || "No especificado";
         const km = informe.Kilometraje || informe.km || informe.KM || "No especificado";
-        const motor = informe.Motor || informe.motor || "No especificado";
         const codigos = informe.Codigo || informe.codigo || "Sin códigos";
         const detalle = informe.Detalle || informe.detalle || "Sin detalle";
         const valorArea = informe.Valor_Area || informe.valor_area || "Sin valor";
@@ -651,13 +650,6 @@
                 <span class="data-label">KM</span>
                 <span class="data-value">${km}</span>
               </div>
-              
-              ${motor && motor !== "No especificado" ? `
-                <div class="data-item">
-                  <span class="data-label">Motor</span>
-                  <span class="data-value">${motor}</span>
-                </div>
-              ` : ''}
             </div>
             
             ${codigos && codigos !== "Sin códigos" && codigos !== "-" && codigos.trim() !== "" ? `
