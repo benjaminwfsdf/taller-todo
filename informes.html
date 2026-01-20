@@ -160,23 +160,23 @@
       border-left: 6px solid #155724 !important;
     }
     
-    /* Header para OT */
-    .header-ot {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid #000;
+    /* Indicador de actualización OT */
+    .ot-update-indicator {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ff9900;
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 10px;
+      animation: pulse 2s infinite;
     }
     
-    .ot-info {
-      font-size: 14px;
-      font-weight: bold;
-    }
-    
-    .ot-info span {
-      margin-right: 15px;
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
   </style>
 
@@ -186,67 +186,270 @@
       body { margin: 0; padding: 0; box-shadow: none; border: none; }
       .fab { display: none !important; }
       #modal-coincidencias { display: none !important; }
+      #auth-overlay { display: none !important; }
     }
 
-    body { font-family: Arial, sans-serif; margin: 0; background: #f2f2f2; }
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      background: #f2f2f2; 
+      padding-bottom: 100px;
+    }
 
     /* Contenedor exportable (la "hoja") */
     #paper {
-      width: 21cm; min-height: 29.7cm;
-      margin: 32px auto; padding: 40px; background: #fff;
-      border: 1px solid #000; box-sizing: border-box; font-size: 13px;
-      position: relative; /* estable */
+      width: 21cm; 
+      min-height: 29.7cm;
+      margin: 20px auto; 
+      padding: 35px 40px; 
+      background: #fff;
+      border: 1px solid #000; 
+      box-sizing: border-box; 
+      font-size: 13px;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .titulo {
-      width: 100%; background: #b30000; color: #fff; font-weight: bold;
-      font-size: 24px; padding: 12px 0; text-align: center; box-sizing: border-box; margin: 0 0 10px 0;
+      width: 100%; 
+      background: #b30000; 
+      color: #fff; 
+      font-weight: bold;
+      font-size: 24px; 
+      padding: 12px 0; 
+      text-align: center; 
+      box-sizing: border-box; 
+      margin: 0 0 20px 0;
+      border-radius: 4px;
     }
 
-    .contacto-wrap { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; gap:12px; }
-    .contacto { text-align:center; font-size:14px; line-height:1.4; flex:1; font-weight:bold; }
-    .contacto-wrap img { max-height:170px; object-fit:contain; }
+    .contacto-wrap { 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+      margin-bottom:20px; 
+      gap:12px; 
+    }
+    .contacto { 
+      text-align:center; 
+      font-size:14px; 
+      line-height:1.4; 
+      flex:1; 
+      font-weight:bold; 
+    }
+    .contacto-wrap img { 
+      max-height:170px; 
+      object-fit:contain; 
+      max-width: 150px;
+    }
 
-    .form-grid { width:100%; border-collapse:collapse; margin-bottom:20px; }
-    .form-grid td { padding:6px; border:1px solid #000; vertical-align:middle; }
-    .form-grid label { font-weight:bold; margin-right:6px; min-width:60px; font-size:14px; }
-    .inline { display:flex; align-items:center; gap:6px; }
-    .form-grid input[type="text"] { width:100%; padding:2px 4px; box-sizing:border-box; border:1px solid #000; font-size:16px; }
+    .form-grid { 
+      width:100%; 
+      border-collapse:collapse; 
+      margin-bottom:20px; 
+    }
+    .form-grid td { 
+      padding:6px; 
+      border:1px solid #000; 
+      vertical-align:middle; 
+    }
+    .form-grid label { 
+      font-weight:bold; 
+      margin-right:6px; 
+      min-width:60px; 
+      font-size:14px; 
+    }
+    .inline { 
+      display:flex; 
+      align-items:center; 
+      gap:6px; 
+    }
+    .form-grid input[type="text"] { 
+      width:100%; 
+      padding:6px 8px; 
+      box-sizing:border-box; 
+      border:1px solid #ccc; 
+      font-size:15px; 
+      border-radius: 3px;
+      transition: border 0.2s;
+    }
+    
+    .form-grid input[type="text"]:focus { 
+      border:1px solid #b30000; 
+      outline: none;
+    }
 
-    .seccion-titulo { font-weight:bold; margin-top:20px; margin-bottom:5px; text-transform:uppercase; background:#f0f0f0; padding:6px; border:1px solid #000; }
+    .seccion-titulo { 
+      font-weight:bold; 
+      margin-top:20px; 
+      margin-bottom:5px; 
+      text-transform:uppercase; 
+      background:#f0f0f0; 
+      padding:8px; 
+      border:1px solid #000; 
+      border-radius: 3px;
+    }
 
-    .tabla-codigos { width:100%; border-collapse:collapse; margin-bottom:20px; table-layout:fixed; }
-    .tabla-codigos th, .tabla-codigos td { border:1px solid #000; padding:8px; vertical-align:top; }
-    .tabla-codigos th { background:#d9d9d9; font-weight:bold; text-align:left; }
-    .tabla-codigos textarea { width:100%; height:220px; border:none; resize:none; font-size:16px; box-sizing:border-box; padding:6px; }
+    .tabla-codigos { 
+      width:100%; 
+      border-collapse:collapse; 
+      margin-bottom:20px; 
+      table-layout:fixed; 
+    }
+    .tabla-codigos th, .tabla-codigos td { 
+      border:1px solid #000; 
+      padding:8px; 
+      vertical-align:top; 
+    }
+    .tabla-codigos th { 
+      background:#d9d9d9; 
+      font-weight:bold; 
+      text-align:left; 
+    }
+    .tabla-codigos textarea { 
+      width:100%; 
+      height:220px; 
+      border:none; 
+      resize:vertical; 
+      font-size:15px; 
+      box-sizing:border-box; 
+      padding:8px; 
+      font-family: Arial, sans-serif;
+      line-height: 1.4;
+    }
 
-    textarea { width:100%; height:100px; margin-top:5px; padding:6px; border:1px solid #000; box-sizing:border-box; font-size:16px; }
+    textarea { 
+      width:100%; 
+      min-height:100px; 
+      margin-top:5px; 
+      padding:8px; 
+      border:1px solid #000; 
+      box-sizing:border-box; 
+      font-size:15px; 
+      font-family: Arial, sans-serif;
+      line-height: 1.4;
+      resize: vertical;
+    }
 
-    .valor-final { margin-top:20px; font-weight:bold; font-size:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
-    .valor-final input { padding:10px 16px; border:2px solid #000; font-size:20px; font-weight:bold; width:180px; text-align:right; }
-    .fecha-final { border:1px solid #000; padding:6px 12px; font-size:13px; color:#000; }
+    /* VALOR FINAL CORREGIDO - OT EN EL MEDIO */
+    .valor-final { 
+      margin-top:25px; 
+      font-weight:bold; 
+      font-size:16px; 
+      display:flex; 
+      justify-content:space-between; 
+      align-items:center; 
+      gap:10px; 
+      flex-wrap:wrap; 
+      border-top: 2px solid #000;
+      padding-top: 15px;
+      position: relative;
+    }
+    
+    .fecha-final { 
+      border:1px solid #000; 
+      padding:8px 15px; 
+      font-size:14px; 
+      color:#000; 
+      background: #f9f9f9;
+      border-radius: 4px;
+      min-width: 120px;
+      text-align: center;
+    }
+    
+    .ot-final {
+      font-weight: bold;
+      font-size: 16px;
+      padding: 8px 15px;
+      background: #f0f0f0;
+      border: 1px solid #000;
+      border-radius: 4px;
+      min-width: 120px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .ot-final span {
+      color: #b30000;
+      font-weight: bold;
+    }
+    
+    .precio-final {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .precio-final label {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    
+    .valor-final input { 
+      padding:10px 16px; 
+      border:2px solid #000; 
+      font-size:18px; 
+      font-weight:bold; 
+      width:180px; 
+      text-align:right; 
+      border-radius: 4px;
+    }
 
-    .nota-footer { font-size:10px; text-align:center; margin-top:10px; font-weight:bold; }
+    .nota-footer { 
+      font-size:10px; 
+      text-align:center; 
+      margin-top:15px; 
+      font-weight:bold; 
+      padding: 5px;
+      background: #f0f0f0;
+      border-radius: 3px;
+    }
 
     /* Botonera: SIEMPRE visible (móvil) */
     .fab {
-      position: fixed; bottom: 16px; right: 16px;
-      display:flex; flex-direction:column; gap:10px;
-      z-index: 2147483647; /* super alto para móvil/PWA */
+      position: fixed; 
+      bottom: 16px; 
+      right: 16px;
+      display:flex; 
+      flex-direction:column; 
+      gap:10px;
+      z-index: 2147483647;
+      background: rgba(255,255,255,0.95);
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
     .fab button {
-      padding: 12px 18px; font-size: 15px;
-      border:1px solid #000; background:#fff; cursor:pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,.25); border-radius:10px;
+      padding: 12px 18px; 
+      font-size: 15px;
+      border:1px solid #000; 
+      background:#fff; 
+      cursor:pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,.15); 
+      border-radius:8px;
       -webkit-tap-highlight-color: transparent;
+      font-weight: bold;
+      transition: all 0.2s;
+      text-align: left;
+      min-width: 180px;
     }
     .fab button:active { transform: translateY(1px); }
     @supports (-webkit-touch-callout: none) { .fab { bottom: 12px; right: 12px; } }
 
-    /* Auto-grow SOLO códigos/detalle */
-    #codigo_area, #detalle_area {
-      width:100%; min-height:220px; height:auto; border:none; font-size:16px;
-      box-sizing:border-box; padding:6px; resize:vertical; overflow:hidden;
+    /* Auto-grow SOLO códigos/detalle - CORREGIDO */
+    #codigo_area, #detalle_area, #valor_area {
+      width:100%; 
+      min-height:220px; 
+      height: auto;
+      border:none; 
+      font-size:15px;
+      box-sizing:border-box; 
+      padding:8px; 
+      resize:vertical; 
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      line-height: 1.4;
     }
     
     /* Estilos para botones específicos */
@@ -289,28 +492,72 @@
     /* Efecto hover para todos los botones */
     .fab button:hover {
       opacity: 0.9;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.25);
     }
     
     ::-webkit-scrollbar {
-      width: 10px;
+      width: 8px;
     }
     ::-webkit-scrollbar-track {
       background: #f1f1f1;
-      border-radius: 5px;
+      border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb {
       background: #888;
-      border-radius: 5px;
+      border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #555;
     }
+    
+    /* Para prevenir pérdida de datos */
+    .data-protected {
+      border-color: #28a745 !important;
+      background-color: #f8fff9 !important;
+    }
+    
+    /* Protección de campos manuales */
+    .manual-entry {
+      background-color: #fff8e1 !important;
+    }
+    
+    .auto-entry {
+      background-color: #e8f5e9 !important;
+    }
+    
+    /* Indicador de actualización */
+    .update-indicator {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #007bff;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      z-index: 10000;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .ot-updated {
+      animation: highlight 2s ease;
+    }
+    
+    @keyframes highlight {
+      0% { background-color: #ff9900; }
+      100% { background-color: #f0f0f0; }
+    }
   </style>
 </head>
 
-<body onload="document.getElementById('fecha').innerText = new Date().toLocaleDateString('es-CL');">
+<body>
   <!-- Modal auth -->
   <div id="auth-overlay" aria-hidden="true">
     <div id="auth-card">
@@ -347,20 +594,15 @@
   <!-- Mensaje de éxito -->
   <div class="mensaje-exito" id="mensajeExito"></div>
 
-  <!-- ===== CONTENIDO DEL INFORME (exportaremos #paper a PDF) ===== -->
-  <div id="paper">
-    <!-- Header con OT y Fecha -->
-    <div class="header-ot">
-      <div class="ot-info">
-        <span>OT: <strong id="otNumero"></strong></span>
-        <span>FECHA: <span id="fechaHoy"></span></span>
-      </div>
-    </div>
+  <!-- Indicador de actualización -->
+  <div class="update-indicator" id="updateIndicator"></div>
 
+  <!-- ===== CONTENIDO DEL INFORME ===== -->
+  <div id="paper">
+    <!-- TITULO PRINCIPAL (sin OT arriba) -->
     <div class="titulo">INFORME DE DIAGNOSTICO</div>
 
     <div class="contacto-wrap">
-      <!-- IMPORTANTE: rutas relativas y CORS para html2canvas -->
       <img src="img/logo-scanners.png" alt="logo scanners" loading="eager" crossorigin="anonymous" />
       <div class="contacto">
         WWW.ELSEÑORDELOSESCANER.CL<br />
@@ -411,15 +653,25 @@
     <div class="seccion-titulo">RECOMENDACIONES</div>
     <textarea name="recomendaciones" id="recomendaciones"></textarea>
 
+    <!-- SECCIÓN FINAL CON FECHA, OT Y PRECIO -->
     <div class="valor-final">
       <div class="fecha-final" id="fecha"></div>
-      <div>$ <input type="text" name="valor_final" id="valor_final"></div>
+      
+      <div class="ot-final" id="otFinalContainer">
+        OT: <span id="otNumero"></span>
+        <div class="ot-update-indicator" id="otUpdateIndicator" style="display: none;">🔄</div>
+      </div>
+      
+      <div class="precio-final">
+        <label>$</label>
+        <input type="text" name="valor_final" id="valor_final">
+      </div>
     </div>
 
     <div class="nota-footer">
       <strong>NOTA: COMPROBANTE VALIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
     </div>
-  </div><!-- /#paper -->
+  </div>
 
   <!-- ====== AUTH ====== -->
   <script>
@@ -489,12 +741,12 @@
     })();
   </script>
 
-  <!-- ====== Script principal con funcionalidad OT ====== -->
+  <!-- ====== Script principal CON ACTUALIZACIÓN AUTOMÁTICA DE OT ====== -->
   <script>
-    // URL de la API de Google Apps Script (la misma que usamos en el primer formulario)
+    // URL de la API de Google Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbylWprbcHvUITXljajbJYO1pxGJ_nGtubA8NOjI-dKuoB6GRklwksrqUcS64fX-_N3a/exec";
 
-    // Variables globales para manejo de OTs
+    // Variables globales
     let registroSeleccionado = null;
     let modoNuevoRegistro = true;
     let ultimaOTCalculada = "";
@@ -502,6 +754,33 @@
     let modalAbierto = false;
     let coincidenciasEncontradas = [];
     let datosFormularioActual = {};
+    
+    // Variables para prevención de pérdida de datos
+    let autoSaveTimeout = null;
+    let lastSavedState = {};
+    let isRestoringData = false;
+    
+    // Variables para controlar contenido manual/automático
+    let manualEntries = {
+      codigo_area: [],
+      detalle_area: [],
+      valor_area: [],
+      causas: [],
+      recomendaciones: []
+    };
+    
+    let autoEntries = {
+      codigo_area: [],
+      detalle_area: [],
+      valor_area: [],
+      causas: [],
+      recomendaciones: []
+    };
+    
+    // Variables para sincronización entre pestañas
+    let isUpdatingOT = false;
+    let lastOTUpdateTime = 0;
+    const OT_UPDATE_INTERVAL = 2 * 60 * 1000; // 2 minutos en milisegundos
 
     // Función para normalizar patente
     function normalizarPatente(p){
@@ -512,12 +791,21 @@
     function setFechaHoy(){
       const hoy = new Date();
       const fechaFormateada = hoy.toLocaleDateString("es-CL");
-      document.getElementById("fechaHoy").textContent = fechaFormateada;
       document.getElementById("fecha").textContent = fechaFormateada;
+      
+      // Guardar estado inicial
+      saveCurrentState();
     }
 
-    // Obtener la siguiente OT
-    async function cargarSiguienteOT(){
+    // Obtener la siguiente OT desde el servidor
+    async function cargarSiguienteOT(forceUpdate = false){
+      // Si ya estamos actualizando, no hacerlo de nuevo
+      if (isUpdatingOT && !forceUpdate) {
+        return ultimaOTCalculada;
+      }
+      
+      isUpdatingOT = true;
+      
       try{
         const timestamp = new Date().getTime();
         const response = await fetch(`${API_URL}?action=obtenerSiguienteOT&t=${timestamp}`);
@@ -525,21 +813,412 @@
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.nextOT) {
-            document.getElementById("otNumero").textContent = data.nextOT;
-            ultimaOTCalculada = data.nextOT;
-            return data.nextOT;
+            const otFormateada = String(data.nextOT).padStart(6, "0");
+            const currentOT = document.getElementById("otNumero").textContent;
+            
+            // Solo actualizar si es diferente
+            if (otFormateada !== currentOT && modoNuevoRegistro) {
+              document.getElementById("otNumero").textContent = otFormateada;
+              ultimaOTCalculada = otFormateada;
+              lastOTUpdateTime = Date.now();
+              
+              // Mostrar indicador de actualización
+              showOTUpdateNotification(otFormateada, currentOT);
+            } else {
+              ultimaOTCalculada = otFormateada;
+            }
+            
+            return otFormateada;
           }
         }
         
         // Si falla, usar un valor por defecto
-        document.getElementById("otNumero").textContent = "000001";
-        return "000001";
+        const otDefault = "000001";
+        document.getElementById("otNumero").textContent = otDefault;
+        ultimaOTCalculada = otDefault;
+        lastOTUpdateTime = Date.now();
+        return otDefault;
         
       }catch(e){
         console.error("Error cargando OT:", e);
-        document.getElementById("otNumero").textContent = "000001";
-        return "000001";
+        const otDefault = "000001";
+        document.getElementById("otNumero").textContent = otDefault;
+        ultimaOTCalculada = otDefault;
+        lastOTUpdateTime = Date.now();
+        return otDefault;
+      } finally {
+        isUpdatingOT = false;
       }
+    }
+
+    // Mostrar notificación de actualización de OT
+    function showOTUpdateNotification(newOT, oldOT) {
+      const otContainer = document.getElementById("otFinalContainer");
+      const updateIndicator = document.getElementById("otUpdateIndicator");
+      
+      // Agregar animación de actualización
+      otContainer.classList.add("ot-updated");
+      
+      // Mostrar indicador visual
+      updateIndicator.style.display = "block";
+      
+      // Mostrar notificación flotante
+      const notification = document.getElementById("updateIndicator");
+      notification.textContent = `OT actualizada: ${oldOT} → ${newOT}`;
+      notification.style.display = "block";
+      notification.style.background = "#28a745";
+      
+      // Ocultar después de 3 segundos
+      setTimeout(() => {
+        notification.style.display = "none";
+        updateIndicator.style.display = "none";
+        otContainer.classList.remove("ot-updated");
+      }, 3000);
+    }
+
+    // Sistema de sincronización entre pestañas usando localStorage
+    function setupTabSync() {
+      // Escuchar cambios en localStorage de otras pestañas
+      window.addEventListener('storage', function(event) {
+        if (event.key === 'current_ot_sync') {
+          try {
+            const syncData = JSON.parse(event.newValue);
+            if (syncData && syncData.ot && syncData.timestamp) {
+              const timeDiff = Date.now() - syncData.timestamp;
+              
+              // Solo procesar si es reciente (últimos 10 segundos)
+              if (timeDiff < 10000) {
+                const currentOT = document.getElementById("otNumero").textContent;
+                
+                // Si la OT sincronizada es diferente y estamos en modo nuevo registro
+                if (syncData.ot !== currentOT && modoNuevoRegistro) {
+                  document.getElementById("otNumero").textContent = syncData.ot;
+                  ultimaOTCalculada = syncData.ot;
+                  
+                  // Mostrar notificación de sincronización
+                  showSyncNotification(`OT sincronizada: ${syncData.ot}`);
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Error en sincronización:", e);
+          }
+        }
+      });
+      
+      // Sincronizar cada 30 segundos
+      setInterval(syncCurrentOT, 30000);
+    }
+
+    // Sincronizar la OT actual con otras pestañas
+    function syncCurrentOT() {
+      const currentOT = document.getElementById("otNumero").textContent;
+      const syncData = {
+        ot: currentOT,
+        timestamp: Date.now(),
+        windowId: Math.random().toString(36).substr(2, 9)
+      };
+      
+      localStorage.setItem('current_ot_sync', JSON.stringify(syncData));
+    }
+
+    // Mostrar notificación de sincronización
+    function showSyncNotification(message) {
+      const notification = document.getElementById("updateIndicator");
+      notification.textContent = message;
+      notification.style.display = "block";
+      notification.style.background = "#007bff";
+      
+      setTimeout(() => {
+        notification.style.display = "none";
+      }, 2000);
+    }
+
+    // Verificar y actualizar OT periódicamente
+    async function checkAndUpdateOT() {
+      const now = Date.now();
+      const timeSinceLastUpdate = now - lastOTUpdateTime;
+      
+      // Si ha pasado más del intervalo de actualización, actualizar
+      if (timeSinceLastUpdate > OT_UPDATE_INTERVAL && modoNuevoRegistro) {
+        await cargarSiguienteOT(true);
+      }
+      
+      // Sincronizar con otras pestañas
+      syncCurrentOT();
+    }
+
+    // Configurar actualización periódica cada 30 segundos
+    function setupPeriodicOTUpdate() {
+      // Actualizar inmediatamente al cargar
+      setTimeout(() => {
+        cargarSiguienteOT();
+      }, 1000);
+      
+      // Configurar intervalo de verificación cada 30 segundos
+      setInterval(checkAndUpdateOT, 30000);
+      
+      // También configurar para actualizar cada 2 minutos exactamente
+      setInterval(async () => {
+        if (modoNuevoRegistro) {
+          await cargarSiguienteOT(true);
+        }
+      }, OT_UPDATE_INTERVAL);
+    }
+
+    // Guardar estado actual del formulario
+    function saveCurrentState() {
+      lastSavedState = {
+        marca: document.getElementById("marca").value,
+        modelo: document.getElementById("modelo").value,
+        patente: document.getElementById("patente").value,
+        ano: document.getElementById("ano").value,
+        km: document.getElementById("km").value,
+        motor: document.getElementById("motor").value,
+        codigo_area: document.getElementById("codigo_area").value,
+        detalle_area: document.getElementById("detalle_area").value,
+        valor_area: document.getElementById("valor_area").value,
+        causas: document.getElementById("causas").value,
+        recomendaciones: document.getElementById("recomendaciones").value,
+        valor_final: document.getElementById("valor_final").value,
+        otNumero: document.getElementById("otNumero").textContent
+      };
+      
+      // Guardar en localStorage como backup
+      localStorage.setItem('informe_backup', JSON.stringify(lastSavedState));
+      localStorage.setItem('informe_backup_timestamp', Date.now().toString());
+      
+      // Separar contenido manual
+      separateManualContent();
+    }
+
+    // Separar contenido manual del automático
+    function separateManualContent() {
+      const textareas = ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'];
+      
+      textareas.forEach(id => {
+        const textarea = document.getElementById(id);
+        if (textarea) {
+          const lines = textarea.value.split('\n');
+          const manualLines = [];
+          const autoLines = [];
+          
+          lines.forEach(line => {
+            const trimmedLine = line.trim();
+            if (trimmedLine) {
+              // Detectar si es línea automática (comienza con • o es de la base de datos)
+              if (trimmedLine.startsWith('• ') || 
+                  trimmedLine.includes('(Banco') ||
+                  trimmedLine.includes('Sensor') ||
+                  trimmedLine.includes('Circuito') ||
+                  trimmedLine.includes('Falla') ||
+                  trimmedLine.includes('Mal funcionamiento')) {
+                autoLines.push(line);
+              } else {
+                manualLines.push(line);
+              }
+            }
+          });
+          
+          manualEntries[id] = manualLines;
+          autoEntries[id] = autoLines;
+        }
+      });
+    }
+
+    // Restaurar datos perdidos
+    function restoreLostData() {
+      if (isRestoringData) return;
+      
+      const backup = localStorage.getItem('informe_backup');
+      if (!backup) return;
+      
+      try {
+        const data = JSON.parse(backup);
+        const timestamp = parseInt(localStorage.getItem('informe_backup_timestamp') || '0');
+        const minutesAgo = (Date.now() - timestamp) / (1000 * 60);
+        
+        // Solo restaurar si el backup es reciente (últimos 5 minutos)
+        if (minutesAgo < 5) {
+          isRestoringData = true;
+          
+          // Verificar si los campos están vacíos o casi vacíos
+          const textareas = ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'];
+          
+          textareas.forEach(id => {
+            const element = document.getElementById(id);
+            const currentValue = element.value.trim();
+            const backupValue = data[id] || '';
+            
+            // Si el campo actual está vacío o tiene muy poco contenido, restaurar del backup
+            if (currentValue.length < 10 && backupValue.length > 10) {
+              element.value = backupValue;
+              
+              // Re-aplicar estilos
+              if (id === 'detalle_area') {
+                applyAutoFillStyles(element);
+              }
+            }
+            // Si el campo actual tiene contenido pero es diferente al backup
+            // (posible pérdida de datos), preguntar al usuario
+            else if (currentValue.length > 0 && backupValue.length > 0 && 
+                     currentValue !== backupValue && 
+                     backupValue.length > currentValue.length) {
+              // Marcar que podría haber pérdida de datos
+              element.classList.add('manual-entry');
+              
+              // Mostrar notificación discreta
+              setTimeout(() => {
+                showDataLossWarning(id);
+              }, 2000);
+            }
+          });
+          
+          setTimeout(() => {
+            isRestoringData = false;
+          }, 1000);
+        }
+      } catch (e) {
+        console.error("Error restoring backup:", e);
+      }
+    }
+
+    // Mostrar advertencia de posible pérdida de datos
+    function showDataLossWarning(fieldId) {
+      const fieldNames = {
+        'codigo_area': 'Códigos',
+        'detalle_area': 'Detalle',
+        'valor_area': 'Valor',
+        'causas': 'Causas',
+        'recomendaciones': 'Recomendaciones'
+      };
+      
+      const notification = document.createElement('div');
+      notification.className = 'data-loss-notification';
+      notification.innerHTML = `
+        <div style="position: fixed; top: 50px; right: 20px; background: #ffc107; color: #000; padding: 10px 15px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10000;">
+          <strong>⚠️ Posible pérdida de datos</strong><br>
+          Se detectó que ${fieldNames[fieldId]} podría haberse perdido.<br>
+          <small>Se restauró del último guardado automático.</small>
+        </div>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 5000);
+    }
+
+    // Auto-guardar cada 30 segundos
+    function setupAutoSave() {
+      // Guardar estado inicial
+      saveCurrentState();
+      
+      // Configurar auto-guardado periódico
+      setInterval(saveCurrentState, 30000);
+      
+      // Configurar auto-guardado en eventos
+      const elementos = [
+        'codigo_area', 'detalle_area', 'valor_area',
+        'causas', 'recomendaciones', 'valor_final',
+        'marca', 'modelo', 'patente', 'ano', 'km', 'motor'
+      ];
+      
+      elementos.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener('input', () => {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(saveCurrentState, 1000);
+            
+            // Marcar como entrada manual
+            if (id === 'detalle_area') {
+              markManualEntry(element);
+            }
+          });
+          
+          element.addEventListener('blur', saveCurrentState);
+        }
+      });
+      
+      // Verificar pérdida de datos al cargar la página
+      window.addEventListener('load', () => {
+        setTimeout(restoreLostData, 1000);
+      });
+      
+      // Prevenir pérdida de datos al navegar/cerrar
+      window.addEventListener('beforeunload', (e) => {
+        const hasData = document.getElementById("codigo_area").value.trim() !== '' ||
+                       document.getElementById("detalle_area").value.trim() !== '';
+        
+        if (hasData) {
+          saveCurrentState();
+        }
+      });
+    }
+
+    // Marcar entrada manual
+    function markManualEntry(textarea) {
+      const lines = textarea.value.split('\n');
+      const lastLine = lines[lines.length - 1] || '';
+      
+      // Si la última línea no es automática, marcar como manual
+      if (lastLine.trim() && !lastLine.trim().startsWith('• ') && 
+          !lastLine.includes('(Banco') && !lastLine.includes('Sensor')) {
+        textarea.classList.add('manual-entry');
+        textarea.classList.remove('auto-entry');
+      }
+    }
+
+    // Aplicar estilos de auto-relleno
+    function applyAutoFillStyles(textarea) {
+      const lines = textarea.value.split('\n');
+      let hasAutoContent = false;
+      
+      lines.forEach(line => {
+        if (line.trim().startsWith('• ') || line.includes('(Banco')) {
+          hasAutoContent = true;
+        }
+      });
+      
+      if (hasAutoContent) {
+        textarea.classList.add('auto-entry');
+      }
+    }
+
+    // Ajuste automático de textareas
+    function autoAdjustTextareas() {
+      ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.height = 'auto';
+          el.style.height = (el.scrollHeight + 2) + 'px';
+        }
+      });
+    }
+
+    // Configurar ajuste automático de textareas
+    function setupAutoAdjustTextareas() {
+      const textareas = ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'];
+      
+      textareas.forEach(id => {
+        const textarea = document.getElementById(id);
+        if (textarea) {
+          textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight + 2) + 'px';
+          });
+          
+          // Ajustar inicialmente
+          setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+          }, 100);
+        }
+      });
     }
 
     // Buscar patente automáticamente
@@ -570,7 +1249,6 @@
           modoNuevoRegistro = true;
           registroSeleccionado = null;
           ultimaPatenteBuscada = pat;
-          limpiarDetallesInforme();
           await cargarSiguienteOT();
           return;
         }
@@ -601,18 +1279,6 @@
         km: document.getElementById("km").value,
         motor: document.getElementById("motor").value
       };
-    }
-
-    // Limpiar detalles del informe
-    function limpiarDetallesInforme(){
-      if(modoNuevoRegistro){
-        document.getElementById("codigo_area").value = "";
-        document.getElementById("detalle_area").value = "";
-        document.getElementById("valor_area").value = "";
-        document.getElementById("causas").value = "";
-        document.getElementById("recomendaciones").value = "";
-        document.getElementById("valor_final").value = "";
-      }
     }
 
     // Función para ordenar registros por fecha descendente
@@ -683,9 +1349,24 @@
         otRegistro = registro.OT || "";
         
         // Para informes anteriores, cargar los detalles específicos
-        document.getElementById("codigo_area").value = registro.Codigo || "";
-        document.getElementById("detalle_area").value = registro.Detalle || "";
-        document.getElementById("valor_area").value = registro.Valor_Area || "";
+        // PERO conservar cualquier entrada manual existente
+        const currentCodigo = document.getElementById("codigo_area").value;
+        const currentDetalle = document.getElementById("detalle_area").value;
+        const currentValor = document.getElementById("valor_area").value;
+        
+        // Solo reemplazar si los campos están vacíos o casi vacíos
+        if (!currentCodigo.trim() || currentCodigo.trim().length < 5) {
+          document.getElementById("codigo_area").value = registro.Codigo || "";
+        }
+        
+        if (!currentDetalle.trim() || currentDetalle.trim().length < 5) {
+          document.getElementById("detalle_area").value = registro.Detalle || "";
+        }
+        
+        if (!currentValor.trim()) {
+          document.getElementById("valor_area").value = registro.Valor_Area || "";
+        }
+        
         document.getElementById("causas").value = registro.Posibles_Causas || "";
         document.getElementById("recomendaciones").value = registro.Recomendaciones || "";
         document.getElementById("valor_final").value = registro.Valor_Final || "";
@@ -699,13 +1380,11 @@
         otRegistro = registro.OT || registro.OrdenTrabajo || "";
         
         // Para Hoja1 (reparaciones), solo cargar datos básicos
-        // Los campos de diagnóstico se dejan vacíos o con valores por defecto
-        document.getElementById("codigo_area").value = "";
-        document.getElementById("detalle_area").value = registro.Detalle_Estado || "";
-        document.getElementById("valor_area").value = "";
-        document.getElementById("causas").value = "";
-        document.getElementById("recomendaciones").value = "";
-        document.getElementById("valor_final").value = "";
+        // NO sobreescribir contenido existente en códigos/detalle/valor
+        const currentDetalle = document.getElementById("detalle_area").value;
+        if (!currentDetalle.trim() || currentDetalle.trim().length < 5) {
+          document.getElementById("detalle_area").value = registro.Detalle_Estado || "";
+        }
         
         if (desdeModal) {
           mostrarMensajeExito("✅ Datos del vehículo cargados. Complete el diagnóstico.");
@@ -719,20 +1398,21 @@
       if(patenteActual === patenteRegistro && otRegistro){
         const otFormateada = String(otRegistro).padStart(6, "0");
         document.getElementById("otNumero").textContent = otFormateada;
+        ultimaOTCalculada = otFormateada;
         console.log("OT establecida desde registro:", otFormateada);
       }
       
       cerrarModalCoincidencias();
       
+      // Guardar estado actual
+      saveCurrentState();
+      
+      // Aplicar estilos de auto-relleno
+      applyAutoFillStyles(document.getElementById("detalle_area"));
+      
       // Ajustar altura de textareas
       setTimeout(() => {
-        ['codigo_area', 'detalle_area'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.style.height = 'auto';
-            el.style.height = (el.scrollHeight + 2) + 'px';
-          }
-        });
+        autoAdjustTextareas();
       }, 100);
     }
 
@@ -832,7 +1512,7 @@
           </div>
           `}
           <div style="margin-top: 8px; padding: 6px; background: #e8f4f8; border-radius: 4px; font-size: 12px; color: #0c5460;">
-            <strong>📋 Al hacer clic:</strong> Se cargarán todos los datos disponibles
+            <strong>📋 Al hacer clic:</strong> Se cargarán los datos disponibles SIN borrar lo que ya escribió
           </div>
         `;
         
@@ -878,28 +1558,34 @@
         document.getElementById("patente").value = datosVehiculo.patente;
       }
       
-      // Limpiar otros campos específicos del diagnóstico
-      document.getElementById("ano").value = "";
-      document.getElementById("km").value = "";
-      document.getElementById("motor").value = "";
-      document.getElementById("codigo_area").value = "";
-      document.getElementById("detalle_area").value = "";
-      document.getElementById("valor_area").value = "";
-      document.getElementById("causas").value = "";
-      document.getElementById("recomendaciones").value = "";
-      document.getElementById("valor_final").value = "";
+      // NO limpiar otros campos - el usuario ya pudo haber escrito algo
+      // Solo limpiar si están vacíos
+      if (!document.getElementById("ano").value.trim()) {
+        document.getElementById("ano").value = "";
+      }
+      
+      if (!document.getElementById("km").value.trim()) {
+        document.getElementById("km").value = "";
+      }
+      
+      if (!document.getElementById("motor").value.trim()) {
+        document.getElementById("motor").value = "";
+      }
       
       modoNuevoRegistro = true;
       registroSeleccionado = null;
       
       cargarSiguienteOT();
+      saveCurrentState();
       
       mostrarMensajeExito("✅ Nueva OT creada. Complete el diagnóstico.");
       
       cerrarModalCoincidencias();
       
       setTimeout(() => {
-        document.getElementById("ano").focus();
+        if (!document.getElementById("ano").value.trim()) {
+          document.getElementById("ano").focus();
+        }
       }, 300);
     }
 
@@ -958,7 +1644,6 @@
         posibles_causas: document.getElementById("causas").value.trim(),
         recomendaciones: document.getElementById("recomendaciones").value.trim(),
         valor_final: document.getElementById("valor_final").value.trim()
-        // Nota: La fecha se genera automáticamente en el backend
       };
     }
 
@@ -997,6 +1682,7 @@
         // Generar nueva OT para el siguiente informe
         setTimeout(async () => {
           await cargarSiguienteOT();
+          saveCurrentState();
         }, 1000);
         
         // Imprimir el formulario
@@ -1007,9 +1693,6 @@
         modoNuevoRegistro = true;
         registroSeleccionado = null;
         ultimaPatenteBuscada = "";
-        
-        // No limpiar automáticamente para permitir correcciones
-        // El usuario puede usar el botón "Borrar todo" si lo desea
         
       }catch(error){
         console.error("Error guardando:", error);
@@ -1039,12 +1722,13 @@
       
       cargarSiguienteOT();
       setFechaHoy();
+      saveCurrentState();
       
       console.log("Formulario borrado, modo nuevo registro activado");
       
       // Resetear altura de textareas
       setTimeout(() => {
-        ['codigo_area', 'detalle_area'].forEach(id => {
+        ['codigo_area', 'detalle_area', 'valor_area'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
             el.style.height = '220px';
@@ -1089,23 +1773,22 @@
       setFechaHoy();
     }, 60000);
 
-    // Verificar OT periódicamente
-    setInterval(() => {
-      if(modoNuevoRegistro){
-        verificarYActualizarOT();
-      }
-    }, 30000);
-
     // Inicializar al cargar
-    window.onload = () => {
+    window.addEventListener('load', () => {
       setFechaHoy();
       cargarSiguienteOT();
+      setupAutoSave();
+      setupAutoAdjustTextareas();
+      setupPeriodicOTUpdate();
+      setupTabSync();
+      
       console.log("Página de diagnóstico cargada, modo nuevo registro activado");
       
       setTimeout(() => {
         verificarYActualizarOT();
+        autoAdjustTextareas();
       }, 1000);
-    };
+    });
   </script>
 
   <!-- ====== Función para buscar aplicación ====== -->
@@ -1114,21 +1797,17 @@
       guardarInformeLocal();
       sessionStorage.setItem('viene_de_busqueda', 'true');
 
-      // URL ABSOLUTA (igual que el index)
       const url = "https://taller-todo.vercel.app/buscar_aplicacion.html";
-
       window.open(url, "_blank", "noopener");
     }
 
     function guardarInformeLocal() {
-      // Guardar todos los datos del informe en localStorage
       const datos = recogerDatosInforme();
       localStorage.setItem('informe_autoguardado', JSON.stringify(datos));
       localStorage.setItem('informe_autoguardado_timestamp', Date.now().toString());
     }
     
     function cargarInformeLocal() {
-      // Cargar datos guardados al volver
       const guardado = localStorage.getItem('informe_autoguardado');
       if (guardado) {
         try {
@@ -1136,7 +1815,6 @@
           const timestamp = parseInt(localStorage.getItem('informe_autoguardado_timestamp') || '0');
           const horasTranscurridas = (Date.now() - timestamp) / (1000 * 60 * 60);
           
-          // Solo cargar si tiene menos de 2 horas
           if (horasTranscurridas < 2) {
             document.getElementById("marca").value = datos.marca || '';
             document.getElementById("modelo").value = datos.modelo || '';
@@ -1150,6 +1828,11 @@
             document.getElementById("causas").value = datos.posibles_causas || '';
             document.getElementById("recomendaciones").value = datos.recomendaciones || '';
             document.getElementById("valor_final").value = datos.valor_final || '';
+            
+            if (datos.OT) {
+              document.getElementById("otNumero").textContent = datos.OT;
+              ultimaOTCalculada = datos.OT;
+            }
           }
         } catch (e) {
           console.error("Error al cargar informe guardado:", e);
@@ -1157,29 +1840,24 @@
       }
     }
     
-    // Función para agregar producto seleccionado al informe
     function agregarProductoSeleccionado() {
       const productoGuardado = localStorage.getItem('producto_seleccionado');
       if (productoGuardado) {
         try {
           const producto = JSON.parse(productoGuardado);
           
-          // Agregar al campo VALOR AREA
           const valorArea = document.getElementById("valor_area");
           const precio = producto.precio_unit ? parseFloat(producto.precio_unit) : 0;
           const nuevoValor = `${producto.nombre || 'Producto'} - $${precio.toLocaleString('es-CL')}`;
           
-          // Agregar en una nueva línea si ya hay contenido
           if (valorArea.value.trim()) {
             valorArea.value = valorArea.value + '\n' + nuevoValor;
           } else {
             valorArea.value = nuevoValor;
           }
           
-          // Limpiar el producto guardado
           localStorage.removeItem('producto_seleccionado');
           
-          // Ajustar altura del textarea
           valorArea.style.height = 'auto';
           valorArea.style.height = (valorArea.scrollHeight + 2) + 'px';
           
@@ -1190,20 +1868,14 @@
       }
     }
     
-    // Cargar datos al iniciar la página
     window.addEventListener('load', function() {
-      // Verificar si venimos de la página de búsqueda
       const vieneDeBusqueda = sessionStorage.getItem('viene_de_busqueda') === 'true';
       
       if (vieneDeBusqueda) {
         sessionStorage.removeItem('viene_de_busqueda');
         cargarInformeLocal();
-        // Pequeño delay para asegurar que los campos estén listos
         setTimeout(agregarProductoSeleccionado, 300);
       }
-      
-      // Auto-guardar cada 30 segundos
-      setInterval(guardarInformeLocal, 30000);
     });
   </script>
 
@@ -1289,7 +1961,7 @@
       "P0496": "Eficiencia del sistema de ventilador de refrigeración por debajo del umbral.",
       "P0500": "Sensor de velocidad del vehículo – mal funcionamiento del circuito.",
       "P0501": "Rango/rendimiento del sensor de velocidad del vehículo fuera de especificación.",
-      "P0504": "Mal funcionamiento del circuito del sensor de corte del ralentí.",
+      "P0504": "Mal funcionamiento del circuito del sensor de corte del rantalí.",
       "P0505": "Relación rantalí – fuera de rango.",
       "P0507": "Vacío excesivo en el rantalí detectado.",
       "P0521": "Mal funcionamiento del circuito del sensor de presión de aceite.",
@@ -1355,12 +2027,51 @@
       const cods = codigosDe(txtCodigos.value);
       const nuevasAuto = construirLineasAutoSoloDescripcion(cods);
       const lineas = txtDetalle.value.split(/\r?\n/);
+      
+      // Separar líneas manuales de automáticas
       const manual = lineas.filter(l => !esLineaAuto(l) && l.trim() !== "");
-      txtDetalle.value = nuevasAuto.length ? [...nuevasAuto, ...(manual.length?["",...manual]:[])].join("\n") : manual.join("\n");
+      const auto = lineas.filter(l => esLineaAuto(l) && l.trim() !== "");
+      
+      // Combinar nuevas automáticas con las existentes (sin duplicados)
+      const todasAuto = [...new Set([...auto, ...nuevasAuto])];
+      
+      // Mantener las líneas manuales siempre
+      const resultado = [...todasAuto];
+      if (manual.length > 0) {
+        // Agregar separador solo si hay contenido automático
+        if (todasAuto.length > 0) {
+          resultado.push("");
+        }
+        resultado.push(...manual);
+      }
+      
+      txtDetalle.value = resultado.join("\n");
+      
+      // Ajustar altura
+      txtDetalle.style.height = 'auto';
+      txtDetalle.style.height = (txtDetalle.scrollHeight + 2) + 'px';
+      
+      // Marcar como contenido automático
+      if (nuevasAuto.length > 0) {
+        txtDetalle.classList.add('auto-entry');
+      }
     }
+    
+    // Configurar el auto-relleno con protección de contenido manual
     txtCodigos.addEventListener("input", () => {
       clearTimeout(window.__debAutoTimer);
-      window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 120);
+      
+      // Solo activar auto-relleno si hay nuevos códigos
+      const currentCodes = codigosDe(txtCodigos.value);
+      if (currentCodes.length > 0) {
+        window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 300);
+      }
+    });
+    
+    // Marcar contenido manual cuando el usuario escribe en detalle
+    txtDetalle.addEventListener("input", function() {
+      this.classList.add('manual-entry');
+      this.classList.remove('auto-entry');
     });
   </script>
 
@@ -1412,7 +2123,6 @@
       mostrarQr(construirLinkDescarga(recogerDatosInforme()));
     }
 
-    // Espera a que las imágenes del papel estén listas (evita que falten en el PDF)
     function waitImagesLoaded(container){
       const imgs = Array.from(container.querySelectorAll('img'));
       if (!imgs.length) return Promise.resolve();
@@ -1423,7 +2133,7 @@
     async function descargarPDFLocal(){
       const paper = document.getElementById('paper');
       const fab = document.querySelector('.fab');
-      const prev = fab.style.display; fab.style.display = 'none'; // no exportar botones
+      const prev = fab.style.display; fab.style.display = 'none';
       await waitImagesLoaded(paper);
 
       const patente = (document.getElementById('patente').value || 'SIN_PATENTE')
