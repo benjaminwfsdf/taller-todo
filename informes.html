@@ -159,174 +159,17 @@
       border-color: #155724 !important;
       border-left: 6px solid #155724 !important;
     }
-    
-    /* Indicador de actualización OT */
-    .ot-update-indicator {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: #ff9900;
-      color: white;
-      font-size: 10px;
-      padding: 2px 5px;
-      border-radius: 10px;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
   </style>
 
   <style>
-    /* ============================================
-       MEDIA PRINT - TAMAÑO CARTA
-    ============================================ */
     @media print {
-      @page { 
-        size: letter; 
-        margin: 5mm 10mm; /* Margen reducido para aprovechar espacio */
-      }
-      
-      body { 
-        margin: 0; 
-        padding: 0; 
-        background: white !important;
-        font-size: 11px !important;
-      }
-      
-      #paper {
-        width: 100% !important;
-        min-height: auto !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        page-break-inside: avoid;
-      }
-      
-      /* Ajustar tamaño de fuentes para impresión */
-      .titulo {
-        font-size: 18px !important;
-        padding: 8px 0 !important;
-        margin: 0 0 12px 0 !important;
-      }
-      
-      .contacto {
-        font-size: 10px !important;
-        line-height: 1.2 !important;
-      }
-      
-      .contacto-wrap img {
-        max-height: 120px !important;
-        max-width: 110px !important;
-      }
-      
-      .form-grid {
-        margin-bottom: 12px !important;
-      }
-      
-      .form-grid td {
-        padding: 4px !important;
-        font-size: 11px !important;
-      }
-      
-      .form-grid input[type="text"] {
-        font-size: 11px !important;
-        padding: 4px 6px !important;
-      }
-      
-      .seccion-titulo {
-        font-size: 11px !important;
-        padding: 6px !important;
-        margin-top: 15px !important;
-        margin-bottom: 4px !important;
-      }
-      
-      .tabla-codigos {
-        margin-bottom: 12px !important;
-      }
-      
-      .tabla-codigos th, 
-      .tabla-codigos td {
-        padding: 5px !important;
-        font-size: 10px !important;
-      }
-      
-      .tabla-codigos textarea {
-        height: 150px !important;
-        font-size: 11px !important;
-        padding: 4px !important;
-      }
-      
-      textarea {
-        font-size: 11px !important;
-        padding: 6px !important;
-        min-height: 60px !important;
-      }
-      
-      .valor-final {
-        margin-top: 15px !important;
-        padding-top: 10px !important;
-        font-size: 12px !important;
-      }
-      
-      .fecha-final, 
-      .ot-final {
-        padding: 5px 10px !important;
-        font-size: 11px !important;
-      }
-      
-      .valor-final input {
-        font-size: 14px !important;
-        padding: 6px 12px !important;
-        width: 140px !important;
-      }
-      
-      .nota-footer {
-        font-size: 9px !important;
-        margin-top: 8px !important;
-        padding: 4px !important;
-        border: 1px solid #ccc !important;
-        background: #fff !important;
-        color: #000 !important;
-        font-weight: bold !important;
-      }
-      
-      /* Ocultar elementos no deseados */
-      .fab, 
-      #auth-overlay, 
-      #modal-coincidencias, 
-      .mensaje-exito,
-      .update-indicator,
-      #qr-modal {
-        display: none !important;
-      }
-      
-      /* Ajustes específicos para el texto "válido para 2 scanner" */
-      .contacto-wrap {
-        margin-bottom: 15px !important;
-      }
-      
-      /* Asegurar que el contenido quepa en una página */
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      
-      /* Prevenir cortes de página dentro de elementos importantes */
-      .tabla-codigos,
-      .valor-final {
-        page-break-inside: avoid;
-      }
+      @page { size: letter; margin: 6mm 20mm; }
+      body { margin: 0; padding: 0; box-shadow: none; border: none; }
+      .fab { display: none !important; }
+      #modal-coincidencias { display: none !important; }
+      #auth-overlay { display: none !important; }
     }
 
-    /* ============================================
-       ESTILOS PARA PANTALLA
-    ============================================ */
     body { 
       font-family: Arial, sans-serif; 
       margin: 0; 
@@ -334,16 +177,16 @@
       padding-bottom: 100px;
     }
 
-    /* Contenedor exportable (la "hoja") - Tamaño carta */
+    /* Contenedor exportable (la "hoja") */
     #paper {
-      width: 21.6cm; /* 8.5 pulgadas en cm para carta */
-      min-height: 27.9cm; /* 11 pulgadas en cm */
+      width: 21cm; 
+      min-height: 29.7cm;
       margin: 20px auto; 
-      padding: 25px 30px; /* Padding reducido para aprovechar espacio */
+      padding: 30px 35px; /* Reducido de 35px 40px */
       background: #fff;
       border: 1px solid #000; 
       box-sizing: border-box; 
-      font-size: 12px; /* Tamaño de fuente base reducido */
+      font-size: 13px;
       position: relative;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
@@ -353,11 +196,11 @@
       background: #b30000; 
       color: #fff; 
       font-weight: bold;
-      font-size: 20px; /* Reducido de 24px */
-      padding: 10px 0; /* Reducido de 12px */
+      font-size: 24px; 
+      padding: 12px 0; 
       text-align: center; 
       box-sizing: border-box; 
-      margin: 0 0 15px 0; /* Reducido de 20px */
+      margin: 0 0 18px 0; /* Reducido de 20px */
       border-radius: 4px;
     }
 
@@ -365,26 +208,26 @@
       display:flex; 
       justify-content:space-between; 
       align-items:center; 
-      margin-bottom:15px; /* Reducido de 20px */
+      margin-bottom:18px; /* Reducido de 20px */
       gap:10px; /* Reducido de 12px */
     }
     .contacto { 
       text-align:center; 
-      font-size:12px; /* Reducido de 14px */
-      line-height:1.3; /* Ajustado */
+      font-size:14px; 
+      line-height:1.4; 
       flex:1; 
       font-weight:bold; 
     }
     .contacto-wrap img { 
-      max-height:150px; /* Reducido de 170px */
+      max-height:160px; /* Reducido de 170px */
       object-fit:contain; 
-      max-width: 130px; /* Reducido de 150px */
+      max-width: 140px; /* Reducido de 150px */
     }
 
     .form-grid { 
       width:100%; 
       border-collapse:collapse; 
-      margin-bottom:15px; /* Reducido de 20px */
+      margin-bottom:18px; /* Reducido de 20px */
     }
     .form-grid td { 
       padding:5px; /* Reducido de 6px */
@@ -393,21 +236,21 @@
     }
     .form-grid label { 
       font-weight:bold; 
-      margin-right:4px; /* Reducido de 6px */
-      min-width:50px; /* Reducido de 60px */
-      font-size:12px; /* Reducido de 14px */
+      margin-right:5px; /* Reducido de 6px */
+      min-width:55px; /* Reducido de 60px */
+      font-size:14px; 
     }
     .inline { 
       display:flex; 
       align-items:center; 
-      gap:4px; /* Reducido de 6px */
+      gap:5px; /* Reducido de 6px */
     }
     .form-grid input[type="text"] { 
       width:100%; 
-      padding:5px 6px; /* Reducido de 6px 8px */
+      padding:5px 7px; /* Reducido de 6px 8px */
       box-sizing:border-box; 
       border:1px solid #ccc; 
-      font-size:13px; /* Reducido de 15px */
+      font-size:14px; /* Reducido de 15px */
       border-radius: 3px;
       transition: border 0.2s;
     }
@@ -419,77 +262,74 @@
 
     .seccion-titulo { 
       font-weight:bold; 
-      margin-top:15px; /* Reducido de 20px */
+      margin-top:18px; /* Reducido de 20px */
       margin-bottom:4px; /* Reducido de 5px */
       text-transform:uppercase; 
       background:#f0f0f0; 
       padding:6px; /* Reducido de 8px */
       border:1px solid #000; 
       border-radius: 3px;
-      font-size: 12px; /* Añadido */
     }
 
     .tabla-codigos { 
       width:100%; 
       border-collapse:collapse; 
-      margin-bottom:15px; /* Reducido de 20px */
+      margin-bottom:18px; /* Reducido de 20px */
       table-layout:fixed; 
     }
     .tabla-codigos th, .tabla-codigos td { 
       border:1px solid #000; 
-      padding:6px; /* Reducido de 8px */
+      padding:7px; /* Reducido de 8px */
       vertical-align:top; 
     }
     .tabla-codigos th { 
       background:#d9d9d9; 
       font-weight:bold; 
       text-align:left; 
-      font-size: 12px; /* Añadido */
     }
     .tabla-codigos textarea { 
       width:100%; 
-      height:180px; /* Reducido de 220px */
+      height:200px; /* Reducido de 220px */
       border:none; 
       resize:vertical; 
-      font-size:13px; /* Reducido de 15px */
+      font-size:14px; /* Reducido de 15px */
       box-sizing:border-box; 
-      padding:6px; /* Reducido de 8px */
+      padding:7px; /* Reducido de 8px */
       font-family: Arial, sans-serif;
       line-height: 1.4;
     }
 
     textarea { 
       width:100%; 
-      min-height:80px; /* Reducido de 100px */
+      min-height:90px; /* Reducido de 100px */
       margin-top:4px; /* Reducido de 5px */
-      padding:6px; /* Reducido de 8px */
+      padding:7px; /* Reducido de 8px */
       border:1px solid #000; 
       box-sizing:border-box; 
-      font-size:13px; /* Reducido de 15px */
+      font-size:14px; /* Reducido de 15px */
       font-family: Arial, sans-serif;
       line-height: 1.4;
       resize: vertical;
     }
 
-    /* VALOR FINAL CORREGIDO - OT EN EL MEDIO */
+    /* VALOR FINAL CORREGIDO - OT EN EL MEDIO - SIN LÍNEA SUPERIOR */
     .valor-final { 
       margin-top:20px; /* Reducido de 25px */
       font-weight:bold; 
-      font-size:14px; /* Reducido de 16px */
+      font-size:16px; 
       display:flex; 
       justify-content:space-between; 
       align-items:center; 
       gap:8px; /* Reducido de 10px */
       flex-wrap:wrap; 
-      border-top: 2px solid #000;
+      /* border-top: 2px solid #000; ELIMINADA LA LÍNEA */
       padding-top: 12px; /* Reducido de 15px */
-      position: relative;
     }
     
     .fecha-final { 
       border:1px solid #000; 
-      padding:6px 12px; /* Reducido de 8px 15px */
-      font-size:12px; /* Reducido de 14px */
+      padding:7px 12px; /* Reducido de 8px 15px */
+      font-size:13px; /* Reducido de 14px */
       color:#000; 
       background: #f9f9f9;
       border-radius: 4px;
@@ -499,14 +339,13 @@
     
     .ot-final {
       font-weight: bold;
-      font-size: 14px; /* Reducido de 16px */
-      padding: 6px 12px; /* Reducido de 8px 15px */
+      font-size: 16px;
+      padding: 7px 12px; /* Reducido de 8px 15px */
       background: #f0f0f0;
       border: 1px solid #000;
       border-radius: 4px;
       min-width: 110px; /* Reducido de 120px */
       text-align: center;
-      position: relative;
     }
     
     .ot-final span {
@@ -522,20 +361,19 @@
     
     .precio-final label {
       font-weight: bold;
-      font-size: 14px; /* Reducido de 16px */
+      font-size: 16px;
     }
     
     .valor-final input { 
       padding:8px 14px; /* Reducido de 10px 16px */
       border:2px solid #000; 
-      font-size:16px; /* Reducido de 18px */
+      font-size:17px; /* Reducido de 18px */
       font-weight:bold; 
-      width:160px; /* Reducido de 180px */
+      width:170px; /* Reducido de 180px */
       text-align:right; 
       border-radius: 4px;
     }
 
-    /* NOTA FOOTER - TEXTOS ARREGLADOS */
     .nota-footer { 
       font-size:10px; 
       text-align:center; 
@@ -544,11 +382,6 @@
       padding: 5px;
       background: #f0f0f0;
       border-radius: 3px;
-      border: 1px solid #ccc;
-    }
-    
-    .nota-footer strong {
-      color: #b30000;
     }
 
     /* Botonera: SIEMPRE visible (móvil) */
@@ -586,12 +419,12 @@
     /* Auto-grow SOLO códigos/detalle - CORREGIDO */
     #codigo_area, #detalle_area, #valor_area {
       width:100%; 
-      min-height:180px; /* Reducido de 220px */
+      min-height:200px; /* Reducido de 220px */
       height: auto;
       border:none; 
-      font-size:13px; /* Reducido de 15px */
+      font-size:14px; /* Reducido de 15px */
       box-sizing:border-box; 
-      padding:6px; /* Reducido de 8px */
+      padding:7px; /* Reducido de 8px */
       resize:vertical; 
       overflow-y: auto;
       font-family: Arial, sans-serif;
@@ -671,35 +504,6 @@
     .auto-entry {
       background-color: #e8f5e9 !important;
     }
-    
-    /* Indicador de actualización */
-    .update-indicator {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: #007bff;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 15px;
-      font-size: 12px;
-      z-index: 10000;
-      display: none;
-      animation: slideIn 0.3s ease;
-    }
-    
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    
-    .ot-updated {
-      animation: highlight 2s ease;
-    }
-    
-    @keyframes highlight {
-      0% { background-color: #ff9900; }
-      100% { background-color: #f0f0f0; }
-    }
   </style>
 </head>
 
@@ -739,9 +543,6 @@
 
   <!-- Mensaje de éxito -->
   <div class="mensaje-exito" id="mensajeExito"></div>
-
-  <!-- Indicador de actualización -->
-  <div class="update-indicator" id="updateIndicator"></div>
 
   <!-- ===== CONTENIDO DEL INFORME ===== -->
   <div id="paper">
@@ -799,13 +600,12 @@
     <div class="seccion-titulo">RECOMENDACIONES</div>
     <textarea name="recomendaciones" id="recomendaciones"></textarea>
 
-    <!-- SECCIÓN FINAL CON FECHA, OT Y PRECIO -->
+    <!-- SECCIÓN FINAL CON FECHA, OT Y PRECIO - SIN LÍNEA SEPARADORA -->
     <div class="valor-final">
       <div class="fecha-final" id="fecha"></div>
       
       <div class="ot-final" id="otFinalContainer">
         OT: <span id="otNumero"></span>
-        <div class="ot-update-indicator" id="otUpdateIndicator" style="display: none;">🔄</div>
       </div>
       
       <div class="precio-final">
@@ -814,9 +614,8 @@
       </div>
     </div>
 
-    <!-- NOTA FOOTER CON TEXTO CORREGIDO -->
     <div class="nota-footer">
-      <strong>NOTA: COMPROBANTE VÁLIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
+      <strong>NOTA: COMPROBANTE VALIDO PARA SEGUNDO SCANNER (7 DÍAS)</strong>
     </div>
   </div>
 
@@ -888,7 +687,7 @@
     })();
   </script>
 
-  <!-- ====== Script principal CON ACTUALIZACIÓN AUTOMÁTICA DE OT ====== -->
+  <!-- ====== Script principal CORREGIDO ====== -->
   <script>
     // URL de la API de Google Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbylWprbcHvUITXljajbJYO1pxGJ_nGtubA8NOjI-dKuoB6GRklwksrqUcS64fX-_N3a/exec";
@@ -923,11 +722,6 @@
       causas: [],
       recomendaciones: []
     };
-    
-    // Variables para sincronización entre pestañas
-    let isUpdatingOT = false;
-    let lastOTUpdateTime = 0;
-    const OT_UPDATE_INTERVAL = 2 * 60 * 1000; // 2 minutos en milisegundos
 
     // Función para normalizar patente
     function normalizarPatente(p){
@@ -944,15 +738,8 @@
       saveCurrentState();
     }
 
-    // Obtener la siguiente OT desde el servidor
-    async function cargarSiguienteOT(forceUpdate = false){
-      // Si ya estamos actualizando, no hacerlo de nuevo
-      if (isUpdatingOT && !forceUpdate) {
-        return ultimaOTCalculada;
-      }
-      
-      isUpdatingOT = true;
-      
+    // Obtener la siguiente OT
+    async function cargarSiguienteOT(){
       try{
         const timestamp = new Date().getTime();
         const response = await fetch(`${API_URL}?action=obtenerSiguienteOT&t=${timestamp}`);
@@ -961,20 +748,8 @@
           const data = await response.json();
           if (data.success && data.nextOT) {
             const otFormateada = String(data.nextOT).padStart(6, "0");
-            const currentOT = document.getElementById("otNumero").textContent;
-            
-            // Solo actualizar si es diferente
-            if (otFormateada !== currentOT && modoNuevoRegistro) {
-              document.getElementById("otNumero").textContent = otFormateada;
-              ultimaOTCalculada = otFormateada;
-              lastOTUpdateTime = Date.now();
-              
-              // Mostrar indicador de actualización
-              showOTUpdateNotification(otFormateada, currentOT);
-            } else {
-              ultimaOTCalculada = otFormateada;
-            }
-            
+            document.getElementById("otNumero").textContent = otFormateada;
+            ultimaOTCalculada = otFormateada;
             return otFormateada;
           }
         }
@@ -983,7 +758,6 @@
         const otDefault = "000001";
         document.getElementById("otNumero").textContent = otDefault;
         ultimaOTCalculada = otDefault;
-        lastOTUpdateTime = Date.now();
         return otDefault;
         
       }catch(e){
@@ -991,126 +765,8 @@
         const otDefault = "000001";
         document.getElementById("otNumero").textContent = otDefault;
         ultimaOTCalculada = otDefault;
-        lastOTUpdateTime = Date.now();
         return otDefault;
-      } finally {
-        isUpdatingOT = false;
       }
-    }
-
-    // Mostrar notificación de actualización de OT
-    function showOTUpdateNotification(newOT, oldOT) {
-      const otContainer = document.getElementById("otFinalContainer");
-      const updateIndicator = document.getElementById("otUpdateIndicator");
-      
-      // Agregar animación de actualización
-      otContainer.classList.add("ot-updated");
-      
-      // Mostrar indicador visual
-      updateIndicator.style.display = "block";
-      
-      // Mostrar notificación flotante
-      const notification = document.getElementById("updateIndicator");
-      notification.textContent = `OT actualizada: ${oldOT} → ${newOT}`;
-      notification.style.display = "block";
-      notification.style.background = "#28a745";
-      
-      // Ocultar después de 3 segundos
-      setTimeout(() => {
-        notification.style.display = "none";
-        updateIndicator.style.display = "none";
-        otContainer.classList.remove("ot-updated");
-      }, 3000);
-    }
-
-    // Sistema de sincronización entre pestañas usando localStorage
-    function setupTabSync() {
-      // Escuchar cambios en localStorage de otras pestañas
-      window.addEventListener('storage', function(event) {
-        if (event.key === 'current_ot_sync') {
-          try {
-            const syncData = JSON.parse(event.newValue);
-            if (syncData && syncData.ot && syncData.timestamp) {
-              const timeDiff = Date.now() - syncData.timestamp;
-              
-              // Solo procesar si es reciente (últimos 10 segundos)
-              if (timeDiff < 10000) {
-                const currentOT = document.getElementById("otNumero").textContent;
-                
-                // Si la OT sincronizada es diferente y estamos en modo nuevo registro
-                if (syncData.ot !== currentOT && modoNuevoRegistro) {
-                  document.getElementById("otNumero").textContent = syncData.ot;
-                  ultimaOTCalculada = syncData.ot;
-                  
-                  // Mostrar notificación de sincronización
-                  showSyncNotification(`OT sincronizada: ${syncData.ot}`);
-                }
-              }
-            }
-          } catch (e) {
-            console.error("Error en sincronización:", e);
-          }
-        }
-      });
-      
-      // Sincronizar cada 30 segundos
-      setInterval(syncCurrentOT, 30000);
-    }
-
-    // Sincronizar la OT actual con otras pestañas
-    function syncCurrentOT() {
-      const currentOT = document.getElementById("otNumero").textContent;
-      const syncData = {
-        ot: currentOT,
-        timestamp: Date.now(),
-        windowId: Math.random().toString(36).substr(2, 9)
-      };
-      
-      localStorage.setItem('current_ot_sync', JSON.stringify(syncData));
-    }
-
-    // Mostrar notificación de sincronización
-    function showSyncNotification(message) {
-      const notification = document.getElementById("updateIndicator");
-      notification.textContent = message;
-      notification.style.display = "block";
-      notification.style.background = "#007bff";
-      
-      setTimeout(() => {
-        notification.style.display = "none";
-      }, 2000);
-    }
-
-    // Verificar y actualizar OT periódicamente
-    async function checkAndUpdateOT() {
-      const now = Date.now();
-      const timeSinceLastUpdate = now - lastOTUpdateTime;
-      
-      // Si ha pasado más del intervalo de actualización, actualizar
-      if (timeSinceLastUpdate > OT_UPDATE_INTERVAL && modoNuevoRegistro) {
-        await cargarSiguienteOT(true);
-      }
-      
-      // Sincronizar con otras pestañas
-      syncCurrentOT();
-    }
-
-    // Configurar actualización periódica cada 30 segundos
-    function setupPeriodicOTUpdate() {
-      // Actualizar inmediatamente al cargar
-      setTimeout(() => {
-        cargarSiguienteOT();
-      }, 1000);
-      
-      // Configurar intervalo de verificación cada 30 segundos
-      setInterval(checkAndUpdateOT, 30000);
-      
-      // También configurar para actualizar cada 2 minutos exactamente
-      setInterval(async () => {
-        if (modoNuevoRegistro) {
-          await cargarSiguienteOT(true);
-        }
-      }, OT_UPDATE_INTERVAL);
     }
 
     // Guardar estado actual del formulario
@@ -1878,7 +1534,7 @@
         ['codigo_area', 'detalle_area', 'valor_area'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
-            el.style.height = '180px';
+            el.style.height = '200px';
           }
         });
       }, 100);
@@ -1920,14 +1576,19 @@
       setFechaHoy();
     }, 60000);
 
+    // Verificar OT periódicamente
+    setInterval(() => {
+      if(modoNuevoRegistro){
+        verificarYActualizarOT();
+      }
+    }, 30000);
+
     // Inicializar al cargar
     window.addEventListener('load', () => {
       setFechaHoy();
       cargarSiguienteOT();
       setupAutoSave();
       setupAutoAdjustTextareas();
-      setupPeriodicOTUpdate();
-      setupTabSync();
       
       console.log("Página de diagnóstico cargada, modo nuevo registro activado");
       
@@ -2117,7 +1778,7 @@
       "P0700": "Mal funcionamiento genérico del control de la transmisión (TCM).",
       "P0705": "Interruptor de neutro/seguridad – mal funcionamiento del circuito.",
       "P0715": "Sensor de velocidad de entrada (transmisión) – circuito intermitente o mal funcionamiento.",
-      "P0718": "Sensor de velocidad/turbine – circuito intermitente.",
+      "P0718": "Sensor de velocidad/turbina – circuito intermitente.",
       "P0720": "Sensor de velocidad de salida – mal funcionamiento del circuito.",
       "P0722": "Sensor de velocidad de salida – señal baja o rango fuera especificación.",
       "P0741": "Control de presión del convertidor (presión de torque) – rendimiento fuera de rango.",
