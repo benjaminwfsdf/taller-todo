@@ -24,11 +24,11 @@
     .shake{animation:shake .2s linear 2}
     @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
-    /* Modal de coincidencias OT */
+    /* Modal de coincidencias OT - SIMPLIFICADO */
     #modal-coincidencias{
       position:fixed;
       inset:0;
-      background:rgba(0,0,0,.8);
+      background:rgba(0,0,0,.85);
       display:none;
       align-items:center;
       justify-content:center;
@@ -36,46 +36,52 @@
     }
     #modal-coincidencias .modal-card{
       background:#fff;
-      padding:24px;
-      border-radius:10px;
-      width:550px;
-      max-width:90vw;
-      border:2px solid #000;
-      max-height:85vh;
+      padding:20px;
+      border-radius:8px;
+      width:500px;
+      max-width:92vw;
+      border:1px solid #000;
+      max-height:80vh;
       overflow-y:auto;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     }
     #modal-coincidencias h3{
       margin-top:0;
       color:#1d3053;
-      font-size:22px;
-      margin-bottom: 12px;
+      font-size:20px;
+      margin-bottom: 10px;
+      text-align: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
     }
     #modal-coincidencias p {
-      font-size:16px;
-      margin-bottom: 20px;
+      font-size:14px;
+      margin-bottom:15px;
       color: #444;
+      text-align: center;
+      line-height: 1.4;
     }
     .coincidencia-item{
-      border:2px solid #ccc;
-      padding:16px;
-      margin-bottom:12px;
-      border-radius:8px;
+      border:1px solid #ddd;
+      padding:12px;
+      margin-bottom:10px;
+      border-radius:6px;
       cursor:pointer;
       transition:all 0.2s;
+      background: #f9f9f9;
     }
     .coincidencia-item:hover{
-      background-color:#f0f7ff;
+      background-color:#e8f4ff;
       border-color:#1d3053;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(29, 48, 83, 0.1);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(29, 48, 83, 0.1);
     }
     .coincidencia-item .fuente{
       display:inline-block;
-      padding:3px 8px;
-      border-radius:4px;
-      font-size:14px;
-      margin-left:8px;
+      padding:2px 6px;
+      border-radius:3px;
+      font-size:11px;
+      margin-left:6px;
       background:#e4e4e4;
       font-weight: bold;
     }
@@ -83,22 +89,24 @@
     .coincidencia-item .fuente-informe{ background:#d1ecf1; color:#0c5460; }
     .botones-modal{
       display:flex;
-      gap:12px;
-      margin-top:20px;
+      gap:10px;
+      margin-top:15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
     }
     .botones-modal button{
       flex:1;
-      padding:12px;
-      border:2px solid #000;
-      border-radius:6px;
+      padding:10px;
+      border:1px solid #000;
+      border-radius:5px;
       cursor:pointer;
-      font-size:16px;
+      font-size:14px;
       font-weight: bold;
       transition: all 0.2s;
     }
     .botones-modal button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
     }
     .boton-crear-nuevo{
       background:#28a745;
@@ -113,8 +121,9 @@
     #lista-coincidencias {
       list-style:none; 
       padding:0;
-      max-height: 300px;
+      max-height: 250px;
       overflow-y: auto;
+      margin: 0;
     }
     
     .cargando {
@@ -126,11 +135,11 @@
     }
     
     .cargando-spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #1d3053;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #1d3053;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 30px;
+      height: 30px;
       animation: spin 1s linear infinite;
       margin: 0 auto 10px;
     }
@@ -146,18 +155,36 @@
       right: 20px;
       background: #28a745;
       color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      padding: 10px 15px;
+      border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
       z-index: 1000;
       display: none;
       font-weight: bold;
+      font-size: 13px;
     }
     
-    .detalle-copiado {
-      background-color: #d4edda !important;
-      border-color: #155724 !important;
-      border-left: 6px solid #155724 !important;
+    .nota-motor {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 10px 0;
+      font-size: 12px;
+      color: #856404;
+      text-align: center;
+    }
+    
+    /* NOTA IMPORTANTE EN MODAL - MÁS PEQUEÑA */
+    .nota-importante-modal {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 10px 0;
+      font-size: 12px;
+      color: #495057;
+      text-align: center;
     }
   </style>
 
@@ -168,13 +195,14 @@
       .fab { display: none !important; }
       #modal-coincidencias { display: none !important; }
       #auth-overlay { display: none !important; }
+      .no-print { display: none !important; }
     }
 
     body { 
       font-family: Arial, sans-serif; 
       margin: 0; 
       background: #f2f2f2; 
-      padding-bottom: 100px;
+      padding-bottom: 80px;
     }
 
     /* Contenedor exportable (la "hoja") */
@@ -182,7 +210,7 @@
       width: 21cm; 
       min-height: 29.7cm;
       margin: 20px auto; 
-      padding: 30px 35px; /* Reducido de 35px 40px */
+      padding: 30px 35px;
       background: #fff;
       border: 1px solid #000; 
       box-sizing: border-box; 
@@ -200,7 +228,7 @@
       padding: 12px 0; 
       text-align: center; 
       box-sizing: border-box; 
-      margin: 0 0 18px 0; /* Reducido de 20px */
+      margin: 0 0 18px 0;
       border-radius: 4px;
     }
 
@@ -208,8 +236,8 @@
       display:flex; 
       justify-content:space-between; 
       align-items:center; 
-      margin-bottom:18px; /* Reducido de 20px */
-      gap:10px; /* Reducido de 12px */
+      margin-bottom:18px;
+      gap:10px;
     }
     .contacto { 
       text-align:center; 
@@ -219,38 +247,38 @@
       font-weight:bold; 
     }
     .contacto-wrap img { 
-      max-height:160px; /* Reducido de 170px */
+      max-height:160px;
       object-fit:contain; 
-      max-width: 140px; /* Reducido de 150px */
+      max-width: 140px;
     }
 
     .form-grid { 
       width:100%; 
       border-collapse:collapse; 
-      margin-bottom:18px; /* Reducido de 20px */
+      margin-bottom:18px;
     }
     .form-grid td { 
-      padding:5px; /* Reducido de 6px */
+      padding:5px;
       border:1px solid #000; 
       vertical-align:middle; 
     }
     .form-grid label { 
       font-weight:bold; 
-      margin-right:5px; /* Reducido de 6px */
-      min-width:55px; /* Reducido de 60px */
+      margin-right:5px;
+      min-width:55px;
       font-size:14px; 
     }
     .inline { 
       display:flex; 
       align-items:center; 
-      gap:5px; /* Reducido de 6px */
+      gap:5px;
     }
     .form-grid input[type="text"] { 
       width:100%; 
-      padding:5px 7px; /* Reducido de 6px 8px */
+      padding:5px 7px;
       box-sizing:border-box; 
       border:1px solid #ccc; 
-      font-size:14px; /* Reducido de 15px */
+      font-size:14px;
       border-radius: 3px;
       transition: border 0.2s;
     }
@@ -262,11 +290,11 @@
 
     .seccion-titulo { 
       font-weight:bold; 
-      margin-top:18px; /* Reducido de 20px */
-      margin-bottom:4px; /* Reducido de 5px */
+      margin-top:18px;
+      margin-bottom:4px;
       text-transform:uppercase; 
       background:#f0f0f0; 
-      padding:6px; /* Reducido de 8px */
+      padding:6px;
       border:1px solid #000; 
       border-radius: 3px;
     }
@@ -274,12 +302,12 @@
     .tabla-codigos { 
       width:100%; 
       border-collapse:collapse; 
-      margin-bottom:18px; /* Reducido de 20px */
+      margin-bottom:18px;
       table-layout:fixed; 
     }
     .tabla-codigos th, .tabla-codigos td { 
       border:1px solid #000; 
-      padding:7px; /* Reducido de 8px */
+      padding:7px;
       vertical-align:top; 
     }
     .tabla-codigos th { 
@@ -289,24 +317,24 @@
     }
     .tabla-codigos textarea { 
       width:100%; 
-      height:200px; /* Reducido de 220px */
+      height:200px;
       border:none; 
       resize:vertical; 
-      font-size:14px; /* Reducido de 15px */
+      font-size:14px;
       box-sizing:border-box; 
-      padding:7px; /* Reducido de 8px */
+      padding:7px;
       font-family: Arial, sans-serif;
       line-height: 1.4;
     }
 
     textarea { 
       width:100%; 
-      min-height:90px; /* Reducido de 100px */
-      margin-top:4px; /* Reducido de 5px */
-      padding:7px; /* Reducido de 8px */
+      min-height:90px;
+      margin-top:4px;
+      padding:7px;
       border:1px solid #000; 
       box-sizing:border-box; 
-      font-size:14px; /* Reducido de 15px */
+      font-size:14px;
       font-family: Arial, sans-serif;
       line-height: 1.4;
       resize: vertical;
@@ -314,37 +342,36 @@
 
     /* VALOR FINAL CORREGIDO - OT EN EL MEDIO - SIN LÍNEA SUPERIOR */
     .valor-final { 
-      margin-top:20px; /* Reducido de 25px */
+      margin-top:20px;
       font-weight:bold; 
       font-size:16px; 
       display:flex; 
       justify-content:space-between; 
       align-items:center; 
-      gap:8px; /* Reducido de 10px */
+      gap:8px;
       flex-wrap:wrap; 
-      /* border-top: 2px solid #000; ELIMINADA LA LÍNEA */
-      padding-top: 12px; /* Reducido de 15px */
+      padding-top: 12px;
     }
     
     .fecha-final { 
       border:1px solid #000; 
-      padding:7px 12px; /* Reducido de 8px 15px */
-      font-size:13px; /* Reducido de 14px */
+      padding:7px 12px;
+      font-size:13px;
       color:#000; 
       background: #f9f9f9;
       border-radius: 4px;
-      min-width: 110px; /* Reducido de 120px */
+      min-width: 110px;
       text-align: center;
     }
     
     .ot-final {
       font-weight: bold;
       font-size: 16px;
-      padding: 7px 12px; /* Reducido de 8px 15px */
+      padding: 7px 12px;
       background: #f0f0f0;
       border: 1px solid #000;
       border-radius: 4px;
-      min-width: 110px; /* Reducido de 120px */
+      min-width: 110px;
       text-align: center;
     }
     
@@ -356,7 +383,7 @@
     .precio-final {
       display: flex;
       align-items: center;
-      gap: 8px; /* Reducido de 10px */
+      gap: 8px;
     }
     
     .precio-final label {
@@ -365,11 +392,11 @@
     }
     
     .valor-final input { 
-      padding:8px 14px; /* Reducido de 10px 16px */
+      padding:8px 14px;
       border:2px solid #000; 
-      font-size:17px; /* Reducido de 18px */
+      font-size:17px;
       font-weight:bold; 
-      width:170px; /* Reducido de 180px */
+      width:170px;
       text-align:right; 
       border-radius: 4px;
     }
@@ -377,61 +404,65 @@
     .nota-footer { 
       font-size:10px; 
       text-align:center; 
-      margin-top:12px; /* Reducido de 15px */
+      margin-top:12px;
       font-weight:bold; 
       padding: 5px;
       background: #f0f0f0;
       border-radius: 3px;
     }
 
-    /* Botonera: SIEMPRE visible (móvil) */
+    /* BOTONERA FLOTANTE MÁS COMPACTA */
     .fab {
       position: fixed; 
-      bottom: 16px; 
-      right: 16px;
+      bottom: 10px; 
+      right: 10px;
       display:flex; 
       flex-direction:column; 
-      gap:10px;
+      gap:5px;
       z-index: 2147483647;
-      background: rgba(255,255,255,0.95);
-      padding: 10px;
-      border-radius: 12px;
+      background: rgba(255,255,255,0.98);
+      padding: 8px;
+      border-radius: 8px;
       border: 1px solid #ccc;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+      max-width: 150px;
     }
     .fab button {
-      padding: 12px 18px; 
-      font-size: 15px;
+      padding: 8px 10px;
+      font-size: 12px;
       border:1px solid #000; 
       background:#fff; 
       cursor:pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,.15); 
-      border-radius:8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1); 
+      border-radius:5px;
       -webkit-tap-highlight-color: transparent;
       font-weight: bold;
       transition: all 0.2s;
       text-align: left;
-      min-width: 180px;
+      min-width: 130px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .fab button:active { transform: translateY(1px); }
-    @supports (-webkit-touch-callout: none) { .fab { bottom: 12px; right: 12px; } }
+    @supports (-webkit-touch-callout: none) { .fab { bottom: 8px; right: 8px; } }
 
     /* Auto-grow SOLO códigos/detalle - CORREGIDO */
     #codigo_area, #detalle_area, #valor_area {
       width:100%; 
-      min-height:200px; /* Reducido de 220px */
+      min-height:200px;
       height: auto;
       border:none; 
-      font-size:14px; /* Reducido de 15px */
+      font-size:14px;
       box-sizing:border-box; 
-      padding:7px; /* Reducido de 8px */
+      padding:7px;
       resize:vertical; 
       overflow-y: auto;
       font-family: Arial, sans-serif;
       line-height: 1.4;
     }
     
-    /* Estilos para botones específicos */
+    /* Estilos para botones específicos - MÁS COMPACTOS */
     .boton-imprimir {
       background: #28a745 !important;
       color: white !important;
@@ -471,38 +502,23 @@
     /* Efecto hover para todos los botones */
     .fab button:hover {
       opacity: 0.9;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
     
     ::-webkit-scrollbar {
-      width: 8px;
+      width: 5px;
     }
     ::-webkit-scrollbar-track {
       background: #f1f1f1;
-      border-radius: 4px;
+      border-radius: 2px;
     }
     ::-webkit-scrollbar-thumb {
       background: #888;
-      border-radius: 4px;
+      border-radius: 2px;
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #555;
-    }
-    
-    /* Para prevenir pérdida de datos */
-    .data-protected {
-      border-color: #28a745 !important;
-      background-color: #f8fff9 !important;
-    }
-    
-    /* Protección de campos manuales */
-    .manual-entry {
-      background-color: #fff8e1 !important;
-    }
-    
-    .auto-entry {
-      background-color: #e8f5e9 !important;
     }
   </style>
 </head>
@@ -521,11 +537,16 @@
     </div>
   </div>
 
-  <!-- MODAL DE COINCIDENCIAS OT -->
+  <!-- MODAL DE COINCIDENCIAS OT - SIMPLIFICADO -->
   <div id="modal-coincidencias">
     <div class="modal-card">
-      <h3>OTs anteriores de esta patente</h3>
-      <p>Seleccione una OT para cargar sus datos.</p>
+      <h3>OTs Anteriores</h3>
+      <p>Seleccione una OT para ver detalles o cree una nueva.</p>
+      
+      <div class="nota-importante-modal">
+        ⚠️ Al seleccionar OT anterior: Se carga sin el motor.<br>
+        Para nuevo diagnóstico use: <strong>"Crear Nueva OT"</strong>
+      </div>
       
       <div id="cargando-ots" class="cargando">
         <div class="cargando-spinner"></div>
@@ -535,8 +556,8 @@
       <ul id="lista-coincidencias"></ul>
       
       <div class="botones-modal">
-        <button onclick="cerrarModalCoincidencias()">Cancelar</button>
-        <button class="boton-crear-nuevo" onclick="crearNuevaOTDesdeModal()">Crear Nueva OT</button>
+        <button onclick="cerrarModalCoincidencias()" style="background:#6c757d;color:white;border-color:#6c757d">Cancelar</button>
+        <button class="boton-crear-nuevo" onclick="crearNuevaOTDesdeModal()">Nueva OT</button>
       </div>
     </div>
   </div>
@@ -687,7 +708,7 @@
     })();
   </script>
 
-  <!-- ====== Script principal CORREGIDO ====== -->
+  <!-- ====== Script principal MODIFICADO ====== -->
   <script>
     // URL de la API de Google Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbylWprbcHvUITXljajbJYO1pxGJ_nGtubA8NOjI-dKuoB6GRklwksrqUcS64fX-_N3a/exec";
@@ -699,29 +720,11 @@
     let ultimaPatenteBuscada = "";
     let modalAbierto = false;
     let coincidenciasEncontradas = [];
-    let datosFormularioActual = {};
     
     // Variables para prevención de pérdida de datos
     let autoSaveTimeout = null;
     let lastSavedState = {};
-    let isRestoringData = false;
-    
-    // Variables para controlar contenido manual/automático
-    let manualEntries = {
-      codigo_area: [],
-      detalle_area: [],
-      valor_area: [],
-      causas: [],
-      recomendaciones: []
-    };
-    
-    let autoEntries = {
-      codigo_area: [],
-      detalle_area: [],
-      valor_area: [],
-      causas: [],
-      recomendaciones: []
-    };
+    let isSaving = false;
 
     // Función para normalizar patente
     function normalizarPatente(p){
@@ -733,9 +736,6 @@
       const hoy = new Date();
       const fechaFormateada = hoy.toLocaleDateString("es-CL");
       document.getElementById("fecha").textContent = fechaFormateada;
-      
-      // Guardar estado inicial
-      saveCurrentState();
     }
 
     // Obtener la siguiente OT
@@ -771,7 +771,9 @@
 
     // Guardar estado actual del formulario
     function saveCurrentState() {
-      lastSavedState = {
+      if (isSaving) return;
+      
+      const state = {
         marca: document.getElementById("marca").value,
         modelo: document.getElementById("modelo").value,
         patente: document.getElementById("patente").value,
@@ -784,244 +786,17 @@
         causas: document.getElementById("causas").value,
         recomendaciones: document.getElementById("recomendaciones").value,
         valor_final: document.getElementById("valor_final").value,
-        otNumero: document.getElementById("otNumero").textContent
+        otNumero: document.getElementById("otNumero").textContent,
+        timestamp: Date.now()
       };
+      
+      lastSavedState = state;
       
       // Guardar en localStorage como backup
-      localStorage.setItem('informe_backup', JSON.stringify(lastSavedState));
+      localStorage.setItem('informe_backup', JSON.stringify(state));
       localStorage.setItem('informe_backup_timestamp', Date.now().toString());
       
-      // Separar contenido manual
-      separateManualContent();
-    }
-
-    // Separar contenido manual del automático
-    function separateManualContent() {
-      const textareas = ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'];
-      
-      textareas.forEach(id => {
-        const textarea = document.getElementById(id);
-        if (textarea) {
-          const lines = textarea.value.split('\n');
-          const manualLines = [];
-          const autoLines = [];
-          
-          lines.forEach(line => {
-            const trimmedLine = line.trim();
-            if (trimmedLine) {
-              // Detectar si es línea automática (comienza con • o es de la base de datos)
-              if (trimmedLine.startsWith('• ') || 
-                  trimmedLine.includes('(Banco') ||
-                  trimmedLine.includes('Sensor') ||
-                  trimmedLine.includes('Circuito') ||
-                  trimmedLine.includes('Falla') ||
-                  trimmedLine.includes('Mal funcionamiento')) {
-                autoLines.push(line);
-              } else {
-                manualLines.push(line);
-              }
-            }
-          });
-          
-          manualEntries[id] = manualLines;
-          autoEntries[id] = autoLines;
-        }
-      });
-    }
-
-    // Restaurar datos perdidos
-    function restoreLostData() {
-      if (isRestoringData) return;
-      
-      const backup = localStorage.getItem('informe_backup');
-      if (!backup) return;
-      
-      try {
-        const data = JSON.parse(backup);
-        const timestamp = parseInt(localStorage.getItem('informe_backup_timestamp') || '0');
-        const minutesAgo = (Date.now() - timestamp) / (1000 * 60);
-        
-        // Solo restaurar si el backup es reciente (últimos 5 minutos)
-        if (minutesAgo < 5) {
-          isRestoringData = true;
-          
-          // Verificar si los campos están vacíos o casi vacíos
-          const textareas = ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'];
-          
-          textareas.forEach(id => {
-            const element = document.getElementById(id);
-            const currentValue = element.value.trim();
-            const backupValue = data[id] || '';
-            
-            // Si el campo actual está vacío o tiene muy poco contenido, restaurar del backup
-            if (currentValue.length < 10 && backupValue.length > 10) {
-              element.value = backupValue;
-              
-              // Re-aplicar estilos
-              if (id === 'detalle_area') {
-                applyAutoFillStyles(element);
-              }
-            }
-            // Si el campo actual tiene contenido pero es diferente al backup
-            // (posible pérdida de datos), preguntar al usuario
-            else if (currentValue.length > 0 && backupValue.length > 0 && 
-                     currentValue !== backupValue && 
-                     backupValue.length > currentValue.length) {
-              // Marcar que podría haber pérdida de datos
-              element.classList.add('manual-entry');
-              
-              // Mostrar notificación discreta
-              setTimeout(() => {
-                showDataLossWarning(id);
-              }, 2000);
-            }
-          });
-          
-          setTimeout(() => {
-            isRestoringData = false;
-          }, 1000);
-        }
-      } catch (e) {
-        console.error("Error restoring backup:", e);
-      }
-    }
-
-    // Mostrar advertencia de posible pérdida de datos
-    function showDataLossWarning(fieldId) {
-      const fieldNames = {
-        'codigo_area': 'Códigos',
-        'detalle_area': 'Detalle',
-        'valor_area': 'Valor',
-        'causas': 'Causas',
-        'recomendaciones': 'Recomendaciones'
-      };
-      
-      const notification = document.createElement('div');
-      notification.className = 'data-loss-notification';
-      notification.innerHTML = `
-        <div style="position: fixed; top: 50px; right: 20px; background: #ffc107; color: #000; padding: 10px 15px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10000;">
-          <strong>⚠️ Posible pérdida de datos</strong><br>
-          Se detectó que ${fieldNames[fieldId]} podría haberse perdido.<br>
-          <small>Se restauró del último guardado automático.</small>
-        </div>
-      `;
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
-      }, 5000);
-    }
-
-    // Auto-guardar cada 30 segundos
-    function setupAutoSave() {
-      // Guardar estado inicial
-      saveCurrentState();
-      
-      // Configurar auto-guardado periódico
-      setInterval(saveCurrentState, 30000);
-      
-      // Configurar auto-guardado en eventos
-      const elementos = [
-        'codigo_area', 'detalle_area', 'valor_area',
-        'causas', 'recomendaciones', 'valor_final',
-        'marca', 'modelo', 'patente', 'ano', 'km', 'motor'
-      ];
-      
-      elementos.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.addEventListener('input', () => {
-            clearTimeout(autoSaveTimeout);
-            autoSaveTimeout = setTimeout(saveCurrentState, 1000);
-            
-            // Marcar como entrada manual
-            if (id === 'detalle_area') {
-              markManualEntry(element);
-            }
-          });
-          
-          element.addEventListener('blur', saveCurrentState);
-        }
-      });
-      
-      // Verificar pérdida de datos al cargar la página
-      window.addEventListener('load', () => {
-        setTimeout(restoreLostData, 1000);
-      });
-      
-      // Prevenir pérdida de datos al navegar/cerrar
-      window.addEventListener('beforeunload', (e) => {
-        const hasData = document.getElementById("codigo_area").value.trim() !== '' ||
-                       document.getElementById("detalle_area").value.trim() !== '';
-        
-        if (hasData) {
-          saveCurrentState();
-        }
-      });
-    }
-
-    // Marcar entrada manual
-    function markManualEntry(textarea) {
-      const lines = textarea.value.split('\n');
-      const lastLine = lines[lines.length - 1] || '';
-      
-      // Si la última línea no es automática, marcar como manual
-      if (lastLine.trim() && !lastLine.trim().startsWith('• ') && 
-          !lastLine.includes('(Banco') && !lastLine.includes('Sensor')) {
-        textarea.classList.add('manual-entry');
-        textarea.classList.remove('auto-entry');
-      }
-    }
-
-    // Aplicar estilos de auto-relleno
-    function applyAutoFillStyles(textarea) {
-      const lines = textarea.value.split('\n');
-      let hasAutoContent = false;
-      
-      lines.forEach(line => {
-        if (line.trim().startsWith('• ') || line.includes('(Banco')) {
-          hasAutoContent = true;
-        }
-      });
-      
-      if (hasAutoContent) {
-        textarea.classList.add('auto-entry');
-      }
-    }
-
-    // Ajuste automático de textareas
-    function autoAdjustTextareas() {
-      ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.style.height = 'auto';
-          el.style.height = (el.scrollHeight + 2) + 'px';
-        }
-      });
-    }
-
-    // Configurar ajuste automático de textareas
-    function setupAutoAdjustTextareas() {
-      const textareas = ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'];
-      
-      textareas.forEach(id => {
-        const textarea = document.getElementById(id);
-        if (textarea) {
-          textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight + 2) + 'px';
-          });
-          
-          // Ajustar inicialmente
-          setTimeout(() => {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight + 2) + 'px';
-          }, 100);
-        }
-      });
+      return state;
     }
 
     // Buscar patente automáticamente
@@ -1058,30 +833,13 @@
 
         ultimaPatenteBuscada = pat;
         
-        if(data.registros.length === 1){
-          cargarDatosDesdeRegistro(data.registros[0], false);
-          return;
-        }
-        
+        // Siempre mostrar el modal cuando hay coincidencias
         coincidenciasEncontradas = data.registros;
-        guardarDatosFormularioActual();
         mostrarModalCoincidencias(data.registros);
         
       }catch(error){
         console.error("Error buscando patente:", error);
       }
-    }
-
-    // Guardar datos actuales del formulario
-    function guardarDatosFormularioActual(){
-      datosFormularioActual = {
-        marca: document.getElementById("marca").value,
-        modelo: document.getElementById("modelo").value,
-        patente: document.getElementById("patente").value,
-        ano: document.getElementById("ano").value,
-        km: document.getElementById("km").value,
-        motor: document.getElementById("motor").value
-      };
     }
 
     // Función para ordenar registros por fecha descendente
@@ -1128,22 +886,21 @@
       registroSeleccionado = registro;
       modoNuevoRegistro = false;
       
-      console.log("Cargando registro para informe:", registro);
+      console.log("Cargando registro:", registro);
       
-      // Campos básicos del vehículo
+      // Campos básicos del vehículo - SIEMPRE cargar marca, modelo y patente
       document.getElementById("marca").value = registro.Marca || "";
       document.getElementById("modelo").value = registro.Modelo || "";
       document.getElementById("patente").value = registro.Patente || registro.patente || "";
       document.getElementById("km").value = registro.Kilometraje || registro.KM || registro.km || "";
       
-      // Año y motor solo si están en el registro
+      // Año - cargar si existe
       if (registro.Ano || registro.year) {
         document.getElementById("ano").value = registro.Ano || registro.year || "";
       }
       
-      if (registro.Motor) {
-        document.getElementById("motor").value = registro.Motor || "";
-      }
+      // MOTOR: NO CARGAR AUTOMÁTICAMENTE - dejar campo vacío
+      document.getElementById("motor").value = "";
       
       // Obtener OT del registro
       let otRegistro = "";
@@ -1156,13 +913,16 @@
         const currentCodigo = document.getElementById("codigo_area").value;
         const currentDetalle = document.getElementById("detalle_area").value;
         const currentValor = document.getElementById("valor_area").value;
+        const currentCausas = document.getElementById("causas").value;
+        const currentRecomendaciones = document.getElementById("recomendaciones").value;
+        const currentValorFinal = document.getElementById("valor_final").value;
         
-        // Solo reemplazar si los campos están vacíos o casi vacíos
-        if (!currentCodigo.trim() || currentCodigo.trim().length < 5) {
+        // Solo cargar si los campos están vacíos
+        if (!currentCodigo.trim()) {
           document.getElementById("codigo_area").value = registro.Codigo || "";
         }
         
-        if (!currentDetalle.trim() || currentDetalle.trim().length < 5) {
+        if (!currentDetalle.trim()) {
           document.getElementById("detalle_area").value = registro.Detalle || "";
         }
         
@@ -1170,27 +930,27 @@
           document.getElementById("valor_area").value = registro.Valor_Area || "";
         }
         
-        document.getElementById("causas").value = registro.Posibles_Causas || "";
-        document.getElementById("recomendaciones").value = registro.Recomendaciones || "";
-        document.getElementById("valor_final").value = registro.Valor_Final || "";
+        if (!currentCausas.trim()) {
+          document.getElementById("causas").value = registro.Posibles_Causas || "";
+        }
         
-        // Mostrar mensaje si se cargaron datos
+        if (!currentRecomendaciones.trim()) {
+          document.getElementById("recomendaciones").value = registro.Recomendaciones || "";
+        }
+        
+        if (!currentValorFinal.trim()) {
+          document.getElementById("valor_final").value = registro.Valor_Final || "";
+        }
+        
         if (desdeModal) {
-          mostrarMensajeExito("✅ Datos del informe anterior cargados");
+          mostrarMensajeExito("✅ Datos cargados (sin motor)");
         }
         
       }else if(registro.Fuente === "Hoja1"){
         otRegistro = registro.OT || registro.OrdenTrabajo || "";
         
-        // Para Hoja1 (reparaciones), solo cargar datos básicos
-        // NO sobreescribir contenido existente en códigos/detalle/valor
-        const currentDetalle = document.getElementById("detalle_area").value;
-        if (!currentDetalle.trim() || currentDetalle.trim().length < 5) {
-          document.getElementById("detalle_area").value = registro.Detalle_Estado || "";
-        }
-        
         if (desdeModal) {
-          mostrarMensajeExito("✅ Datos del vehículo cargados. Complete el diagnóstico.");
+          mostrarMensajeExito("✅ Datos cargados (sin motor)");
         }
       }
       
@@ -1202,16 +962,14 @@
         const otFormateada = String(otRegistro).padStart(6, "0");
         document.getElementById("otNumero").textContent = otFormateada;
         ultimaOTCalculada = otFormateada;
-        console.log("OT establecida desde registro:", otFormateada);
       }
       
-      cerrarModalCoincidencias();
+      if (desdeModal) {
+        cerrarModalCoincidencias();
+      }
       
       // Guardar estado actual
       saveCurrentState();
-      
-      // Aplicar estilos de auto-relleno
-      applyAutoFillStyles(document.getElementById("detalle_area"));
       
       // Ajustar altura de textareas
       setTimeout(() => {
@@ -1225,7 +983,7 @@
       const pat = normalizarPatente(patenteInput.value);
       
       if(!pat || pat.length < 3) {
-        alert("Por favor ingrese una patente para buscar OTs anteriores");
+        alert("Ingrese patente para buscar OTs");
         patenteInput.focus();
         return;
       }
@@ -1248,7 +1006,9 @@
             cargandoElement.style.display = "none";
 
             if(!data.success || !data.registros || data.registros.length === 0) {
-              listaElement.innerHTML = `<li style="text-align: center; padding: 20px; color: #666;">No se encontraron OTs anteriores para la patente ${pat}</li>`;
+              listaElement.innerHTML = `<li style="text-align: center; padding: 15px; color: #666; background: #f8f9fa; border-radius: 6px;">
+                No hay OTs anteriores para ${pat}
+              </li>`;
               return;
             }
 
@@ -1259,18 +1019,22 @@
           } catch(error) {
             console.error("Error buscando OTs anteriores:", error);
             cargandoElement.style.display = "none";
-            listaElement.innerHTML = `<li style="text-align: center; padding: 20px; color: #dc3545;">Error al buscar OTs anteriores. Intente nuevamente.</li>`;
+            listaElement.innerHTML = `<li style="text-align: center; padding: 15px; color: #dc3545; background: #f8d7da; border-radius: 6px;">
+              Error al buscar OTs.
+            </li>`;
           }
         }, 0);
         
       } catch(error) {
         console.error("Error inicial:", error);
         cargandoElement.style.display = "none";
-        listaElement.innerHTML = `<li style="text-align: center; padding: 20px; color: #dc3545;">Error al buscar OTs anteriores. Intente nuevamente.</li>`;
+        listaElement.innerHTML = `<li style="text-align: center; padding: 15px; color: #dc3545; background: #f8d7da; border-radius: 6px;">
+          Error al buscar OTs.
+        </li>`;
       }
     }
 
-    // Función para mostrar registros en el modal
+    // Función para mostrar registros en el modal - SIMPLIFICADA
     function mostrarRegistrosEnModal(registros) {
       const lista = document.getElementById("lista-coincidencias");
       lista.innerHTML = "";
@@ -1284,38 +1048,65 @@
         
         const ot = registro.OT || registro.OrdenTrabajo || 'N/A';
         const otFormateada = ot !== 'N/A' ? String(ot).padStart(6, "0") : 'N/A';
-        const fuente = registro.Fuente === "Hoja1" ? "Hoja 1 (Reparación)" : "Informe";
+        const fuente = registro.Fuente === "Hoja1" ? "Reparación" : "Informe";
         const claseFuente = registro.Fuente === "Hoja1" ? "fuente-hoja1" : "fuente-informe";
+        
+        // Determinar si tiene diagnóstico previo
+        const tieneDiagnostico = registro.Fuente === "DatosInforme" && 
+                                (registro.Codigo || registro.Detalle || registro.Posibles_Causas);
         
         li.className = "coincidencia-item";
         
+        // Construir contenido del detalle
+        let detalleContenido = "";
+        
+        if (registro.Fuente === "DatosInforme") {
+          // Para informes de diagnóstico
+          if (registro.Codigo) {
+            const codigosPreview = registro.Codigo.length > 30 ? 
+              registro.Codigo.substring(0, 30) + '...' : registro.Codigo;
+            detalleContenido += `<div style="margin-top: 4px; color: #155724; font-size: 12px;"><strong>Códigos:</strong> ${codigosPreview}</div>`;
+          }
+          
+          if (registro.Detalle) {
+            const detallePreview = registro.Detalle.length > 60 ? 
+              registro.Detalle.substring(0, 60) + '...' : registro.Detalle;
+            detalleContenido += `<div style="margin-top: 2px; color: #0c5460; font-size: 12px;"><strong>Detalle:</strong> ${detallePreview}</div>`;
+          }
+          
+          if (registro.Valor_Final) {
+            const valor = parseInt(registro.Valor_Final) || 0;
+            detalleContenido += `<div style="margin-top: 2px; color: #721c24; font-size: 12px;"><strong>Valor:</strong> $${valor.toLocaleString('es-CL')}</div>`;
+          }
+        } else if (registro.Fuente === "Hoja1") {
+          // Para reparaciones
+          if (registro.Detalle_Estado) {
+            const detallePreview = registro.Detalle_Estado.length > 60 ? 
+              registro.Detalle_Estado.substring(0, 60) + '...' : registro.Detalle_Estado;
+            detalleContenido += `<div style="margin-top: 4px; color: #666; font-size: 12px;"><strong>Trabajo:</strong> ${detallePreview}</div>`;
+          }
+        }
+        
         li.innerHTML = `
           <div style="display: flex; align-items: center; justify-content: space-between;">
-            <strong style="font-size: 16px;">OT: ${otFormateada}</strong> 
+            <div>
+              <strong style="font-size: 14px; color: #1d3053;">OT: ${otFormateada}</strong>
+              <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                ${fecha} | ${registro.Marca || ''} ${registro.Modelo || ''}
+              </div>
+            </div>
             <span class="fuente ${claseFuente}">${fuente}</span>
           </div>
-          <div style="font-size: 14px; margin-top: 4px; color: #444;">
-            <strong>Fecha:</strong> ${fecha}
-          </div>
-          <div style="font-size: 15px; margin-top: 6px; font-weight: bold;">
-            ${registro.Marca || ''} ${registro.Modelo || ''}
-          </div>
-          <div style="font-size: 14px; margin-top: 4px; color: #444;">
+          
+          <div style="font-size: 12px; margin-top: 6px; color: #444;">
             <strong>Patente:</strong> ${registro.Patente || registro.patente || ''}
           </div>
-          ${registro.Fuente === "DatosInforme" ? `
-          <div style="font-size: 13px; color: #555; margin-top: 8px; padding: 8px; background: #f0f8f0; border-radius: 4px; border-left: 4px solid #28a745;">
-            <strong style="display: block; margin-bottom: 3px; color: #155724;">Informe de diagnóstico anterior</strong>
-            ${registro.Codigo ? `<div><strong>Códigos:</strong> ${registro.Codigo.substring(0, 50)}${registro.Codigo.length > 50 ? '...' : ''}</div>` : ''}
-          </div>
-          ` : `
-          <div style="font-size: 13px; color: #999; margin-top: 8px; padding: 8px; background: #f9f9f9; border-radius: 4px; border-left: 4px solid #ccc;">
-            <strong style="display: block; margin-bottom: 3px; color: #666;">Reparación anterior</strong>
-            ${registro.Detalle_Estado ? `<div>${registro.Detalle_Estado.substring(0, 50)}${registro.Detalle_Estado.length > 50 ? '...' : ''}</div>` : 'Sin detalles'}
-          </div>
-          `}
-          <div style="margin-top: 8px; padding: 6px; background: #e8f4f8; border-radius: 4px; font-size: 12px; color: #0c5460;">
-            <strong>📋 Al hacer clic:</strong> Se cargarán los datos disponibles SIN borrar lo que ya escribió
+          
+          ${detalleContenido}
+          
+          <div style="margin-top: 8px; padding: 4px; background: ${tieneDiagnostico ? '#e8f4f8' : '#f8f9fa'}; 
+               border-radius: 3px; font-size: 11px; color: ${tieneDiagnostico ? '#0c5460' : '#6c757d'};">
+            <strong>${tieneDiagnostico ? '📋 Con diagnóstico' : '🛠️ Reparación'}</strong> - Haga clic para ${tieneDiagnostico ? 'ver' : 'cargar datos'}
           </div>
         `;
         
@@ -1323,9 +1114,10 @@
         lista.appendChild(li);
       });
       
+      // Actualizar texto del botón
       const botonCrearNuevo = document.querySelector('.boton-crear-nuevo');
       if (botonCrearNuevo) {
-        botonCrearNuevo.textContent = `Crear Nueva OT (${registros.length} existentes)`;
+        botonCrearNuevo.textContent = `Nueva OT (${registros.length})`;
       }
     }
 
@@ -1350,61 +1142,51 @@
     }
 
     // Crear nueva OT desde el modal
-    function crearNuevaOTDesdeModal(){
-      const datosVehiculo = obtenerDatosVehiculoDesdeCoincidencias();
-      const patenteActual = document.getElementById("patente").value.trim();
-      
-      document.getElementById("marca").value = datosVehiculo.marca || "";
-      document.getElementById("modelo").value = datosVehiculo.modelo || "";
-      
-      if (datosVehiculo.patente && !patenteActual) {
-        document.getElementById("patente").value = datosVehiculo.patente;
-      }
-      
-      // NO limpiar otros campos - el usuario ya pudo haber escrito algo
-      // Solo limpiar si están vacíos
-      if (!document.getElementById("ano").value.trim()) {
-        document.getElementById("ano").value = "";
-      }
-      
-      if (!document.getElementById("km").value.trim()) {
-        document.getElementById("km").value = "";
-      }
-      
-      if (!document.getElementById("motor").value.trim()) {
+    async function crearNuevaOTDesdeModal(){
+      if (coincidenciasEncontradas && coincidenciasEncontradas.length > 0) {
+        // Tomar datos del primer registro (más reciente) pero NO el motor
+        const primerRegistro = coincidenciasEncontradas[0];
+        
+        document.getElementById("marca").value = primerRegistro.Marca || "";
+        document.getElementById("modelo").value = primerRegistro.Modelo || "";
+        document.getElementById("patente").value = primerRegistro.Patente || primerRegistro.patente || "";
+        
+        // NO cargar el motor - dejar vacío
         document.getElementById("motor").value = "";
+        
+        // Solo cargar año y KM si están vacíos
+        if (!document.getElementById("ano").value.trim()) {
+          document.getElementById("ano").value = primerRegistro.Ano || primerRegistro.year || "";
+        }
+        
+        if (!document.getElementById("km").value.trim()) {
+          document.getElementById("km").value = primerRegistro.Kilometraje || primerRegistro.KM || primerRegistro.km || "";
+        }
+        
+        // Limpiar campos de diagnóstico para nueva OT
+        document.getElementById("codigo_area").value = "";
+        document.getElementById("detalle_area").value = "";
+        document.getElementById("valor_area").value = "";
+        document.getElementById("causas").value = "";
+        document.getElementById("recomendaciones").value = "";
+        document.getElementById("valor_final").value = "";
       }
       
       modoNuevoRegistro = true;
       registroSeleccionado = null;
       
-      cargarSiguienteOT();
+      // Generar nueva OT
+      await cargarSiguienteOT();
       saveCurrentState();
       
-      mostrarMensajeExito("✅ Nueva OT creada. Complete el diagnóstico.");
+      mostrarMensajeExito("✅ Nueva OT creada");
       
       cerrarModalCoincidencias();
       
+      // Enfocar campo de motor
       setTimeout(() => {
-        if (!document.getElementById("ano").value.trim()) {
-          document.getElementById("ano").focus();
-        }
+        document.getElementById("motor").focus();
       }, 300);
-    }
-
-    // Obtener datos del vehículo desde coincidencias
-    function obtenerDatosVehiculoDesdeCoincidencias() {
-      if (!coincidenciasEncontradas || coincidenciasEncontradas.length === 0) {
-        return { marca: "", modelo: "", patente: "" };
-      }
-      
-      const primerRegistro = coincidenciasEncontradas[0];
-      
-      return {
-        marca: primerRegistro.Marca || "",
-        modelo: primerRegistro.Modelo || "",
-        patente: primerRegistro.Patente || primerRegistro.patente || ""
-      };
     }
 
     // Función para mostrar mensaje de éxito
@@ -1427,7 +1209,7 @@
       }, 3000);
     }
 
-    // Recolectar datos para guardar en la nueva estructura
+    // Recolectar datos para guardar
     function recogerDatosInforme(){
       const otActual = document.getElementById("otNumero").textContent.trim();
       const patente = normalizarPatente(document.getElementById("patente").value);
@@ -1450,20 +1232,31 @@
       };
     }
 
-    // Función para guardar en Google Sheets con la nueva estructura
+    // Función para guardar en Google Sheets
     async function guardarEnGoogleSheetsYImprimir() {
       const datos = recogerDatosInforme();
       
       if(!datos.patente || datos.patente.length < 3){
-        alert("Por favor ingrese una patente válida");
+        alert("Ingrese patente válida");
         return;
       }
       
-      if(!datos.codigo.trim() && !datos.detalle.trim()){
-        if(!confirm("No ha ingresado códigos ni detalles del diagnóstico. ¿Desea continuar de todos modos?")){
+      // Verificar si hay datos para guardar
+      const tieneDatosDiagnostico = datos.codigo.trim() || datos.detalle.trim() || 
+                                   datos.posibles_causas.trim() || datos.recomendaciones.trim();
+      
+      if(!tieneDatosDiagnostico && !datos.valor_final.trim()){
+        if(!confirm("No hay datos de diagnóstico. ¿Continuar?")){
           return;
         }
       }
+      
+      // Marcar que estamos guardando
+      isSaving = true;
+      const botonGuardar = document.querySelector('.boton-imprimir');
+      const textoOriginal = botonGuardar.textContent;
+      botonGuardar.textContent = "⏳ Guardando...";
+      botonGuardar.disabled = true;
       
       try{
         const formData = new URLSearchParams();
@@ -1471,7 +1264,8 @@
           formData.append(key, datos[key]);
         }
         
-        const response = await fetch(API_URL, {
+        // Guardar en Google Sheets
+        await fetch(API_URL, {
           method: "POST",
           mode: 'no-cors',
           headers: { 
@@ -1480,33 +1274,70 @@
           body: formData.toString()
         });
         
-        alert(`✅ Informe de diagnóstico guardado\n\nOT: ${datos.OT}\nPatente: ${datos.patente}\nMarca: ${datos.marca}\nModelo: ${datos.modelo}\n\nEl informe se ha guardado en DatosInforme.`);
+        // Mostrar confirmación
+        const confirmado = confirm(
+          `✅ Informe guardado\n\n` +
+          `OT: ${datos.OT}\n` +
+          `Patente: ${datos.patente}\n` +
+          `¿Imprimir ahora?`
+        );
         
-        // Generar nueva OT para el siguiente informe
+        if (confirmado) {
+          setTimeout(() => {
+            window.print();
+          }, 500);
+        }
+        
+        // Solo después de guardar e imprimir (o cancelar), preparar para nueva OT
         setTimeout(async () => {
+          // Generar nueva OT
           await cargarSiguienteOT();
-          saveCurrentState();
-        }, 1000);
-        
-        // Imprimir el formulario
-        setTimeout(() => {
-          window.print();
-        }, 500);
-        
-        modoNuevoRegistro = true;
-        registroSeleccionado = null;
-        ultimaPatenteBuscada = "";
+          
+          // Limpiar SOLO campos de diagnóstico, mantener datos del vehículo
+          const camposParaLimpiar = [
+            "codigo_area", "detalle_area", "valor_area",
+            "causas", "recomendaciones", "valor_final"
+          ];
+          
+          camposParaLimpiar.forEach(id => {
+            const element = document.getElementById(id);
+            if(element) element.value = "";
+          });
+          
+          // Preparar para nuevo registro
+          modoNuevoRegistro = true;
+          registroSeleccionado = null;
+          
+          mostrarMensajeExito("✅ Nueva OT lista");
+          
+        }, confirmado ? 1500 : 500);
         
       }catch(error){
         console.error("Error guardando:", error);
-        alert("⚠️ Se produjo un error al guardar, pero puede imprimir el informe.");
-        window.print();
+        
+        const opcion = confirm(
+          "⚠️ Error al guardar.\n\n" +
+          "¿Imprimir de todos modos?\n\n" +
+          "Cancelar: Mantiene datos para intentar nuevamente."
+        );
+        
+        if(opcion){
+          setTimeout(() => {
+            window.print();
+          }, 500);
+        }
+        
+      }finally{
+        // Restaurar botón
+        botonGuardar.textContent = textoOriginal;
+        botonGuardar.disabled = false;
+        isSaving = false;
       }
     }
 
     // Borrar todo el formulario
     function borrarTodo(){
-      if(!confirm("¿Está seguro de borrar todos los datos del formulario?")) return;
+      if(!confirm("¿Borrar TODOS los datos?")) return;
       
       const campos = [
         "marca", "modelo", "patente", "ano", 
@@ -1527,25 +1358,43 @@
       setFechaHoy();
       saveCurrentState();
       
-      console.log("Formulario borrado, modo nuevo registro activado");
-      
       // Resetear altura de textareas
       setTimeout(() => {
-        ['codigo_area', 'detalle_area', 'valor_area'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.style.height = '200px';
-          }
-        });
+        autoAdjustTextareas();
       }, 100);
     }
 
-    // Verificar y actualizar OT automáticamente
-    function verificarYActualizarOT(){
-      const patente = document.getElementById("patente").value.trim();
-      if(modoNuevoRegistro && (!patente || patente.length < 3)){
-        cargarSiguienteOT();
-      }
+    // Ajuste automático de textareas
+    function autoAdjustTextareas() {
+      ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.height = 'auto';
+          el.style.height = (el.scrollHeight + 2) + 'px';
+        }
+      });
+    }
+
+    // Configurar ajuste automático de textareas
+    function setupAutoAdjustTextareas() {
+      const textareas = ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'];
+      
+      textareas.forEach(id => {
+        const textarea = document.getElementById(id);
+        if (textarea) {
+          textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight + 2) + 'px';
+            saveCurrentState();
+          });
+          
+          // Ajustar inicialmente
+          setTimeout(() => {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+          }, 100);
+        }
+      });
     }
 
     // Event listeners para búsqueda automática
@@ -1562,40 +1411,35 @@
           registroSeleccionado = null;
           buscarPorPatente();
         }
-      }, 500);
+      }, 800);
     });
-
-    document.getElementById("patente").addEventListener("blur", function(){
-      if(this.value.trim().length >= 3){
-        buscarPorPatente();
-      }
-    });
-
-    // Evento para actualizar fecha cada minuto
-    setInterval(() => {
-      setFechaHoy();
-    }, 60000);
-
-    // Verificar OT periódicamente
-    setInterval(() => {
-      if(modoNuevoRegistro){
-        verificarYActualizarOT();
-      }
-    }, 30000);
 
     // Inicializar al cargar
     window.addEventListener('load', () => {
       setFechaHoy();
       cargarSiguienteOT();
-      setupAutoSave();
       setupAutoAdjustTextareas();
       
-      console.log("Página de diagnóstico cargada, modo nuevo registro activado");
+      // Auto-guardar periódicamente
+      setInterval(saveCurrentState, 30000);
       
-      setTimeout(() => {
-        verificarYActualizarOT();
-        autoAdjustTextareas();
-      }, 1000);
+      // Auto-guardar al perder foco
+      document.addEventListener('focusout', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+          saveCurrentState();
+        }
+      });
+    });
+    
+    // Prevenir pérdida de datos al cerrar
+    window.addEventListener('beforeunload', (e) => {
+      const hasData = document.getElementById("codigo_area").value.trim() !== '' ||
+                     document.getElementById("detalle_area").value.trim() !== '' ||
+                     document.getElementById("valor_final").value.trim() !== '';
+      
+      if (hasData && !isSaving) {
+        saveCurrentState();
+      }
     });
   </script>
 
@@ -1614,77 +1458,6 @@
       localStorage.setItem('informe_autoguardado', JSON.stringify(datos));
       localStorage.setItem('informe_autoguardado_timestamp', Date.now().toString());
     }
-    
-    function cargarInformeLocal() {
-      const guardado = localStorage.getItem('informe_autoguardado');
-      if (guardado) {
-        try {
-          const datos = JSON.parse(guardado);
-          const timestamp = parseInt(localStorage.getItem('informe_autoguardado_timestamp') || '0');
-          const horasTranscurridas = (Date.now() - timestamp) / (1000 * 60 * 60);
-          
-          if (horasTranscurridas < 2) {
-            document.getElementById("marca").value = datos.marca || '';
-            document.getElementById("modelo").value = datos.modelo || '';
-            document.getElementById("patente").value = datos.patente || '';
-            document.getElementById("ano").value = datos.ano || '';
-            document.getElementById("km").value = datos.km || '';
-            document.getElementById("motor").value = datos.motor || '';
-            document.getElementById("codigo_area").value = datos.codigo || '';
-            document.getElementById("detalle_area").value = datos.detalle || '';
-            document.getElementById("valor_area").value = datos.valor_area || '';
-            document.getElementById("causas").value = datos.posibles_causas || '';
-            document.getElementById("recomendaciones").value = datos.recomendaciones || '';
-            document.getElementById("valor_final").value = datos.valor_final || '';
-            
-            if (datos.OT) {
-              document.getElementById("otNumero").textContent = datos.OT;
-              ultimaOTCalculada = datos.OT;
-            }
-          }
-        } catch (e) {
-          console.error("Error al cargar informe guardado:", e);
-        }
-      }
-    }
-    
-    function agregarProductoSeleccionado() {
-      const productoGuardado = localStorage.getItem('producto_seleccionado');
-      if (productoGuardado) {
-        try {
-          const producto = JSON.parse(productoGuardado);
-          
-          const valorArea = document.getElementById("valor_area");
-          const precio = producto.precio_unit ? parseFloat(producto.precio_unit) : 0;
-          const nuevoValor = `${producto.nombre || 'Producto'} - $${precio.toLocaleString('es-CL')}`;
-          
-          if (valorArea.value.trim()) {
-            valorArea.value = valorArea.value + '\n' + nuevoValor;
-          } else {
-            valorArea.value = nuevoValor;
-          }
-          
-          localStorage.removeItem('producto_seleccionado');
-          
-          valorArea.style.height = 'auto';
-          valorArea.style.height = (valorArea.scrollHeight + 2) + 'px';
-          
-        } catch (e) {
-          console.error("Error al procesar producto seleccionado:", e);
-          localStorage.removeItem('producto_seleccionado');
-        }
-      }
-    }
-    
-    window.addEventListener('load', function() {
-      const vieneDeBusqueda = sessionStorage.getItem('viene_de_busqueda') === 'true';
-      
-      if (vieneDeBusqueda) {
-        sessionStorage.removeItem('viene_de_busqueda');
-        cargarInformeLocal();
-        setTimeout(agregarProductoSeleccionado, 300);
-      }
-    });
   </script>
 
   <!-- ====== Autorrelleno de DETALLE por códigos ====== -->
@@ -1828,58 +1601,50 @@
     const codigosDe = (input) => Array.from(new Set(
       input.toUpperCase().split(/[\s,;]+/).map(normalizar).filter(c => RE_CODIGO.test(c))
     ));
-    const esLineaAuto = (l) => /^•\s+.+/.test(l.trim()) && !/^[PBCU]\d{4}/.test(l.trim());
     const construirLineasAutoSoloDescripcion = (codigos) => codigos.filter(c => CODIGOS_BASE[c]).map(c => `• ${CODIGOS_BASE[c]}`);
 
     function mezclarDetalleSoloDescripcion() {
       const cods = codigosDe(txtCodigos.value);
       const nuevasAuto = construirLineasAutoSoloDescripcion(cods);
-      const lineas = txtDetalle.value.split(/\r?\n/);
       
-      // Separar líneas manuales de automáticas
-      const manual = lineas.filter(l => !esLineaAuto(l) && l.trim() !== "");
-      const auto = lineas.filter(l => esLineaAuto(l) && l.trim() !== "");
-      
-      // Combinar nuevas automáticas con las existentes (sin duplicados)
-      const todasAuto = [...new Set([...auto, ...nuevasAuto])];
-      
-      // Mantener las líneas manuales siempre
-      const resultado = [...todasAuto];
-      if (manual.length > 0) {
-        // Agregar separador solo si hay contenido automático
-        if (todasAuto.length > 0) {
-          resultado.push("");
-        }
-        resultado.push(...manual);
-      }
-      
-      txtDetalle.value = resultado.join("\n");
-      
-      // Ajustar altura
-      txtDetalle.style.height = 'auto';
-      txtDetalle.style.height = (txtDetalle.scrollHeight + 2) + 'px';
-      
-      // Marcar como contenido automático
       if (nuevasAuto.length > 0) {
-        txtDetalle.classList.add('auto-entry');
+        // Si hay nuevos códigos, agregarlos al inicio
+        const lineasActuales = txtDetalle.value.split(/\r?\n/);
+        const lineasSinAuto = lineasActuales.filter(l => !l.trim().startsWith('•'));
+        const autoActuales = lineasActuales.filter(l => l.trim().startsWith('•'));
+        
+        // Combinar automáticos nuevos y existentes (sin duplicados)
+        const todasAuto = [...new Set([...autoActuales, ...nuevasAuto])];
+        
+        // Construir resultado: automáticos primero, luego manuales
+        const resultado = [...todasAuto];
+        if (lineasSinAuto.length > 0) {
+          if (todasAuto.length > 0) {
+            resultado.push(""); // Separador
+          }
+          resultado.push(...lineasSinAuto);
+        }
+        
+        txtDetalle.value = resultado.join("\n");
+        
+        // Ajustar altura
+        txtDetalle.style.height = 'auto';
+        txtDetalle.style.height = (txtDetalle.scrollHeight + 2) + 'px';
       }
     }
     
-    // Configurar el auto-relleno con protección de contenido manual
+    // Configurar el auto-relleno
     txtCodigos.addEventListener("input", () => {
       clearTimeout(window.__debAutoTimer);
       
       // Solo activar auto-relleno si hay nuevos códigos
       const currentCodes = codigosDe(txtCodigos.value);
       if (currentCodes.length > 0) {
-        window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 300);
+        window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 500);
       }
-    });
-    
-    // Marcar contenido manual cuando el usuario escribe en detalle
-    txtDetalle.addEventListener("input", function() {
-      this.classList.add('manual-entry');
-      this.classList.remove('auto-entry');
+      
+      // Auto-guardar
+      saveCurrentState();
     });
   </script>
 
@@ -1890,25 +1655,25 @@
 
   <!-- ====== Modal QR ====== -->
   <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:99998;">
-    <div style="background:#fff; width:min(92vw,420px); border:1px solid #000; border-radius:10px; padding:18px; box-shadow:0 4px 0 #000; text-align:center;">
-      <h3 style="margin:0 0 10px">Escanea para descargar el PDF</h3>
-      <div id="qr-box" style="display:flex; justify-content:center; margin:10px 0;"></div>
-      <div style="word-break:break-all; font-size:12px; margin:8px 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"></a></div>
-      <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
-        <button onclick="navigator.clipboard.writeText(document.getElementById('qr-link').href)">Copiar link</button>
-        <button onclick="document.getElementById('qr-modal').style.display='none'">Cerrar</button>
+    <div style="background:#fff; width:min(92vw,400px); border:1px solid #000; border-radius:8px; padding:15px; box-shadow:0 3px 10px rgba(0,0,0,0.2); text-align:center;">
+      <h3 style="margin:0 0 8px; font-size:16px">Escanea para descargar</h3>
+      <div id="qr-box" style="display:flex; justify-content:center; margin:8px 0;"></div>
+      <div style="word-break:break-all; font-size:11px; margin:6px 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"></a></div>
+      <div style="display:flex; gap:6px; justify-content:center; margin-top:6px;">
+        <button onclick="navigator.clipboard.writeText(document.getElementById('qr-link').href)" style="padding:6px 10px; font-size:12px">Copiar link</button>
+        <button onclick="document.getElementById('qr-modal').style.display='none'" style="padding:6px 10px; font-size:12px">Cerrar</button>
       </div>
     </div>
   </div>
 
-  <!-- ====== Botonera flotante ====== -->
+  <!-- ====== Botonera flotante SUPER COMPACTA ====== -->
   <div class="fab">
-    <button onclick="mostrarOTsAnteriores()" class="boton-ots-anteriores">📋 OTs anteriores</button>
-    <button onclick="guardarEnGoogleSheetsYImprimir()" class="boton-imprimir">🖨️ Imprimir y Guardar</button>
-    <button onclick="descargarPDFLocal()" class="boton-pdf">📄 Descargar PDF</button>
-    <button onclick="generarQRDeDescargaPDF()" class="boton-qr">📲 Mostrar QR</button>
-    <button onclick="buscarAplicacion()" class="boton-buscar-aplicacion">🔍 Buscar aplicación</button>
-    <button onclick="borrarTodo()" class="boton-borrar">🧹 Borrar todo</button>
+    <button onclick="mostrarOTsAnteriores()" class="boton-ots-anteriores">📋 OTs Ant.</button>
+    <button onclick="guardarEnGoogleSheetsYImprimir()" class="boton-imprimir">🖨️ Imprimir</button>
+    <button onclick="descargarPDFLocal()" class="boton-pdf">📄 PDF</button>
+    <button onclick="generarQRDeDescargaPDF()" class="boton-qr">📲 QR</button>
+    <button onclick="buscarAplicacion()" class="boton-buscar-aplicacion">🔍 Buscar</button>
+    <button onclick="borrarTodo()" class="boton-borrar">🧹 Borrar</button>
   </div>
 
   <!-- ====== Lógica QR + Descarga PDF local ====== -->
@@ -1923,7 +1688,7 @@
       const link = document.getElementById('qr-link');
       const box = document.getElementById('qr-box');
       link.textContent = url; link.href = url; box.innerHTML = "";
-      new QRCode(box, { text: url, width: 220, height: 220 });
+      new QRCode(box, { text: url, width: 180, height: 180 });
       document.getElementById('qr-modal').style.display = 'flex';
     }
 
@@ -1947,7 +1712,7 @@
       const patente = (document.getElementById('patente').value || 'SIN_PATENTE')
                       .toUpperCase().replace(/\s+/g,'');
       const opt = {
-        filename: `Informe_Diagnostico_${patente}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`,
+        filename: `Informe_${patente}_${new Date().toISOString().slice(0,10)}.pdf`,
         margin: 0,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
