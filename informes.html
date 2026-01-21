@@ -763,6 +763,11 @@
     let ultimoReinicio = Date.now();
     let reinicioContador = 60; // 60 segundos = 1 minuto
     let reinicioPausado = false;
+    
+    // Caché para búsquedas de patente (MEJORA DE VELOCIDAD)
+    let patenteCache = new Map();
+    let cacheTimestamp = 0;
+    const CACHE_DURACION = 30000; // 30 segundos
 
     // Función para normalizar patente
     function normalizarPatente(p){
@@ -776,7 +781,7 @@
       document.getElementById("fecha").textContent = fechaFormateada;
     }
 
-    // Obtener la siguiente OT - SIN CERRAR MODAL
+    // Obtener la siguiente OT - MEJORADA
     async function cargarSiguienteOT(sinCerrarModal = false){
       try{
         const timestamp = new Date().getTime();
@@ -797,24 +802,9 @@
             
             ultimaOTCalculada = otFormateada;
             
-            // Mostrar mensaje de nueva OT sin cerrar modal
+            // Mostrar mensaje de nueva OT
             if (sinCerrarModal) {
-              mostrarMensajeExitoModal(`✨ Nueva OT: ${otFormateada}`);
-              
-              // Actualizar botón en modal
-              const btnNuevaOT = document.getElementById("btnNuevaOT");
-              if (btnNuevaOT) {
-                const textoOriginal = btnNuevaOT.textContent;
-                btnNuevaOT.textContent = "✅ OT Creada";
-                btnNuevaOT.style.background = "#17a2b8";
-                btnNuevaOT.style.borderColor = "#17a2b8";
-                
-                setTimeout(() => {
-                  btnNuevaOT.textContent = textoOriginal;
-                  btnNuevaOT.style.background = "#28a745";
-                  btnNuevaOT.style.borderColor = "#28a745";
-                }, 1500);
-              }
+              mostrarMensajeExito(`✨ Nueva OT: ${otFormateada}`, "success");
             }
             
             return otFormateada;
@@ -866,7 +856,7 @@
       return state;
     }
 
-    // Buscar patente automáticamente
+    // Buscar patente automáticamente - MEJORADA CON CACHÉ
     async function buscarPorPatente(){
       const patenteInput = document.getElementById("patente");
       const pat = normalizarPatente(patenteInput.value);
@@ -886,9 +876,33 @@
       }
       
       try{
+        // Verificar caché primero (MEJORA DE VELOCIDAD)
+        const ahora = Date.now();
+        if (patenteCache.has(pat) && (ahora - cacheTimestamp < CACHE_DURACION)) {
+          const data = patenteCache.get(pat);
+          if(!data.success || !data.registros || data.registros.length === 0) {
+            modoNuevoRegistro = true;
+            registroSeleccionado = null;
+            ultimaPatenteBuscada = pat;
+            await cargarSiguienteOT();
+            return;
+          }
+          
+          ultimaPatenteBuscada = pat;
+          patenteEnModal = pat;
+          coincidenciasEncontradas = data.registros;
+          mostrarModalCoincidencias(data.registros);
+          return;
+        }
+        
+        // Si no hay caché o está expirado, hacer petición
         const timestamp = new Date().getTime();
         const response = await fetch(`${API_URL}?action=buscarPorPatente&patente=${encodeURIComponent(pat)}&t=${timestamp}`);
         const data = await response.json();
+
+        // Guardar en caché (MEJORA DE VELOCIDAD)
+        patenteCache.set(pat, data);
+        cacheTimestamp = ahora;
 
         if(!data.success || !data.registros || data.registros.length === 0) {
           modoNuevoRegistro = true;
@@ -1011,24 +1025,24 @@
         }
         
         if (desdeModal) {
-          mostrarMensajeExitoModal("✅ Datos cargados (motor vacío)");
+          mostrarMensajeExito("✅ Datos cargados (motor vacío)");
           
           // Cerrar modal después de cargar datos
           setTimeout(() => {
             cerrarModalCoincidencias();
-          }, 800);
+          }, 500); // Reducido de 800 a 500 ms
         }
         
       }else if(registro.Fuente === "Hoja1"){
         otRegistro = registro.OT || registro.OrdenTrabajo || "";
         
         if (desdeModal) {
-          mostrarMensajeExitoModal("✅ Datos básicos cargados");
+          mostrarMensajeExito("✅ Datos básicos cargados");
           
           // Cerrar modal después de cargar datos
           setTimeout(() => {
             cerrarModalCoincidencias();
-          }, 800);
+          }, 500); // Reducido de 800 a 500 ms
         }
       }
       
@@ -1051,10 +1065,10 @@
       // Ajustar altura de textareas
       setTimeout(() => {
         autoAdjustTextareas();
-      }, 100);
+      }, 50); // Reducido de 100 a 50 ms
     }
 
-    // Función para mostrar OTs anteriores
+    // Función para mostrar OTs anteriores - MEJORADA
     async function mostrarOTsAnteriores() {
       const patenteInput = document.getElementById("patente");
       const pat = normalizarPatente(patenteInput.value);
@@ -1074,40 +1088,55 @@
       cargandoElement.style.display = "block";
       listaElement.innerHTML = "";
       
+      // Verificar caché primero (MEJORA DE VELOCIDAD)
+      const ahora = Date.now();
+      if (patenteCache.has(pat) && (ahora - cacheTimestamp < CACHE_DURACION)) {
+        const data = patenteCache.get(pat);
+        cargandoElement.style.display = "none";
+        
+        if(!data.success || !data.registros || data.registros.length === 0) {
+          listaElement.innerHTML = `<li style="text-align: center; padding: 12px; color: #666; background: #f8f9fa; border-radius: 5px;">
+            No hay OTs anteriores para ${pat}<br>
+            <button onclick="crearNuevaOTDesdeModal()" style="margin-top: 8px; padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+              ✨ Crear Nueva OT
+            </button>
+          </li>`;
+          return;
+        }
+        
+        const registrosOrdenados = ordenarRegistrosPorFechaDesc(data.registros);
+        coincidenciasEncontradas = registrosOrdenados;
+        mostrarRegistrosEnModal(registrosOrdenados);
+        return;
+      }
+      
       try {
-        setTimeout(async () => {
-          try {
-            const timestamp = new Date().getTime();
-            const response = await fetch(`${API_URL}?action=buscarPorPatente&patente=${encodeURIComponent(pat)}&t=${timestamp}`);
-            const data = await response.json();
+        const timestamp = new Date().getTime();
+        const response = await fetch(`${API_URL}?action=buscarPorPatente&patente=${encodeURIComponent(pat)}&t=${timestamp}`);
+        const data = await response.json();
+        
+        // Guardar en caché (MEJORA DE VELOCIDAD)
+        patenteCache.set(pat, data);
+        cacheTimestamp = ahora;
 
-            cargandoElement.style.display = "none";
+        cargandoElement.style.display = "none";
 
-            if(!data.success || !data.registros || data.registros.length === 0) {
-              listaElement.innerHTML = `<li style="text-align: center; padding: 12px; color: #666; background: #f8f9fa; border-radius: 5px;">
-                No hay OTs anteriores para ${pat}<br>
-                <button onclick="crearNuevaOTDesdeModal()" style="margin-top: 8px; padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                  ✨ Crear Nueva OT
-                </button>
-              </li>`;
-              return;
-            }
+        if(!data.success || !data.registros || data.registros.length === 0) {
+          listaElement.innerHTML = `<li style="text-align: center; padding: 12px; color: #666; background: #f8f9fa; border-radius: 5px;">
+            No hay OTs anteriores para ${pat}<br>
+            <button onclick="crearNuevaOTDesdeModal()" style="margin-top: 8px; padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+              ✨ Crear Nueva OT
+            </button>
+          </li>`;
+          return;
+        }
 
-            const registrosOrdenados = ordenarRegistrosPorFechaDesc(data.registros);
-            coincidenciasEncontradas = registrosOrdenados;
-            mostrarRegistrosEnModal(registrosOrdenados);
-            
-          } catch(error) {
-            console.error("Error buscando OTs anteriores:", error);
-            cargandoElement.style.display = "none";
-            listaElement.innerHTML = `<li style="text-align: center; padding: 12px; color: #dc3545; background: #f8d7da; border-radius: 5px;">
-              Error al buscar OTs.
-            </li>`;
-          }
-        }, 0);
+        const registrosOrdenados = ordenarRegistrosPorFechaDesc(data.registros);
+        coincidenciasEncontradas = registrosOrdenados;
+        mostrarRegistrosEnModal(registrosOrdenados);
         
       } catch(error) {
-        console.error("Error inicial:", error);
+        console.error("Error buscando OTs anteriores:", error);
         cargandoElement.style.display = "none";
         listaElement.innerHTML = `<li style="text-align: center; padding: 12px; color: #dc3545; background: #f8d7da; border-radius: 5px;">
           Error al buscar OTs.
@@ -1120,7 +1149,10 @@
       const lista = document.getElementById("lista-coincidencias");
       lista.innerHTML = "";
       
-      registros.forEach((registro, index) => {
+      // Limitar a 10 registros para mejor rendimiento
+      const registrosLimitados = registros.slice(0, 10);
+      
+      registrosLimitados.forEach((registro, index) => {
         const li = document.createElement("li");
         
         const fecha = registro.Fecha ? 
@@ -1223,57 +1255,7 @@
       patenteEnModal = "";
     }
 
-    // Mostrar mensaje de éxito en el modal (sin cerrarlo)
-    function mostrarMensajeExitoModal(mensaje) {
-      // Crear o actualizar mensaje en el modal
-      let mensajeElement = document.querySelector('.mensaje-modal-temporal');
-      if (!mensajeElement) {
-        mensajeElement = document.createElement('div');
-        mensajeElement.className = 'mensaje-modal-temporal';
-        mensajeElement.style.cssText = `
-          position: absolute;
-          top: 10px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: #28a745;
-          color: white;
-          padding: 6px 12px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: bold;
-          z-index: 100;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-          animation: fadeInOut 2s ease-in-out;
-        `;
-        
-        const modalCard = document.querySelector('#modal-coincidencias .modal-card');
-        modalCard.style.position = 'relative';
-        modalCard.appendChild(mensajeElement);
-      }
-      
-      mensajeElement.textContent = mensaje;
-      mensajeElement.style.display = 'block';
-      
-      // Agregar estilo de animación
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes fadeInOut {
-          0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-          15% { opacity: 1; transform: translateX(-50%) translateY(0); }
-          85% { opacity: 1; transform: translateX(-50%) translateY(0); }
-          100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      setTimeout(() => {
-        if (mensajeElement.parentNode) {
-          mensajeElement.style.display = 'none';
-        }
-      }, 2000);
-    }
-
-    // Crear nueva OT desde el modal - SIN CERRAR MODAL
+    // Crear nueva OT desde el modal - MODIFICADA PARA CERRAR MODAL
     async function crearNuevaOTDesdeModal(){
       if (coincidenciasEncontradas && coincidenciasEncontradas.length > 0) {
         // Tomar datos del primer registro (más reciente) pero NO el motor
@@ -1312,8 +1294,11 @@
       modoNuevoRegistro = true;
       registroSeleccionado = null;
       
-      // Generar nueva OT SIN CERRAR MODAL
-      await cargarSiguienteOT(true);
+      // CERRAR MODAL INMEDIATAMENTE
+      cerrarModalCoincidencias();
+      
+      // Generar nueva OT después de cerrar modal
+      await cargarSiguienteOT();
       
       // Guardar estado
       saveCurrentState();
@@ -1321,16 +1306,12 @@
       // Reiniciar el contador de reinicio automático
       reiniciarContadorReinicio();
       
-      // Mostrar mensaje en el modal (no se cierra)
-      mostrarMensajeExitoModal("✅ Nueva OT creada (motor vacío)");
+      // Mostrar mensaje de éxito
+      mostrarMensajeExito("✅ Nueva OT creada (motor vacío)");
       
-      // NO cerrar el modal - permanece abierto
       // Enfocar campo de motor automáticamente
       setTimeout(() => {
-        // Si el modal sigue abierto, enfocar el campo motor
-        if (modalAbierto) {
-          document.getElementById("motor").focus();
-        }
+        document.getElementById("motor").focus();
       }, 300);
     }
 
@@ -1512,7 +1493,7 @@
       // Resetear altura de textareas
       setTimeout(() => {
         autoAdjustTextareas();
-      }, 100);
+      }, 50); // Reducido de 100 a 50 ms
     }
 
     // Ajuste automático de textareas
@@ -1543,12 +1524,12 @@
           setTimeout(() => {
             textarea.style.height = 'auto';
             textarea.style.height = (textarea.scrollHeight + 2) + 'px';
-          }, 100);
+          }, 50); // Reducido de 100 a 50 ms
         }
       });
     }
 
-    // Event listeners para búsqueda automática
+    // Event listeners para búsqueda automática - MEJORADA
     let timeoutBusqueda = null;
 
     document.getElementById("patente").addEventListener("input", function(){
@@ -1556,13 +1537,14 @@
         clearTimeout(timeoutBusqueda);
       }
       
+      // Reducir tiempo de debounce de 800 a 600 ms
       timeoutBusqueda = setTimeout(() => {
         if(this.value.trim().length >= 3){
           modoNuevoRegistro = true;
           registroSeleccionado = null;
           buscarPorPatente();
         }
-      }, 800);
+      }, 600);
     });
 
     // ====== FUNCIONES PARA REINICIO AUTOMÁTICO DE OT CADA 1 MINUTO ======
@@ -1773,7 +1755,7 @@
       "P0016": "Sensor de posición del cigüeñal - correlación con el árbol de levas (Banco 1)",
       "P0102": "Sensor MAF - entrada baja",
       "P0135": "Sensor de oxígeno (Banco 1 Sensor 1) - calentador - mal funcionamiento del circuito",
-      "P0299": "Presión del turbo/sobrealimentador por debajo del límite",
+      "P0299": "Presión del turbo/sobrealimentador por debajo del límte",
       "P0301": "Fallo de encendido del cilindro 1",
       "P0401": "Flujo insuficiente en el sistema EGR",
       "P0430": "Eficiencia del sistema de catalizador por debajo del umbral (Banco 2)",
@@ -1937,7 +1919,8 @@
       // Solo activar auto-relleno si hay nuevos códigos
       const currentCodes = codigosDe(txtCodigos.value);
       if (currentCodes.length > 0) {
-        window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 500);
+        // Reducir tiempo de debounce de 500 a 300 ms
+        window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 300);
       }
       
       // Auto-guardar
