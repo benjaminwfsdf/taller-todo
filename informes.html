@@ -36,36 +36,36 @@
     }
     #modal-coincidencias .modal-card{
       background:#fff;
-      padding:20px;
-      border-radius:8px;
-      width:500px;
+      padding:15px;
+      border-radius:6px;
+      width:450px;
       max-width:92vw;
       border:1px solid #000;
-      max-height:80vh;
+      max-height:75vh;
       overflow-y:auto;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
     #modal-coincidencias h3{
       margin-top:0;
       color:#1d3053;
-      font-size:20px;
-      margin-bottom: 10px;
+      font-size:18px;
+      margin-bottom: 8px;
       text-align: center;
-      padding-bottom: 8px;
+      padding-bottom: 6px;
       border-bottom: 1px solid #eee;
     }
     #modal-coincidencias p {
-      font-size:14px;
-      margin-bottom:15px;
+      font-size:13px;
+      margin-bottom:12px;
       color: #444;
       text-align: center;
-      line-height: 1.4;
+      line-height: 1.3;
     }
     .coincidencia-item{
       border:1px solid #ddd;
-      padding:12px;
-      margin-bottom:10px;
-      border-radius:6px;
+      padding:10px;
+      margin-bottom:8px;
+      border-radius:5px;
       cursor:pointer;
       transition:all 0.2s;
       background: #f9f9f9;
@@ -89,18 +89,18 @@
     .coincidencia-item .fuente-informe{ background:#d1ecf1; color:#0c5460; }
     .botones-modal{
       display:flex;
-      gap:10px;
-      margin-top:15px;
-      padding-top: 15px;
+      gap:8px;
+      margin-top:12px;
+      padding-top: 12px;
       border-top: 1px solid #eee;
     }
     .botones-modal button{
       flex:1;
-      padding:10px;
+      padding:8px;
       border:1px solid #000;
-      border-radius:5px;
+      border-radius:4px;
       cursor:pointer;
-      font-size:14px;
+      font-size:13px;
       font-weight: bold;
       transition: all 0.2s;
     }
@@ -121,7 +121,7 @@
     #lista-coincidencias {
       list-style:none; 
       padding:0;
-      max-height: 250px;
+      max-height: 220px;
       overflow-y: auto;
       margin: 0;
     }
@@ -129,7 +129,7 @@
     .cargando {
       display: none;
       text-align: center;
-      padding: 20px;
+      padding: 15px;
       color: #1d3053;
       font-weight: bold;
     }
@@ -138,10 +138,10 @@
       border: 3px solid #f3f3f3;
       border-top: 3px solid #1d3053;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 25px;
+      height: 25px;
       animation: spin 1s linear infinite;
-      margin: 0 auto 10px;
+      margin: 0 auto 8px;
     }
     
     @keyframes spin {
@@ -151,26 +151,26 @@
     
     .mensaje-exito {
       position: fixed;
-      top: 20px;
-      right: 20px;
+      top: 15px;
+      right: 15px;
       background: #28a745;
       color: white;
-      padding: 10px 15px;
-      border-radius: 6px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      padding: 8px 12px;
+      border-radius: 5px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
       z-index: 1000;
       display: none;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 12px;
     }
     
     .nota-motor {
       background: #fff3cd;
       border: 1px solid #ffc107;
       border-radius: 4px;
-      padding: 8px;
-      margin: 10px 0;
-      font-size: 12px;
+      padding: 6px;
+      margin: 8px 0;
+      font-size: 11px;
       color: #856404;
       text-align: center;
     }
@@ -180,11 +180,39 @@
       background: #f8f9fa;
       border: 1px solid #dee2e6;
       border-radius: 4px;
-      padding: 8px;
-      margin: 10px 0;
-      font-size: 12px;
+      padding: 6px;
+      margin: 8px 0;
+      font-size: 11px;
       color: #495057;
       text-align: center;
+    }
+    
+    /* Animación para nuevo OT */
+    @keyframes nuevaOTAnimacion {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .nueva-ot-creada {
+      animation: nuevaOTAnimacion 0.5s ease-in-out;
+      border: 2px solid #28a745 !important;
+    }
+    
+    /* Indicador de reinicio OT */
+    .reinicio-indicator {
+      position: fixed;
+      top: 50px;
+      right: 15px;
+      background: #ffc107;
+      color: #212529;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      z-index: 999;
+      display: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
   </style>
 
@@ -196,27 +224,28 @@
       #modal-coincidencias { display: none !important; }
       #auth-overlay { display: none !important; }
       .no-print { display: none !important; }
+      .reinicio-indicator { display: none !important; }
     }
 
     body { 
       font-family: Arial, sans-serif; 
       margin: 0; 
       background: #f2f2f2; 
-      padding-bottom: 80px;
+      padding-bottom: 70px;
     }
 
     /* Contenedor exportable (la "hoja") */
     #paper {
       width: 21cm; 
       min-height: 29.7cm;
-      margin: 20px auto; 
-      padding: 30px 35px;
+      margin: 15px auto; 
+      padding: 25px 30px;
       background: #fff;
       border: 1px solid #000; 
       box-sizing: border-box; 
       font-size: 13px;
       position: relative;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
 
     .titulo {
@@ -224,11 +253,11 @@
       background: #b30000; 
       color: #fff; 
       font-weight: bold;
-      font-size: 24px; 
-      padding: 12px 0; 
+      font-size: 22px; 
+      padding: 10px 0; 
       text-align: center; 
       box-sizing: border-box; 
-      margin: 0 0 18px 0;
+      margin: 0 0 15px 0;
       border-radius: 4px;
     }
 
@@ -236,49 +265,49 @@
       display:flex; 
       justify-content:space-between; 
       align-items:center; 
-      margin-bottom:18px;
-      gap:10px;
+      margin-bottom:15px;
+      gap:8px;
     }
     .contacto { 
       text-align:center; 
-      font-size:14px; 
-      line-height:1.4; 
+      font-size:13px; 
+      line-height:1.3; 
       flex:1; 
       font-weight:bold; 
     }
     .contacto-wrap img { 
-      max-height:160px;
+      max-height:150px;
       object-fit:contain; 
-      max-width: 140px;
+      max-width: 130px;
     }
 
     .form-grid { 
       width:100%; 
       border-collapse:collapse; 
-      margin-bottom:18px;
+      margin-bottom:15px;
     }
     .form-grid td { 
-      padding:5px;
+      padding:4px;
       border:1px solid #000; 
       vertical-align:middle; 
     }
     .form-grid label { 
       font-weight:bold; 
-      margin-right:5px;
-      min-width:55px;
-      font-size:14px; 
+      margin-right:4px;
+      min-width:50px;
+      font-size:13px; 
     }
     .inline { 
       display:flex; 
       align-items:center; 
-      gap:5px;
+      gap:4px;
     }
     .form-grid input[type="text"] { 
       width:100%; 
-      padding:5px 7px;
+      padding:4px 6px;
       box-sizing:border-box; 
       border:1px solid #ccc; 
-      font-size:14px;
+      font-size:13px;
       border-radius: 3px;
       transition: border 0.2s;
     }
@@ -290,11 +319,11 @@
 
     .seccion-titulo { 
       font-weight:bold; 
-      margin-top:18px;
-      margin-bottom:4px;
+      margin-top:15px;
+      margin-bottom:3px;
       text-transform:uppercase; 
       background:#f0f0f0; 
-      padding:6px;
+      padding:5px;
       border:1px solid #000; 
       border-radius: 3px;
     }
@@ -302,12 +331,12 @@
     .tabla-codigos { 
       width:100%; 
       border-collapse:collapse; 
-      margin-bottom:18px;
+      margin-bottom:15px;
       table-layout:fixed; 
     }
     .tabla-codigos th, .tabla-codigos td { 
       border:1px solid #000; 
-      padding:7px;
+      padding:6px;
       vertical-align:top; 
     }
     .tabla-codigos th { 
@@ -317,24 +346,24 @@
     }
     .tabla-codigos textarea { 
       width:100%; 
-      height:200px;
+      height:180px;
       border:none; 
       resize:vertical; 
-      font-size:14px;
+      font-size:13px;
       box-sizing:border-box; 
-      padding:7px;
+      padding:6px;
       font-family: Arial, sans-serif;
       line-height: 1.4;
     }
 
     textarea { 
       width:100%; 
-      min-height:90px;
-      margin-top:4px;
-      padding:7px;
+      min-height:80px;
+      margin-top:3px;
+      padding:6px;
       border:1px solid #000; 
       box-sizing:border-box; 
-      font-size:14px;
+      font-size:13px;
       font-family: Arial, sans-serif;
       line-height: 1.4;
       resize: vertical;
@@ -342,36 +371,36 @@
 
     /* VALOR FINAL CORREGIDO - OT EN EL MEDIO - SIN LÍNEA SUPERIOR */
     .valor-final { 
-      margin-top:20px;
+      margin-top:15px;
       font-weight:bold; 
-      font-size:16px; 
+      font-size:15px; 
       display:flex; 
       justify-content:space-between; 
       align-items:center; 
-      gap:8px;
+      gap:6px;
       flex-wrap:wrap; 
-      padding-top: 12px;
+      padding-top: 10px;
     }
     
     .fecha-final { 
       border:1px solid #000; 
-      padding:7px 12px;
-      font-size:13px;
+      padding:6px 10px;
+      font-size:12px;
       color:#000; 
       background: #f9f9f9;
       border-radius: 4px;
-      min-width: 110px;
+      min-width: 100px;
       text-align: center;
     }
     
     .ot-final {
       font-weight: bold;
-      font-size: 16px;
-      padding: 7px 12px;
+      font-size: 15px;
+      padding: 6px 10px;
       background: #f0f0f0;
       border: 1px solid #000;
       border-radius: 4px;
-      min-width: 110px;
+      min-width: 100px;
       text-align: center;
     }
     
@@ -383,30 +412,30 @@
     .precio-final {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     
     .precio-final label {
       font-weight: bold;
-      font-size: 16px;
+      font-size: 15px;
     }
     
     .valor-final input { 
-      padding:8px 14px;
+      padding:7px 12px;
       border:2px solid #000; 
-      font-size:17px;
+      font-size:16px;
       font-weight:bold; 
-      width:170px;
+      width:150px;
       text-align:right; 
       border-radius: 4px;
     }
 
     .nota-footer { 
-      font-size:10px; 
+      font-size:9px; 
       text-align:center; 
-      margin-top:12px;
+      margin-top:10px;
       font-weight:bold; 
-      padding: 5px;
+      padding: 4px;
       background: #f0f0f0;
       border-radius: 3px;
     }
@@ -414,48 +443,48 @@
     /* BOTONERA FLOTANTE MÁS COMPACTA */
     .fab {
       position: fixed; 
-      bottom: 10px; 
-      right: 10px;
+      bottom: 8px; 
+      right: 8px;
       display:flex; 
       flex-direction:column; 
-      gap:5px;
+      gap:4px;
       z-index: 2147483647;
       background: rgba(255,255,255,0.98);
-      padding: 8px;
-      border-radius: 8px;
+      padding: 6px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.15);
-      max-width: 150px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      max-width: 140px;
     }
     .fab button {
-      padding: 8px 10px;
-      font-size: 12px;
+      padding: 6px 8px;
+      font-size: 11px;
       border:1px solid #000; 
       background:#fff; 
       cursor:pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,.1); 
-      border-radius:5px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.1); 
+      border-radius:4px;
       -webkit-tap-highlight-color: transparent;
       font-weight: bold;
-      transition: all 0.2s;
+      transition: all 0.1s;
       text-align: left;
-      min-width: 130px;
+      min-width: 120px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .fab button:active { transform: translateY(1px); }
-    @supports (-webkit-touch-callout: none) { .fab { bottom: 8px; right: 8px; } }
+    @supports (-webkit-touch-callout: none) { .fab { bottom: 6px; right: 6px; } }
 
     /* Auto-grow SOLO códigos/detalle - CORREGIDO */
     #codigo_area, #detalle_area, #valor_area {
       width:100%; 
-      min-height:200px;
+      min-height:180px;
       height: auto;
       border:none; 
-      font-size:14px;
+      font-size:13px;
       box-sizing:border-box; 
-      padding:7px;
+      padding:6px;
       resize:vertical; 
       overflow-y: auto;
       font-family: Arial, sans-serif;
@@ -503,11 +532,11 @@
     .fab button:hover {
       opacity: 0.9;
       transform: translateY(-1px);
-      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
     
     ::-webkit-scrollbar {
-      width: 5px;
+      width: 4px;
     }
     ::-webkit-scrollbar-track {
       background: #f1f1f1;
@@ -524,6 +553,9 @@
 </head>
 
 <body>
+  <!-- Indicador de reinicio OT -->
+  <div class="reinicio-indicator" id="reinicioIndicator">🔄 Nueva OT en <span id="tiempoRestante">60</span>s</div>
+
   <!-- Modal auth -->
   <div id="auth-overlay" aria-hidden="true">
     <div id="auth-card">
@@ -541,11 +573,10 @@
   <div id="modal-coincidencias">
     <div class="modal-card">
       <h3>OTs Anteriores</h3>
-      <p>Seleccione una OT para ver detalles o cree una nueva.</p>
+      <p>Seleccione una OT para ver detalles.</p>
       
       <div class="nota-importante-modal">
-        ⚠️ Al seleccionar OT anterior: Se carga sin el motor.<br>
-        Para nuevo diagnóstico use: <strong>"Crear Nueva OT"</strong>
+        ⚠️ <strong>Nueva OT:</strong> Se mantienen patente y datos, <strong>sin motor</strong>
       </div>
       
       <div id="cargando-ots" class="cargando">
@@ -556,8 +587,8 @@
       <ul id="lista-coincidencias"></ul>
       
       <div class="botones-modal">
-        <button onclick="cerrarModalCoincidencias()" style="background:#6c757d;color:white;border-color:#6c757d">Cancelar</button>
-        <button class="boton-crear-nuevo" onclick="crearNuevaOTDesdeModal()">Nueva OT</button>
+        <button onclick="cerrarModalCoincidencias()" style="background:#6c757d;color:white;border-color:#6c757d">Cerrar</button>
+        <button class="boton-crear-nuevo" onclick="crearNuevaOTDesdeModal()" id="btnNuevaOT">✨ Nueva OT</button>
       </div>
     </div>
   </div>
@@ -720,11 +751,18 @@
     let ultimaPatenteBuscada = "";
     let modalAbierto = false;
     let coincidenciasEncontradas = [];
+    let patenteEnModal = "";
     
     // Variables para prevención de pérdida de datos
     let autoSaveTimeout = null;
     let lastSavedState = {};
     let isSaving = false;
+    
+    // ====== VARIABLES PARA REINICIO AUTOMÁTICO DE OT ======
+    let reinicioTimer = null;
+    let ultimoReinicio = Date.now();
+    let reinicioContador = 60; // 60 segundos = 1 minuto
+    let reinicioPausado = false;
 
     // Función para normalizar patente
     function normalizarPatente(p){
@@ -738,8 +776,8 @@
       document.getElementById("fecha").textContent = fechaFormateada;
     }
 
-    // Obtener la siguiente OT
-    async function cargarSiguienteOT(){
+    // Obtener la siguiente OT - SIN CERRAR MODAL
+    async function cargarSiguienteOT(sinCerrarModal = false){
       try{
         const timestamp = new Date().getTime();
         const response = await fetch(`${API_URL}?action=obtenerSiguienteOT&t=${timestamp}`);
@@ -749,7 +787,36 @@
           if (data.success && data.nextOT) {
             const otFormateada = String(data.nextOT).padStart(6, "0");
             document.getElementById("otNumero").textContent = otFormateada;
+            
+            // Animación para nueva OT
+            const otContainer = document.getElementById("otFinalContainer");
+            otContainer.classList.add("nueva-ot-creada");
+            setTimeout(() => {
+              otContainer.classList.remove("nueva-ot-creada");
+            }, 500);
+            
             ultimaOTCalculada = otFormateada;
+            
+            // Mostrar mensaje de nueva OT sin cerrar modal
+            if (sinCerrarModal) {
+              mostrarMensajeExitoModal(`✨ Nueva OT: ${otFormateada}`);
+              
+              // Actualizar botón en modal
+              const btnNuevaOT = document.getElementById("btnNuevaOT");
+              if (btnNuevaOT) {
+                const textoOriginal = btnNuevaOT.textContent;
+                btnNuevaOT.textContent = "✅ OT Creada";
+                btnNuevaOT.style.background = "#17a2b8";
+                btnNuevaOT.style.borderColor = "#17a2b8";
+                
+                setTimeout(() => {
+                  btnNuevaOT.textContent = textoOriginal;
+                  btnNuevaOT.style.background = "#28a745";
+                  btnNuevaOT.style.borderColor = "#28a745";
+                }, 1500);
+              }
+            }
+            
             return otFormateada;
           }
         }
@@ -832,6 +899,7 @@
         }
 
         ultimaPatenteBuscada = pat;
+        patenteEnModal = pat;
         
         // Siempre mostrar el modal cuando hay coincidencias
         coincidenciasEncontradas = data.registros;
@@ -943,14 +1011,24 @@
         }
         
         if (desdeModal) {
-          mostrarMensajeExito("✅ Datos cargados (sin motor)");
+          mostrarMensajeExitoModal("✅ Datos cargados (motor vacío)");
+          
+          // Cerrar modal después de cargar datos
+          setTimeout(() => {
+            cerrarModalCoincidencias();
+          }, 800);
         }
         
       }else if(registro.Fuente === "Hoja1"){
         otRegistro = registro.OT || registro.OrdenTrabajo || "";
         
         if (desdeModal) {
-          mostrarMensajeExito("✅ Datos cargados (sin motor)");
+          mostrarMensajeExitoModal("✅ Datos básicos cargados");
+          
+          // Cerrar modal después de cargar datos
+          setTimeout(() => {
+            cerrarModalCoincidencias();
+          }, 800);
         }
       }
       
@@ -964,12 +1042,11 @@
         ultimaOTCalculada = otFormateada;
       }
       
-      if (desdeModal) {
-        cerrarModalCoincidencias();
-      }
-      
       // Guardar estado actual
       saveCurrentState();
+      
+      // Reiniciar el contador de reinicio automático
+      reiniciarContadorReinicio();
       
       // Ajustar altura de textareas
       setTimeout(() => {
@@ -993,6 +1070,7 @@
       
       document.getElementById("modal-coincidencias").style.display = "flex";
       modalAbierto = true;
+      patenteEnModal = pat;
       cargandoElement.style.display = "block";
       listaElement.innerHTML = "";
       
@@ -1006,8 +1084,11 @@
             cargandoElement.style.display = "none";
 
             if(!data.success || !data.registros || data.registros.length === 0) {
-              listaElement.innerHTML = `<li style="text-align: center; padding: 15px; color: #666; background: #f8f9fa; border-radius: 6px;">
-                No hay OTs anteriores para ${pat}
+              listaElement.innerHTML = `<li style="text-align: center; padding: 12px; color: #666; background: #f8f9fa; border-radius: 5px;">
+                No hay OTs anteriores para ${pat}<br>
+                <button onclick="crearNuevaOTDesdeModal()" style="margin-top: 8px; padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                  ✨ Crear Nueva OT
+                </button>
               </li>`;
               return;
             }
@@ -1019,7 +1100,7 @@
           } catch(error) {
             console.error("Error buscando OTs anteriores:", error);
             cargandoElement.style.display = "none";
-            listaElement.innerHTML = `<li style="text-align: center; padding: 15px; color: #dc3545; background: #f8d7da; border-radius: 6px;">
+            listaElement.innerHTML = `<li style="text-align: center; padding: 12px; color: #dc3545; background: #f8d7da; border-radius: 5px;">
               Error al buscar OTs.
             </li>`;
           }
@@ -1028,7 +1109,7 @@
       } catch(error) {
         console.error("Error inicial:", error);
         cargandoElement.style.display = "none";
-        listaElement.innerHTML = `<li style="text-align: center; padding: 15px; color: #dc3545; background: #f8d7da; border-radius: 6px;">
+        listaElement.innerHTML = `<li style="text-align: center; padding: 12px; color: #dc3545; background: #f8d7da; border-radius: 5px;">
           Error al buscar OTs.
         </li>`;
       }
@@ -1063,50 +1144,50 @@
         if (registro.Fuente === "DatosInforme") {
           // Para informes de diagnóstico
           if (registro.Codigo) {
-            const codigosPreview = registro.Codigo.length > 30 ? 
-              registro.Codigo.substring(0, 30) + '...' : registro.Codigo;
-            detalleContenido += `<div style="margin-top: 4px; color: #155724; font-size: 12px;"><strong>Códigos:</strong> ${codigosPreview}</div>`;
+            const codigosPreview = registro.Codigo.length > 25 ? 
+              registro.Codigo.substring(0, 25) + '...' : registro.Codigo;
+            detalleContenido += `<div style="margin-top: 4px; color: #155724; font-size: 11px;"><strong>Códigos:</strong> ${codigosPreview}</div>`;
           }
           
           if (registro.Detalle) {
-            const detallePreview = registro.Detalle.length > 60 ? 
-              registro.Detalle.substring(0, 60) + '...' : registro.Detalle;
-            detalleContenido += `<div style="margin-top: 2px; color: #0c5460; font-size: 12px;"><strong>Detalle:</strong> ${detallePreview}</div>`;
+            const detallePreview = registro.Detalle.length > 40 ? 
+              registro.Detalle.substring(0, 40) + '...' : registro.Detalle;
+            detalleContenido += `<div style="margin-top: 2px; color: #0c5460; font-size: 11px;"><strong>Detalle:</strong> ${detallePreview}</div>`;
           }
           
           if (registro.Valor_Final) {
             const valor = parseInt(registro.Valor_Final) || 0;
-            detalleContenido += `<div style="margin-top: 2px; color: #721c24; font-size: 12px;"><strong>Valor:</strong> $${valor.toLocaleString('es-CL')}</div>`;
+            detalleContenido += `<div style="margin-top: 2px; color: #721c24; font-size: 11px;"><strong>Valor:</strong> $${valor.toLocaleString('es-CL')}</div>`;
           }
         } else if (registro.Fuente === "Hoja1") {
           // Para reparaciones
           if (registro.Detalle_Estado) {
-            const detallePreview = registro.Detalle_Estado.length > 60 ? 
-              registro.Detalle_Estado.substring(0, 60) + '...' : registro.Detalle_Estado;
-            detalleContenido += `<div style="margin-top: 4px; color: #666; font-size: 12px;"><strong>Trabajo:</strong> ${detallePreview}</div>`;
+            const detallePreview = registro.Detalle_Estado.length > 40 ? 
+              registro.Detalle_Estado.substring(0, 40) + '...' : registro.Detalle_Estado;
+            detalleContenido += `<div style="margin-top: 4px; color: #666; font-size: 11px;"><strong>Trabajo:</strong> ${detallePreview}</div>`;
           }
         }
         
         li.innerHTML = `
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <div>
-              <strong style="font-size: 14px; color: #1d3053;">OT: ${otFormateada}</strong>
-              <div style="font-size: 12px; color: #666; margin-top: 2px;">
+              <strong style="font-size: 13px; color: #1d3053;">OT: ${otFormateada}</strong>
+              <div style="font-size: 11px; color: #666; margin-top: 2px;">
                 ${fecha} | ${registro.Marca || ''} ${registro.Modelo || ''}
               </div>
             </div>
             <span class="fuente ${claseFuente}">${fuente}</span>
           </div>
           
-          <div style="font-size: 12px; margin-top: 6px; color: #444;">
+          <div style="font-size: 11px; margin-top: 4px; color: #444;">
             <strong>Patente:</strong> ${registro.Patente || registro.patente || ''}
           </div>
           
           ${detalleContenido}
           
-          <div style="margin-top: 8px; padding: 4px; background: ${tieneDiagnostico ? '#e8f4f8' : '#f8f9fa'}; 
-               border-radius: 3px; font-size: 11px; color: ${tieneDiagnostico ? '#0c5460' : '#6c757d'};">
-            <strong>${tieneDiagnostico ? '📋 Con diagnóstico' : '🛠️ Reparación'}</strong> - Haga clic para ${tieneDiagnostico ? 'ver' : 'cargar datos'}
+          <div style="margin-top: 6px; padding: 3px; background: ${tieneDiagnostico ? '#e8f4f8' : '#f8f9fa'}; 
+               border-radius: 3px; font-size: 10px; color: ${tieneDiagnostico ? '#0c5460' : '#6c757d'};">
+            <strong>${tieneDiagnostico ? '📋 Con diagnóstico' : '🛠️ Reparación'}</strong> - Haga clic para cargar
           </div>
         `;
         
@@ -1115,9 +1196,9 @@
       });
       
       // Actualizar texto del botón
-      const botonCrearNuevo = document.querySelector('.boton-crear-nuevo');
+      const botonCrearNuevo = document.getElementById("btnNuevaOT");
       if (botonCrearNuevo) {
-        botonCrearNuevo.textContent = `Nueva OT (${registros.length})`;
+        botonCrearNuevo.textContent = `✨ Nueva OT (${registros.length})`;
       }
     }
 
@@ -1139,17 +1220,73 @@
       document.getElementById("modal-coincidencias").style.display = "none";
       modalAbierto = false;
       coincidenciasEncontradas = [];
+      patenteEnModal = "";
     }
 
-    // Crear nueva OT desde el modal
+    // Mostrar mensaje de éxito en el modal (sin cerrarlo)
+    function mostrarMensajeExitoModal(mensaje) {
+      // Crear o actualizar mensaje en el modal
+      let mensajeElement = document.querySelector('.mensaje-modal-temporal');
+      if (!mensajeElement) {
+        mensajeElement = document.createElement('div');
+        mensajeElement.className = 'mensaje-modal-temporal';
+        mensajeElement.style.cssText = `
+          position: absolute;
+          top: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #28a745;
+          color: white;
+          padding: 6px 12px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: bold;
+          z-index: 100;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          animation: fadeInOut 2s ease-in-out;
+        `;
+        
+        const modalCard = document.querySelector('#modal-coincidencias .modal-card');
+        modalCard.style.position = 'relative';
+        modalCard.appendChild(mensajeElement);
+      }
+      
+      mensajeElement.textContent = mensaje;
+      mensajeElement.style.display = 'block';
+      
+      // Agregar estilo de animación
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+          15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+          85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+          100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      setTimeout(() => {
+        if (mensajeElement.parentNode) {
+          mensajeElement.style.display = 'none';
+        }
+      }, 2000);
+    }
+
+    // Crear nueva OT desde el modal - SIN CERRAR MODAL
     async function crearNuevaOTDesdeModal(){
       if (coincidenciasEncontradas && coincidenciasEncontradas.length > 0) {
         // Tomar datos del primer registro (más reciente) pero NO el motor
         const primerRegistro = coincidenciasEncontradas[0];
         
+        // Actualizar patente si no está vacía
+        if (primerRegistro.Patente || primerRegistro.patente) {
+          document.getElementById("patente").value = primerRegistro.Patente || primerRegistro.patente || "";
+        }
+        
+        // Cargar marca y modelo
         document.getElementById("marca").value = primerRegistro.Marca || "";
         document.getElementById("modelo").value = primerRegistro.Modelo || "";
-        document.getElementById("patente").value = primerRegistro.Patente || primerRegistro.patente || "";
         
         // NO cargar el motor - dejar vacío
         document.getElementById("motor").value = "";
@@ -1162,34 +1299,42 @@
         if (!document.getElementById("km").value.trim()) {
           document.getElementById("km").value = primerRegistro.Kilometraje || primerRegistro.KM || primerRegistro.km || "";
         }
-        
-        // Limpiar campos de diagnóstico para nueva OT
-        document.getElementById("codigo_area").value = "";
-        document.getElementById("detalle_area").value = "";
-        document.getElementById("valor_area").value = "";
-        document.getElementById("causas").value = "";
-        document.getElementById("recomendaciones").value = "";
-        document.getElementById("valor_final").value = "";
       }
+      
+      // Limpiar campos de diagnóstico para nueva OT
+      document.getElementById("codigo_area").value = "";
+      document.getElementById("detalle_area").value = "";
+      document.getElementById("valor_area").value = "";
+      document.getElementById("causas").value = "";
+      document.getElementById("recomendaciones").value = "";
+      document.getElementById("valor_final").value = "";
       
       modoNuevoRegistro = true;
       registroSeleccionado = null;
       
-      // Generar nueva OT
-      await cargarSiguienteOT();
+      // Generar nueva OT SIN CERRAR MODAL
+      await cargarSiguienteOT(true);
+      
+      // Guardar estado
       saveCurrentState();
       
-      mostrarMensajeExito("✅ Nueva OT creada");
+      // Reiniciar el contador de reinicio automático
+      reiniciarContadorReinicio();
       
-      cerrarModalCoincidencias();
+      // Mostrar mensaje en el modal (no se cierra)
+      mostrarMensajeExitoModal("✅ Nueva OT creada (motor vacío)");
       
-      // Enfocar campo de motor
+      // NO cerrar el modal - permanece abierto
+      // Enfocar campo de motor automáticamente
       setTimeout(() => {
-        document.getElementById("motor").focus();
+        // Si el modal sigue abierto, enfocar el campo motor
+        if (modalAbierto) {
+          document.getElementById("motor").focus();
+        }
       }, 300);
     }
 
-    // Función para mostrar mensaje de éxito
+    // Función para mostrar mensaje de éxito general
     function mostrarMensajeExito(mensaje, tipo = "success") {
       const mensajeElement = document.getElementById("mensajeExito");
       mensajeElement.textContent = mensaje;
@@ -1308,6 +1453,9 @@
           modoNuevoRegistro = true;
           registroSeleccionado = null;
           
+          // Reiniciar el contador de reinicio automático
+          reiniciarContadorReinicio();
+          
           mostrarMensajeExito("✅ Nueva OT lista");
           
         }, confirmado ? 1500 : 500);
@@ -1357,6 +1505,9 @@
       cargarSiguienteOT();
       setFechaHoy();
       saveCurrentState();
+      
+      // Reiniciar el contador de reinicio automático
+      reiniciarContadorReinicio();
       
       // Resetear altura de textareas
       setTimeout(() => {
@@ -1414,6 +1565,143 @@
       }, 800);
     });
 
+    // ====== FUNCIONES PARA REINICIO AUTOMÁTICO DE OT CADA 1 MINUTO ======
+    
+    // Función para verificar si hay datos que preservar
+    function hayDatosParaPreservar() {
+        const camposDiagnostico = [
+            "codigo_area", "detalle_area", "valor_area",
+            "causas", "recomendaciones", "valor_final"
+        ];
+        
+        // Verificar si hay datos en campos de diagnóstico
+        for (const id of camposDiagnostico) {
+            const campo = document.getElementById(id);
+            if (campo && campo.value.trim() !== "") {
+                return true;
+            }
+        }
+        
+        // Verificar si hay datos básicos importantes (más allá de patente)
+        const camposBasicos = ["marca", "modelo", "motor", "km"];
+        for (const id of camposBasicos) {
+            const campo = document.getElementById(id);
+            if (campo && campo.value.trim() !== "") {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // Función para reiniciar la OT automáticamente
+    async function reiniciarOTAutomaticamente() {
+        const ahora = Date.now();
+        const tiempoTranscurrido = ahora - ultimoReinicio;
+        
+        // Solo reiniciar si han pasado más de 60 segundos (1 minuto)
+        if (tiempoTranscurrido < 60000) {
+            return;
+        }
+        
+        // Verificar si hay datos que preservar
+        if (hayDatosParaPreservar()) {
+            console.log("Hay datos importantes, no se reinicia OT automáticamente");
+            ultimoReinicio = ahora;
+            reinicioContador = 60;
+            actualizarIndicadorReinicio();
+            return;
+        }
+        
+        console.log("Reiniciando OT automáticamente (1 minuto de inactividad)");
+        
+        // Limpiar campos de diagnóstico
+        const camposParaLimpiar = [
+            "codigo_area", "detalle_area", "valor_area",
+            "causas", "recomendaciones", "valor_final"
+        ];
+        
+        camposParaLimpiar.forEach(id => {
+            const element = document.getElementById(id);
+            if(element) element.value = "";
+        });
+        
+        // Preparar para nuevo registro
+        modoNuevoRegistro = true;
+        registroSeleccionado = null;
+        
+        // Generar nueva OT
+        await cargarSiguienteOT();
+        
+        // Actualizar fecha
+        setFechaHoy();
+        
+        // Guardar estado
+        saveCurrentState();
+        
+        // Mostrar mensaje de reinicio
+        mostrarMensajeExito("🔄 Nueva OT generada (reinicio automático)", "warning");
+        
+        // Reiniciar contador
+        ultimoReinicio = ahora;
+        reinicioContador = 60;
+        actualizarIndicadorReinicio();
+    }
+
+    // Función para actualizar el indicador visual de reinicio
+    function actualizarIndicadorReinicio() {
+        const indicador = document.getElementById("reinicioIndicator");
+        const tiempoRestante = document.getElementById("tiempoRestante");
+        
+        if (!indicador || !tiempoRestante) return;
+        
+        // Mostrar/ocultar indicador según si hay datos
+        if (hayDatosParaPreservar()) {
+            indicador.style.display = "none";
+        } else {
+            indicador.style.display = "block";
+            tiempoRestante.textContent = reinicioContador;
+            
+            // Cambiar color cuando queda poco tiempo
+            if (reinicioContador <= 10) {
+                indicador.style.background = "#dc3545";
+                indicador.style.color = "white";
+            } else if (reinicioContador <= 30) {
+                indicador.style.background = "#ffc107";
+                indicador.style.color = "#212529";
+            } else {
+                indicador.style.background = "#17a2b8";
+                indicador.style.color = "white";
+            }
+        }
+    }
+
+    // Función para reiniciar el contador de reinicio
+    function reiniciarContadorReinicio() {
+        ultimoReinicio = Date.now();
+        reinicioContador = 60;
+        actualizarIndicadorReinicio();
+    }
+
+    // Función principal del temporizador de reinicio
+    function iniciarTemporizadorReinicio() {
+        if (reinicioTimer) {
+            clearInterval(reinicioTimer);
+        }
+        
+        reinicioTimer = setInterval(() => {
+            if (reinicioContador > 0) {
+                reinicioContador--;
+                actualizarIndicadorReinicio();
+                
+                // Verificar si es tiempo de reiniciar
+                if (reinicioContador <= 0) {
+                    reiniciarOTAutomaticamente();
+                }
+            }
+        }, 1000);
+    }
+
     // Inicializar al cargar
     window.addEventListener('load', () => {
       setFechaHoy();
@@ -1429,6 +1717,15 @@
           saveCurrentState();
         }
       });
+      
+      // Iniciar el temporizador de reinicio automático
+      iniciarTemporizadorReinicio();
+      
+      // Reiniciar contador al interactuar con el formulario
+      document.addEventListener('input', reiniciarContadorReinicio);
+      document.addEventListener('change', reiniciarContadorReinicio);
+      document.addEventListener('click', reiniciarContadorReinicio);
+      document.addEventListener('keydown', reiniciarContadorReinicio);
     });
     
     // Prevenir pérdida de datos al cerrar
@@ -1655,13 +1952,13 @@
 
   <!-- ====== Modal QR ====== -->
   <div id="qr-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; z-index:99998;">
-    <div style="background:#fff; width:min(92vw,400px); border:1px solid #000; border-radius:8px; padding:15px; box-shadow:0 3px 10px rgba(0,0,0,0.2); text-align:center;">
-      <h3 style="margin:0 0 8px; font-size:16px">Escanea para descargar</h3>
-      <div id="qr-box" style="display:flex; justify-content:center; margin:8px 0;"></div>
-      <div style="word-break:break-all; font-size:11px; margin:6px 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"></a></div>
-      <div style="display:flex; gap:6px; justify-content:center; margin-top:6px;">
-        <button onclick="navigator.clipboard.writeText(document.getElementById('qr-link').href)" style="padding:6px 10px; font-size:12px">Copiar link</button>
-        <button onclick="document.getElementById('qr-modal').style.display='none'" style="padding:6px 10px; font-size:12px">Cerrar</button>
+    <div style="background:#fff; width:min(92vw,380px); border:1px solid #000; border-radius:6px; padding:12px; box-shadow:0 3px 8px rgba(0,0,0,0.2); text-align:center;">
+      <h3 style="margin:0 0 6px; font-size:15px">Escanea para descargar</h3>
+      <div id="qr-box" style="display:flex; justify-content:center; margin:6px 0;"></div>
+      <div style="word-break:break-all; font-size:10px; margin:5px 0;"><a id="qr-link" href="#" target="_blank" rel="noopener"></a></div>
+      <div style="display:flex; gap:5px; justify-content:center; margin-top:5px;">
+        <button onclick="navigator.clipboard.writeText(document.getElementById('qr-link').href)" style="padding:5px 8px; font-size:11px">Copiar</button>
+        <button onclick="document.getElementById('qr-modal').style.display='none'" style="padding:5px 8px; font-size:11px">Cerrar</button>
       </div>
     </div>
   </div>
@@ -1688,7 +1985,7 @@
       const link = document.getElementById('qr-link');
       const box = document.getElementById('qr-box');
       link.textContent = url; link.href = url; box.innerHTML = "";
-      new QRCode(box, { text: url, width: 180, height: 180 });
+      new QRCode(box, { text: url, width: 160, height: 160 });
       document.getElementById('qr-modal').style.display = 'flex';
     }
 
