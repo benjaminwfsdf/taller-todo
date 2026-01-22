@@ -214,6 +214,22 @@
       display: none;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+    
+    /* Indicador de sincronización */
+    .sync-indicator {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #17a2b8;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      z-index: 999;
+      display: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
   </style>
 
   <style>
@@ -225,6 +241,7 @@
       #auth-overlay { display: none !important; }
       .no-print { display: none !important; }
       .reinicio-indicator { display: none !important; }
+      .sync-indicator { display: none !important; }
     }
 
     body { 
@@ -348,7 +365,7 @@
       width:100%; 
       height:180px;
       border:none; 
-      resize:vertical; 
+      resize:none; 
       font-size:13px;
       box-sizing:border-box; 
       padding:6px;
@@ -480,12 +497,12 @@
     #codigo_area, #detalle_area, #valor_area {
       width:100%; 
       min-height:180px;
-      height: auto;
+      height: 180px; /* FIJO - no se agranda solo */
       border:none; 
       font-size:13px;
       box-sizing:border-box; 
       padding:6px;
-      resize:vertical; 
+      resize: none; /* DESACTIVADO el resize */
       overflow-y: auto;
       font-family: Arial, sans-serif;
       line-height: 1.4;
@@ -528,6 +545,12 @@
       border-color: #1d3053 !important;
     }
     
+    .boton-sincronizar {
+      background: #17a2b8 !important;
+      color: white !important;
+      border-color: #17a2b8 !important;
+    }
+    
     /* Efecto hover para todos los botones */
     .fab button:hover {
       opacity: 0.9;
@@ -555,6 +578,9 @@
 <body>
   <!-- Indicador de reinicio OT -->
   <div class="reinicio-indicator" id="reinicioIndicator">🔄 Nueva OT en <span id="tiempoRestante">60</span>s</div>
+  
+  <!-- Indicador de sincronización -->
+  <div class="sync-indicator" id="syncIndicator">🔄 Sincronizado</div>
 
   <!-- Modal auth -->
   <div id="auth-overlay" aria-hidden="true">
@@ -769,6 +795,138 @@
     let cacheTimestamp = 0;
     const CACHE_DURACION = 30000; // 30 segundos
 
+    // ====== SISTEMA DE SINCRONIZACIÓN ENTRE PESTAÑAS ======
+    let syncChannel = new BroadcastChannel('informe-ot-sync');
+    let soyLiderSync = false;
+    let syncTimer = null;
+    let ultimaOTRecibida = "";
+    
+    // Inicializar sincronización
+    function inicializarSincronizacion() {
+        syncChannel.onmessage = function(event) {
+            const mensaje = event.data;
+            
+            switch(mensaje.tipo) {
+                case 'ping':
+                    // Responder al ping si no soy líder
+                    if (!soyLiderSync && mensaje.origen !== 'esta_pestana') {
+                        syncChannel.postMessage({ 
+                            tipo: 'pong', 
+                            timestamp: Date.now(),
+                            respondeA: mensaje.timestamp,
+                            origen: 'esta_pestana'
+                        });
+                    }
+                    break;
+                    
+                case 'pong':
+                    // Hay otra pestaña activa
+                    if (mensaje.origen !== 'esta_pestana') {
+                        soyLiderSync = false;
+                    }
+                    break;
+                    
+                case 'nueva_ot':
+                    // Solo actualizar si la OT es diferente y viene de otra pestaña
+                    if (mensaje.origen !== 'esta_pestana' && mensaje.ot && 
+                        document.getElementById("otNumero").textContent !== mensaje.ot) {
+                        
+                        console.log('🔄 OT actualizada desde otra pestaña:', mensaje.ot);
+                        ultimaOTRecibida = mensaje.ot;
+                        
+                        // NO BORRAR DATOS - solo actualizar el número de OT
+                        const otActual = document.getElementById("otNumero").textContent;
+                        if (otActual !== mensaje.ot) {
+                            document.getElementById("otNumero").textContent = mensaje.ot;
+                            ultimaOTCalculada = mensaje.ot;
+                            
+                            // Mostrar indicador de sincronización
+                            mostrarIndicadorSincronizacion('OT actualizada: ' + mensaje.ot);
+                        }
+                    }
+                    break;
+                    
+                case 'guardar_completado':
+                    // Otra pestaña guardó datos
+                    if (mensaje.origen !== 'esta_pestana') {
+                        console.log('💾 Guardado completado en otra pestaña');
+                        
+                        // Si la patente coincide con la actual, actualizar cache
+                        if (mensaje.patente === normalizarPatente(document.getElementById("patente").value)) {
+                            patenteCache.delete(mensaje.patente);
+                        }
+                    }
+                    break;
+                    
+                case 'forzar_actualizacion':
+                    // Otra pestaña forzó actualización
+                    if (mensaje.origen !== 'esta_pestana') {
+                        console.log('🔄 Forzando actualización desde otra pestaña');
+                        actualizarOTDesdeServidor(true);
+                    }
+                    break;
+            }
+        };
+        
+        // Verificar liderazgo cada 5 segundos
+        setInterval(() => {
+            syncChannel.postMessage({ 
+                tipo: 'ping', 
+                timestamp: Date.now(),
+                origen: 'esta_pestana'
+            });
+        }, 5000);
+        
+        // Inicialmente soy líder
+        setTimeout(() => {
+            soyLiderSync = true;
+        }, 1000);
+    }
+    
+    // Mostrar indicador de sincronización
+    function mostrarIndicadorSincronizacion(mensaje) {
+        const indicador = document.getElementById("syncIndicator");
+        if (indicador) {
+            indicador.textContent = "🔄 " + mensaje;
+            indicador.style.display = "block";
+            indicador.style.background = "#17a2b8";
+            
+            setTimeout(() => {
+                indicador.style.display = "none";
+            }, 3000);
+        }
+    }
+    
+    // Notificar a otras pestañas sobre nueva OT
+    function notificarNuevaOT(ot) {
+        syncChannel.postMessage({ 
+            tipo: 'nueva_ot', 
+            ot: ot,
+            timestamp: Date.now(),
+            origen: 'esta_pestana'
+        });
+    }
+    
+    // Notificar guardado completado
+    function notificarGuardadoCompletado(patente) {
+        syncChannel.postMessage({ 
+            tipo: 'guardar_completado', 
+            patente: patente,
+            timestamp: Date.now(),
+            origen: 'esta_pestana'
+        });
+    }
+    
+    // Forzar actualización de OT en todas las pestañas
+    function forzarActualizacionTodasPestanas() {
+        syncChannel.postMessage({ 
+            tipo: 'forzar_actualizacion',
+            timestamp: Date.now(),
+            origen: 'esta_pestana'
+        });
+        actualizarOTDesdeServidor(true);
+    }
+
     // Función para normalizar patente
     function normalizarPatente(p){
       return (p||"").toUpperCase().replace(/\s+/g,"").replace(/[^A-Z0-9]/g,"");
@@ -781,30 +939,38 @@
       document.getElementById("fecha").textContent = fechaFormateada;
     }
 
-    // Obtener la siguiente OT - MEJORADA
-    async function cargarSiguienteOT(sinCerrarModal = false){
+    // Obtener la siguiente OT - MEJORADA CON SINCRONIZACIÓN
+    async function cargarSiguienteOT(sinCerrarModal = false, forzarNueva = false){
       try{
         const timestamp = new Date().getTime();
-        const response = await fetch(`${API_URL}?action=obtenerSiguienteOT&t=${timestamp}`);
+        const response = await fetch(`${API_URL}?action=obtenerSiguienteOT&t=${timestamp}&forzar=${forzarNueva ? 'true' : 'false'}`);
         
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.nextOT) {
             const otFormateada = String(data.nextOT).padStart(6, "0");
-            document.getElementById("otNumero").textContent = otFormateada;
+            const otActual = document.getElementById("otNumero").textContent;
             
-            // Animación para nueva OT
-            const otContainer = document.getElementById("otFinalContainer");
-            otContainer.classList.add("nueva-ot-creada");
-            setTimeout(() => {
-              otContainer.classList.remove("nueva-ot-creada");
-            }, 500);
-            
-            ultimaOTCalculada = otFormateada;
-            
-            // Mostrar mensaje de nueva OT
-            if (sinCerrarModal) {
-              mostrarMensajeExito(`✨ Nueva OT: ${otFormateada}`, "success");
+            // Solo actualizar si es diferente
+            if (otActual !== otFormateada) {
+                document.getElementById("otNumero").textContent = otFormateada;
+                
+                // Animación para nueva OT
+                const otContainer = document.getElementById("otFinalContainer");
+                otContainer.classList.add("nueva-ot-creada");
+                setTimeout(() => {
+                    otContainer.classList.remove("nueva-ot-creada");
+                }, 500);
+                
+                ultimaOTCalculada = otFormateada;
+                
+                // 🔥 NOTIFICAR A OTRAS PESTAÑAS
+                notificarNuevaOT(otFormateada);
+                
+                // Mostrar mensaje de nueva OT
+                if (sinCerrarModal) {
+                    mostrarMensajeExito(`✨ Nueva OT: ${otFormateada}`, "success");
+                }
             }
             
             return otFormateada;
@@ -813,17 +979,69 @@
         
         // Si falla, usar un valor por defecto
         const otDefault = "000001";
-        document.getElementById("otNumero").textContent = otDefault;
-        ultimaOTCalculada = otDefault;
+        const otActual = document.getElementById("otNumero").textContent;
+        
+        if (otActual !== otDefault) {
+            document.getElementById("otNumero").textContent = otDefault;
+            ultimaOTCalculada = otDefault;
+            
+            // 🔥 NOTIFICAR A OTRAS PESTAÑAS
+            notificarNuevaOT(otDefault);
+        }
+        
         return otDefault;
         
       }catch(e){
         console.error("Error cargando OT:", e);
         const otDefault = "000001";
-        document.getElementById("otNumero").textContent = otDefault;
-        ultimaOTCalculada = otDefault;
+        const otActual = document.getElementById("otNumero").textContent;
+        
+        if (otActual !== otDefault) {
+            document.getElementById("otNumero").textContent = otDefault;
+            ultimaOTCalculada = otDefault;
+            
+            // 🔥 NOTIFICAR A OTRAS PESTAÑAS
+            notificarNuevaOT(otDefault);
+        }
+        
         return otDefault;
       }
+    }
+    
+    // Función para actualizar OT desde servidor sin borrar datos
+    async function actualizarOTDesdeServidor(forzar = false) {
+        try {
+            const timestamp = new Date().getTime();
+            const response = await fetch(`${API_URL}?action=obtenerSiguienteOT&t=${timestamp}&forzar=${forzar ? 'true' : 'false'}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.nextOT) {
+                    const otFormateada = String(data.nextOT).padStart(6, "0");
+                    const otActual = document.getElementById("otNumero").textContent;
+                    
+                    if (otActual !== otFormateada) {
+                        // Guardar datos actuales antes de cambiar OT
+                        const datosActuales = saveCurrentState();
+                        
+                        // Actualizar OT
+                        document.getElementById("otNumero").textContent = otFormateada;
+                        ultimaOTCalculada = otFormateada;
+                        
+                        // NOTIFICAR A OTRAS PESTAÑAS
+                        notificarNuevaOT(otFormateada);
+                        
+                        mostrarMensajeExito(`🔄 OT actualizada: ${otFormateada}`, "warning");
+                        
+                        // Los datos del formulario SE MANTIENEN
+                        return otFormateada;
+                    }
+                }
+            }
+        } catch(e) {
+            console.error("Error actualizando OT:", e);
+        }
+        return null;
     }
 
     // Guardar estado actual del formulario
@@ -1030,7 +1248,7 @@
           // Cerrar modal después de cargar datos
           setTimeout(() => {
             cerrarModalCoincidencias();
-          }, 500); // Reducido de 800 a 500 ms
+          }, 500);
         }
         
       }else if(registro.Fuente === "Hoja1"){
@@ -1042,7 +1260,7 @@
           // Cerrar modal después de cargar datos
           setTimeout(() => {
             cerrarModalCoincidencias();
-          }, 500); // Reducido de 800 a 500 ms
+          }, 500);
         }
       }
       
@@ -1061,11 +1279,6 @@
       
       // Reiniciar el contador de reinicio automático
       reiniciarContadorReinicio();
-      
-      // Ajustar altura de textareas
-      setTimeout(() => {
-        autoAdjustTextareas();
-      }, 50); // Reducido de 100 a 50 ms
     }
 
     // Función para mostrar OTs anteriores - MEJORADA
@@ -1255,7 +1468,7 @@
       patenteEnModal = "";
     }
 
-    // Crear nueva OT desde el modal - MODIFICADA PARA CERRAR MODAL
+    // Crear nueva OT desde el modal - MODIFICADA PARA CERRAR MODAL Y NO BORRAR DATOS
     async function crearNuevaOTDesdeModal(){
       if (coincidenciasEncontradas && coincidenciasEncontradas.length > 0) {
         // Tomar datos del primer registro (más reciente) pero NO el motor
@@ -1283,13 +1496,8 @@
         }
       }
       
-      // Limpiar campos de diagnóstico para nueva OT
-      document.getElementById("codigo_area").value = "";
-      document.getElementById("detalle_area").value = "";
-      document.getElementById("valor_area").value = "";
-      document.getElementById("causas").value = "";
-      document.getElementById("recomendaciones").value = "";
-      document.getElementById("valor_final").value = "";
+      // IMPORTANTE: NO LIMPIAR CAMPOS DE DIAGNÓSTICO
+      // Los datos existentes SE MANTIENEN
       
       modoNuevoRegistro = true;
       registroSeleccionado = null;
@@ -1298,7 +1506,7 @@
       cerrarModalCoincidencias();
       
       // Generar nueva OT después de cerrar modal
-      await cargarSiguienteOT();
+      const nuevaOT = await cargarSiguienteOT();
       
       // Guardar estado
       saveCurrentState();
@@ -1307,7 +1515,7 @@
       reiniciarContadorReinicio();
       
       // Mostrar mensaje de éxito
-      mostrarMensajeExito("✅ Nueva OT creada (motor vacío)");
+      mostrarMensajeExito("✅ Nueva OT: " + nuevaOT);
       
       // Enfocar campo de motor automáticamente
       setTimeout(() => {
@@ -1400,6 +1608,9 @@
           body: formData.toString()
         });
         
+        // 🔥 NOTIFICAR A OTRAS PESTAÑAS QUE SE GUARDÓ
+        notificarGuardadoCompletado(datos.patente);
+        
         // Mostrar confirmación
         const confirmado = confirm(
           `✅ Informe guardado\n\n` +
@@ -1419,16 +1630,8 @@
           // Generar nueva OT
           await cargarSiguienteOT();
           
-          // Limpiar SOLO campos de diagnóstico, mantener datos del vehículo
-          const camposParaLimpiar = [
-            "codigo_area", "detalle_area", "valor_area",
-            "causas", "recomendaciones", "valor_final"
-          ];
-          
-          camposParaLimpiar.forEach(id => {
-            const element = document.getElementById(id);
-            if(element) element.value = "";
-          });
+          // IMPORTANTE: NO BORRAR LOS DATOS DEL FORMULARIO
+          // Los datos SE MANTIENEN para el próximo diagnóstico
           
           // Preparar para nuevo registro
           modoNuevoRegistro = true;
@@ -1464,9 +1667,9 @@
       }
     }
 
-    // Borrar todo el formulario
+    // Borrar todo el formulario - SOLO CUANDO EL USUARIO LO PIDE
     function borrarTodo(){
-      if(!confirm("¿Borrar TODOS los datos?")) return;
+      if(!confirm("¿Borrar TODOS los datos del formulario?")) return;
       
       const campos = [
         "marca", "modelo", "patente", "ano", 
@@ -1483,50 +1686,20 @@
       registroSeleccionado = null;
       ultimaPatenteBuscada = "";
       
-      cargarSiguienteOT();
+      const nuevaOT = cargarSiguienteOT();
       setFechaHoy();
       saveCurrentState();
       
       // Reiniciar el contador de reinicio automático
       reiniciarContadorReinicio();
       
-      // Resetear altura de textareas
-      setTimeout(() => {
-        autoAdjustTextareas();
-      }, 50); // Reducido de 100 a 50 ms
+      mostrarMensajeExito("✅ Formulario limpiado");
     }
 
-    // Ajuste automático de textareas
-    function autoAdjustTextareas() {
-      ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.style.height = 'auto';
-          el.style.height = (el.scrollHeight + 2) + 'px';
-        }
-      });
-    }
-
-    // Configurar ajuste automático de textareas
+    // Configurar ajuste automático de textareas - DESACTIVADO
     function setupAutoAdjustTextareas() {
-      const textareas = ['codigo_area', 'detalle_area', 'valor_area', 'causas', 'recomendaciones'];
-      
-      textareas.forEach(id => {
-        const textarea = document.getElementById(id);
-        if (textarea) {
-          textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight + 2) + 'px';
-            saveCurrentState();
-          });
-          
-          // Ajustar inicialmente
-          setTimeout(() => {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight + 2) + 'px';
-          }, 50); // Reducido de 100 a 50 ms
-        }
-      });
+      // NOTA: El auto-ajuste está DESACTIVADO
+      // Los textareas tienen altura fija de 180px
     }
 
     // Event listeners para búsqueda automática - MEJORADA
@@ -1537,7 +1710,6 @@
         clearTimeout(timeoutBusqueda);
       }
       
-      // Reducir tiempo de debounce de 800 a 600 ms
       timeoutBusqueda = setTimeout(() => {
         if(this.value.trim().length >= 3){
           modoNuevoRegistro = true;
@@ -1597,23 +1769,12 @@
         
         console.log("Reiniciando OT automáticamente (1 minuto de inactividad)");
         
-        // Limpiar campos de diagnóstico
-        const camposParaLimpiar = [
-            "codigo_area", "detalle_area", "valor_area",
-            "causas", "recomendaciones", "valor_final"
-        ];
-        
-        camposParaLimpiar.forEach(id => {
-            const element = document.getElementById(id);
-            if(element) element.value = "";
-        });
-        
-        // Preparar para nuevo registro
+        // IMPORTANTE: NO BORRAR DATOS - solo actualizar OT
         modoNuevoRegistro = true;
         registroSeleccionado = null;
         
         // Generar nueva OT
-        await cargarSiguienteOT();
+        const nuevaOT = await cargarSiguienteOT();
         
         // Actualizar fecha
         setFechaHoy();
@@ -1684,11 +1845,21 @@
         }, 1000);
     }
 
+    // Función para forzar actualización de OT (manual)
+    function forzarActualizacionOT() {
+        if (confirm("¿Forzar actualización de OT desde servidor?\n\nLos datos del formulario NO se borrarán.")) {
+            actualizarOTDesdeServidor(true);
+        }
+    }
+
     // Inicializar al cargar
     window.addEventListener('load', () => {
       setFechaHoy();
       cargarSiguienteOT();
       setupAutoAdjustTextareas();
+      
+      // 🔥 INICIAR SISTEMA DE SINCRONIZACIÓN
+      inicializarSincronizacion();
       
       // Auto-guardar periódicamente
       setInterval(saveCurrentState, 30000);
@@ -1906,9 +2077,8 @@
         
         txtDetalle.value = resultado.join("\n");
         
-        // Ajustar altura
-        txtDetalle.style.height = 'auto';
-        txtDetalle.style.height = (txtDetalle.scrollHeight + 2) + 'px';
+        // Auto-guardar
+        saveCurrentState();
       }
     }
     
@@ -1919,7 +2089,6 @@
       // Solo activar auto-relleno si hay nuevos códigos
       const currentCodes = codigosDe(txtCodigos.value);
       if (currentCodes.length > 0) {
-        // Reducir tiempo de debounce de 500 a 300 ms
         window.__debAutoTimer = setTimeout(mezclarDetalleSoloDescripcion, 300);
       }
       
@@ -1953,6 +2122,7 @@
     <button onclick="descargarPDFLocal()" class="boton-pdf">📄 PDF</button>
     <button onclick="generarQRDeDescargaPDF()" class="boton-qr">📲 QR</button>
     <button onclick="buscarAplicacion()" class="boton-buscar-aplicacion">🔍 Buscar</button>
+    <button onclick="forzarActualizacionOT()" class="boton-sincronizar">🔄 Actualizar OT</button>
     <button onclick="borrarTodo()" class="boton-borrar">🧹 Borrar</button>
   </div>
 
